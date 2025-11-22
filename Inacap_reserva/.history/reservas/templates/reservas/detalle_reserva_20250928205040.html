@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Reserva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .status-badge {
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-approved { background: #D1FAE5; color: #065F46; }
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-rejected { background: #FEE2E2; color: #991B1B; }
+        
+        .reservation-id {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-danger { background: #DC2626; color: white; }
+        .btn-primary { background: #2563EB; color: white; }
+        .btn-secondary { background: #6B7280; color: white; }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #111827;
+            border-bottom: 2px solid #E5E7EB;
+            padding-bottom: 8px;
+        }
+        
+        .space-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .space-info h4 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        
+        .space-description {
+            color: #6B7280;
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+        
+        .info-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #6B7280;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+            min-width: 120px;
+        }
+        
+        .info-value {
+            color: #6B7280;
+        }
+        
+        /* Timeline */
+        .timeline-card {
+            grid-column: 1 / -1;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #E5E7EB;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2563EB;
+        }
+        
+        .timeline-item.completed::before {
+            background: #10B981;
+            border-color: #10B981;
+        }
+        
+        .timeline-content {
+            background: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #2563EB;
+        }
+        
+        .timeline-content.completed {
+            border-left-color: #10B981;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-date {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        /* Observaciones */
+        .observations {
+            background: #FEF9E7;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #F59E0B;
+            margin-top: 16px;
+        }
+        
+        .observations h4 {
+            color: #92400E;
+            margin-bottom: 8px;
+        }
+        
+        .observations p {
+            color: #78350F;
+        }
+        
+        .notes-section {
+            margin-top: 16px;
+        }
+        
+        .notes-section textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .save-notes {
+            margin-top: 8px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="status-badge status-approved">APROBADA</div>
+                <div class="reservation-id">ID: RES-2025-001234</div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger">❌ Cancelar Reserva</button>
+                <button class="btn btn-primary">📋 Duplicar</button>
+                <button class="btn btn-secondary">🖨️ Imprimir</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Información del Espacio -->
+            <div class="card">
+                <h3>📍 Información del Espacio</h3>
+                <div class="space-image">🏢</div>
+                <div class="space-info">
+                    <h4>Sala de Conferencias A1</h4>
+                    <p class="space-description">
+                        Sala equipada con proyector 4K, sistema de audio, videoconferencia y capacidad para presentaciones ejecutivas.
+                    </p>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📍</div>
+                        <div class="info-label">Ubicación:</div>
+                        <div class="info-value">Edificio Principal, Piso 2</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">👥</div>
+                        <div class="info-label">Capacidad:</div>
+                        <div class="info-value">20 personas</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">⚙️</div>
+                        <div class="info-label">Equipamiento:</div>
+                        <div class="info-value">Proyector, Audio, WiFi, AC</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Temporal y Detalles -->
+            <div class="card">
+                <h3>⏰ Detalles de la Reserva</h3>
+                
+                <div style="margin-bottom: 24px;">
+                    <h4 style="color: #374151; margin-bottom: 12px;">Información Temporal</h4>
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-label">Fecha:</div>
+                        <div class="info-value">Viernes, 15 de Marzo 2025</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">🕐</div>
+                        <div class="info-label">Hora:</div>
+                        <div class="info-value">09:00 - 11:30</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">⏱️</div>
+                        <div class="info-label">Duración:</div>
+                        <div class="info-value">2 horas 30 minutos</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: #374151; margin-bottom: 12px;">Detalles Adicionales</h4>
+                    <div class="info-item">
+                        <div class="info-icon">🎯</div>
+                        <div class="info-label">Propósito:</div>
+                        <div class="info-value">Reunión de Proyecto Q1</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">👥</div>
+                        <div class="info-label">Asistentes:</div>
+                        <div class="info-value">15 personas</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">👤</div>
+                        <div class="info-label">Solicitante:</div>
+                        <div class="info-value">
+                            Ana García<br>
+                            <small style="color: #9CA3AF;">ana.garcia@empresa.com<br>+56 9 1234 5678</small>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📝</div>
+                        <div class="info-label">Fecha solicitud:</div>
+                        <div class="info-value">10 de Marzo, 14:30</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline de Estados -->
+        <div class="card timeline-card">
+            <h3>📊 Timeline de Estados</h3>
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <div class="timeline-content completed">
+                        <div class="timeline-title">✅ Solicitud Enviada</div>
+                        <div class="timeline-date">10 de Marzo, 14:30</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item completed">
+                    <div class="timeline-content completed">
+                        <div class="timeline-title">👀 En Revisión</div>
+                        <div class="timeline-date">10 de Marzo, 15:45</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item completed">
+                    <div class="timeline-content completed">
+                        <div class="timeline-title">✅ Aprobada</div>
+                        <div class="timeline-date">11 de Marzo, 09:15 - Aprobada por: Luis Martínez</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Observaciones -->
+            <div class="observations">
+                <h4>💬 Comentarios del Administrador</h4>
+                <p>Reserva aprobada. Se confirmó la disponibilidad del equipo de videoconferencia para la fecha solicitada.</p>
+            </div>
+            
+            <div class="notes-section">
+                <h4 style="margin-bottom: 8px;">📝 Notas del Usuario</h4>
+                <textarea placeholder="Agregar notas personales sobre esta reserva...">Recordar llevar laptop personal y cables HDMI adicionales.</textarea>
+                <div class="save-notes">
+                    <button class="btn btn-primary btn-small">💾 Guardar Notas</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

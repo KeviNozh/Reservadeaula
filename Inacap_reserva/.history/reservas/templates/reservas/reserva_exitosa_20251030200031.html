@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva Exitosa - Sistema de Reservas</title>
+</head>
+<body>
+    <h1>Reserva Exitosa</h1>
+    <p>Tu reserva se ha creado correctamente.</p>
+    <div id="reserva-details">
+        <p><strong>ID de Reserva:</strong> <span id="reserva-id">Cargando...</span></p>
+        <p><strong>Espacio:</strong> <span id="espacio">Cargando...</span></p>
+        <p><strong>Fecha:</strong> <span id="fecha">Cargando...</span></p>
+        <p><strong>Horario:</strong> <span id="horario">Cargando...</span></p>
+    </div>
+
+    <script>
+        // Obtener el ID de la reserva desde la URL
+        function getReservaIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('reserva_id');
+        }
+
+        // Cargar datos de la reserva
+        async function cargarReserva() {
+            const reservaId = getReservaIdFromURL();
+            
+            if (!reservaId) {
+                document.getElementById('reserva-id').textContent = 'No encontrado';
+                return;
+            }
+
+            try {
+                document.getElementById('reserva-id').textContent = reservaId;
+                
+                const response = await fetch(`http://127.0.0.1:8000/api/reservas/${reservaId}/`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const reserva = await response.json();
+                    
+                    // Mostrar los datos
+                    document.getElementById('espacio').textContent = reserva.espacio_nombre || 'No especificado';
+                    document.getElementById('fecha').textContent = reserva.fecha_reserva || 'No especificado';
+                    document.getElementById('horario').textContent = 
+                        `${reserva.hora_inicio || ''} - ${reserva.hora_fin || ''}`;
+                } else {
+                    throw new Error('No se pudo cargar la reserva');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('espacio').textContent = 'Error al cargar';
+                document.getElementById('fecha').textContent = 'Error al cargar';
+                document.getElementById('horario').textContent = 'Error al cargar';
+            }
+        }
+
+        // Cargar cuando la página esté lista
+        document.addEventListener('DOMContentLoaded', cargarReserva);
+    </script>
+</body>
+</html>

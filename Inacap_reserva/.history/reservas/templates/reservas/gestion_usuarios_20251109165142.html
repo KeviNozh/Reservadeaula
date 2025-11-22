@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema de Reservas</title>
+    <style>
+        /* ... (estilos existentes) ... */
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .users-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .users-table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* ... (otros estilos existentes) ... */
+    </style>
+</head>
+<body>
+    <!-- ... (header y navegación existentes) ... -->
+
+    <main class="main-content">
+        <!-- ... (breadcrumb y header existentes) ... -->
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">🔍 Buscar</label>
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Buscar por nombre, email...">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">👤 Rol</label>
+                    <select class="filter-select" id="roleFilter">
+                        <option value="">Todos los roles</option>
+                        <option value="Usuario">Usuario</option>
+                        <option value="Docente">Docente</option>
+                        <option value="Investigacion">Investigación</option>
+                        <option value="Administrativo">Administrativo</option>
+                        <option value="Aprobador">Aprobador</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📊 Estado</label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        🗑️ Limpiar filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Usuarios -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">Lista de Usuarios</h3>
+                <div class="table-actions">
+                    <span class="user-count" id="userCount">Cargando...</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                <div class="loading-spinner">⏳ Cargando usuarios...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Función para cargar usuarios
+        async function loadUsers() {
+            try {
+                const search = document.getElementById('searchInput').value;
+                const role = document.getElementById('roleFilter').value;
+                const status = document.getElementById('statusFilter').value;
+
+                let url = '/api/usuarios/filtrar/';
+                const params = new URLSearchParams();
+                
+                if (search) params.append('search', search);
+                if (role) params.append('rol', role);
+                if (status) params.append('estado', status);
+
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderUsersTable(data.usuarios);
+                    document.getElementById('userCount').textContent = `${data.total} usuarios encontrados`;
+                } else {
+                    console.error('Error:', data.error);
+                    document.getElementById('usersTableBody').innerHTML = 
+                        '<tr><td colspan="7" style="text-align: center; color: #dc2626;">❌ Error al cargar usuarios</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('usersTableBody').innerHTML = 
+                    '<tr><td colspan="7" style="text-align: center; color: #dc2626;">❌ Error de conexión</td></tr>';
+            }
+        }
+
+        // Función para renderizar la tabla de usuarios
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">
+                            👥 No se encontraron usuarios
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <span class="user-id">#${user.id}</span>
+                    </td>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-name">${user.first_name || ''} ${user.last_name || ''}</div>
+                            <div class="user-username" style="font-size: 12px; color: #6b7280;">@${user.username}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-email">${user.email}</div>
+                    </td>
+                    <td>
+                        <span class="role-badge role-${user.rol.toLowerCase()}">
+                            ${getRoleIcon(user.rol)} ${user.rol}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${user.is_active ? 'active' : 'inactive'}">
+                            ${user.is_active ? '✅ Activo' : '❌ Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            ${formatDate(user.date_joined)}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editUser(${user.id})" title="Editar usuario">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn-action btn-${user.is_active ? 'deactivate' : 'activate'}" 
+                                    onclick="toggleUserStatus(${user.id}, ${!user.is_active})"
+                                    title="${user.is_active ? 'Desactivar usuario' : 'Activar usuario'}">
+                                ${user.is_active ? '❌ Desactivar' : '✅ Activar'}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Función para obtener ícono del rol
+        function getRoleIcon(role) {
+            const icons = {
+                'Usuario': '👤',
+                'Docente': '🎓',
+                'Investigacion': '🔬',
+                'Administrativo': '💼',
+                'Aprobador': '✅'
+            };
+            return icons[role] || '👤';
+        }
+
+        // Función para formatear fecha
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Función para editar usuario
+        function editUser(userId) {
+            window.location.href = `/editar-usuario/?id=${userId}`;
+        }
+
+        // Función para cambiar estado del usuario
+        async function toggleUserStatus(userId, activate) {
+            const action = activate ? 'activar' : 'desactivar';
+            
+            if (!confirm(`¿Estás seguro de que quieres ${action} este usuario?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/usuarios/${userId}/cambiar-estado/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ activo: activate })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`✅ Usuario ${action}do exitosamente`, 'success');
+                    loadUsers(); // Recargar la lista
+                } else {
+                    showNotification(`❌ Error al ${action} usuario: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Error de conexión', 'error');
+            }
+        }
+
+        // Función para limpiar filtros
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            loadUsers();
+        }
+
+        // Función para obtener token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type) {
+            // Implementar sistema de notificaciones (puedes usar el que ya tienes)
+            alert(message); // Temporal - reemplazar con tu sistema de notificaciones
+        }
+
+        // Event listeners para filtros
+        document.getElementById('searchInput').addEventListener('input', debounce(loadUsers, 300));
+        document.getElementById('roleFilter').addEventListener('change', loadUsers);
+        document.getElementById('statusFilter').addEventListener('change', loadUsers);
+
+        // Función debounce para búsqueda
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Cargar usuarios al iniciar
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva Exitosa - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: #28a745;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 2px solid #ffc107;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .reserva-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-icon {
+            font-size: 20px;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .detail-content {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 0.9em;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            color: #34495e;
+            font-size: 1.1em;
+        }
+
+        .next-steps {
+            background: #e8f5e8;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+            border-left: 4px solid #28a745;
+        }
+
+        .next-steps h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .next-steps ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .next-steps li {
+            padding: 8px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+
+        .next-steps li:before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        
+        <div class="status-badge" id="status-badge">⏳ Cargando...</div>
+        
+        <h1 id="main-title">Reserva Exitosa</h1>
+        <p class="subtitle" id="subtitle">Procesando tu solicitud de reserva...</p>
+
+        <div id="loading-message" class="loading">
+            <p>Cargando los detalles de tu reserva...</p>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;">
+            <p id="error-text"></p>
+        </div>
+
+        <div id="reserva-details" class="reserva-details" style="display: none;">
+            <div class="detail-item">
+                <div class="detail-icon">🏛️</div>
+                <div class="detail-content">
+                    <div class="detail-label">Espacio</div>
+                    <div class="detail-value" id="espacio-value">Cargando...</div>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">📅</div>
+                <div class="detail-content">
+                    <div class="detail-label">Fecha</div>
+                    <div class="detail-value" id="fecha-value">Cargando...</div>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">⏰</div>
+                <div class="detail-content">
+                    <div class="detail-label">Horario</div>
+                    <div class="detail-value" id="horario-value">Cargando...</div>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">⏱️</div>
+                <div class="detail-content">
+                    <div class="detail-label">Duración</div>
+                    <div class="detail-value" id="duracion-value">Cargando...</div>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">👥</div>
+                <div class="detail-content">
+                    <div class="detail-label">Asistentes</div>
+                    <div class="detail-value" id="asistentes-value">Cargando...</div>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">📝</div>
+                <div class="detail-content">
+                    <div class="detail-label">Propósito</div>
+                    <div class="detail-value" id="proposito-value">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="next-steps" class="next-steps" style="display: none;">
+            <h3>📋 Próximos pasos</h3>
+            <ul>
+                <li>Tu reserva está siendo revisada por el administrador</li>
+                <li>Recibirás una notificación cuando sea aprobada</li>
+                <li>Puedes ver el estado en la sección de notificaciones</li>
+                <li>Contacta al administrador si necesitas más información</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="verNotificaciones()">🔔 Ver Notificaciones</button>
+            <button class="btn btn-secondary" onclick="nuevaReserva()">➕ Nueva Reserva</button>
+            <button class="btn btn-success" onclick="irInicio()">🏠 Ir al Inicio</button>
+        </div>
+    </div>
+
+    <script>
+        // Obtener el ID de la reserva desde la URL
+        function getReservaIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('reserva_id');
+        }
+
+        // Función para formatear fecha
+        function formatFecha(fecha) {
+            if (!fecha) return 'Fecha no especificada';
+            const partes = fecha.split('-');
+            if (partes.length === 3) {
+                return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+            return fecha;
+        }
+
+        // Función para formatear hora
+        function formatHora(hora) {
+            if (!hora) return 'Hora no especificada';
+            return hora.substring(0, 5); // Tomar solo HH:MM
+        }
+
+        // Función para calcular duración
+        function calcularDuracion(horaInicio, horaFin) {
+            if (!horaInicio || !horaFin) return 'No especificada';
+            
+            try {
+                const inicio = new Date(`2000-01-01T${horaInicio}`);
+                const fin = new Date(`2000-01-01T${horaFin}`);
+                const diffMs = fin - inicio;
+                const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMinutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                if (diffHoras === 0) {
+                    return `${diffMinutos} minutos`;
+                } else if (diffMinutos === 0) {
+                    return `${diffHoras} horas`;
+                } else {
+                    return `${diffHoras}h ${diffMinutos}m`;
+                }
+            } catch (error) {
+                return 'No especificada';
+            }
+        }
+
+        // Cargar datos de la reserva desde la API
+        async function cargarReserva() {
+            const reservaId = getReservaIdFromURL();
+            
+            if (!reservaId) {
+                mostrarError('No se encontró el ID de la reserva en la URL');
+                return;
+            }
+
+            try {
+                console.log(`🔄 Cargando reserva ID: ${reservaId}`);
+                
+                const response = await fetch(`http://127.0.0.1:8000/api/reservas/${reservaId}/`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: No se pudo cargar la reserva`);
+                }
+
+                const reserva = await response.json();
+                console.log('✅ Datos de la reserva cargados:', reserva);
+                
+                // Mostrar los datos en la interfaz
+                mostrarDatosReserva(reserva);
+                
+            } catch (error) {
+                console.error('❌ Error cargando reserva:', error);
+                mostrarError(`No se pudieron cargar los detalles de la reserva: ${error.message}`);
+            }
+        }
+
+        // Mostrar los datos de la reserva en la interfaz
+        function mostrarDatosReserva(reserva) {
+            // Ocultar loading y mostrar detalles
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('reserva-details').style.display = 'block';
+            document.getElementById('next-steps').style.display = 'block';
+
+            // Actualizar estado
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.textContent = `⏳ ${reserva.estado || 'Pendiente de Aprobación'}`;
+            
+            if (reserva.estado === 'Aprobada') {
+                statusBadge.style.background = '#d4edda';
+                statusBadge.style.color = '#155724';
+                statusBadge.style.borderColor = '#28a745';
+                statusBadge.textContent = '✅ Aprobada';
+            } else if (reserva.estado === 'Rechazada') {
+                statusBadge.style.background = '#f8d7da';
+                statusBadge.style.color = '#721c24';
+                statusBadge.style.borderColor = '#dc3545';
+                statusBadge.textContent = '❌ Rechazada';
+            }
+
+            // Actualizar título y subtítulo
+            document.getElementById('main-title').textContent = reserva.estado === 'Aprobada' ? 
+                '¡Reserva Aprobada!' : 'Solicitud de Reserva Enviada';
+                
+            document.getElementById('subtitle').textContent = reserva.estado === 'Aprobada' ?
+                'Tu reserva ha sido confirmada exitosamente' :
+                'Tu solicitud ha sido recibida y está en proceso de revisión';
+
+            // Actualizar detalles
+            document.getElementById('espacio-value').textContent = reserva.espacio_nombre || 'Espacio no especificado';
+            document.getElementById('fecha-value').textContent = formatFecha(reserva.fecha_reserva);
+            document.getElementById('horario-value').textContent = `${formatHora(reserva.hora_inicio)} - ${formatHora(reserva.hora_fin)}`;
+            document.getElementById('duracion-value').textContent = calcularDuracion(reserva.hora_inicio, reserva.hora_fin);
+            document.getElementById('asistentes-value').textContent = reserva.num_asistentes ? 
+                `${reserva.num_asistentes} personas` : 'Número no especificado';
+            document.getElementById('proposito-value').textContent = reserva.proposito || 'Propósito no especificado';
+        }
+
+        // Mostrar error
+        function mostrarError(mensaje) {
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-text').textContent = mensaje;
+            
+            // Mostrar detalles vacíos para que la página no se vea rota
+            document.getElementById('reserva-details').style.display = 'block';
+            document.getElementById('next-steps').style.display = 'block';
+        }
+
+        // Funciones de los botones
+        function verNotificaciones() {
+            window.location.href = '/notificaciones/';
+        }
+
+        function nuevaReserva() {
+            window.location.href = '/crear-reservas/';
+        }
+
+        function irInicio() {
+            window.location.href = '/';
+        }
+
+        // Cargar los datos cuando la página esté lista
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarReserva();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Espacios - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .nav-item {
+            color: #6B7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: #2563EB;
+            background: #EFF6FF;
+        }
+        
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .btn-crear-espacio {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-crear-espacio:hover {
+            background: #059669;
+        }
+        
+        .espacios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .espacio-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .espacio-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .espacio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .espacio-nombre {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .espacio-estado {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .estado-disponible {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .estado-mantenimiento {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .estado-fuera-servicio {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .espacio-info {
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #6B7280;
+        }
+        
+        .espacio-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-action {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .btn-edit:hover {
+            background: #BFDBFE;
+        }
+        
+        .btn-maintenance {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .btn-maintenance:hover {
+            background: #FDE68A;
+        }
+
+        .btn-delete {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .btn-delete:hover {
+            background: #FECACA;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6B7280;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-danger {
+            background: #DC2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏢 Panel Administrativo</div>
+            <nav class="nav-menu">
+                <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+                <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
+                <a href="{% url 'gestion_espacios' %}" class="nav-item active">Espacios</a>
+                <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+                <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="page-title">🏢 Gestión de Espacios</div>
+        <div class="page-subtitle">Administra los espacios disponibles para reservas</div>
+
+        <div class="header-actions">
+            <div></div>
+            <button class="btn-crear-espacio" onclick="abrirModalCrear()">
+                ➕ Crear Nuevo Espacio
+            </button>
+        </div>
+
+        <div class="espacios-grid">
+            {% for espacio in espacios %}
+            <div class="espacio-card">
+                <div class="espacio-header">
+                    <h3 class="espacio-nombre">{{ espacio.nombre }}</h3>
+                    <span class="espacio-estado 
+                        {% if espacio.estado == 'Disponible' %}estado-disponible
+                        {% elif espacio.estado == 'Mantenimiento' %}estado-mantenimiento
+                        {% else %}estado-fuera-servicio{% endif %}">
+                        {{ espacio.estado }}
+                    </span>
+                </div>
+                
+                <div class="espacio-info">
+                    <div class="info-item"><strong>Tipo:</strong> {{ espacio.tipo }}</div>
+                    <div class="info-item"><strong>Capacidad:</strong> {{ espacio.capacidad }} personas</div>
+                    <div class="info-item"><strong>Ubicación:</strong> 
+                        {% if espacio.edificio and espacio.piso %}
+                            {{ espacio.edificio }}, Piso {{ espacio.piso }}
+                        {% else %}
+                            No especificado
+                        {% endif %}
+                    </div>
+                    {% if espacio.descripcion %}
+                    <div class="info-item"><strong>Descripción:</strong> {{ espacio.descripcion }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="espacio-actions">
+                    <button class="btn-action btn-edit" onclick="editarEspacio({{ espacio.id }})">Editar</button>
+                    <button class="btn-action btn-maintenance" onclick="cambiarEstadoEspacio({{ espacio.id }})">
+                        Cambiar Estado
+                    </button>
+                    <button class="btn-action btn-delete" onclick="eliminarEspacio({{ espacio.id }})">Eliminar</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">🏢</div>
+                <h3>No hay espacios registrados</h3>
+                <p>Crea el primer espacio para comenzar</p>
+                <button class="btn-crear-espacio" onclick="abrirModalCrear()" style="margin-top: 16px;">
+                    ➕ Crear Primer Espacio
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Modal para crear/editar espacio -->
+    <div id="espacioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">🏢 Crear Nuevo Espacio</h3>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <form id="espacioForm">
+                <input type="hidden" id="espacioId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Espacio *</label>
+                        <input type="text" id="nombre" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tipo *</label>
+                        <select id="tipo" class="form-select" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="Sala de Reuniones">Sala de Reuniones</option>
+                            <option value="Auditorio">Auditorio</option>
+                            <option value="Laboratorio">Laboratorio</option>
+                            <option value="Oficina">Oficina</option>
+                            <option value="Aula">Aula</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Edificio</label>
+                        <input type="text" id="edificio" class="form-input" placeholder="Ej: Edificio A">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Piso</label>
+                        <input type="number" id="piso" class="form-input" placeholder="Ej: 2" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Capacidad *</label>
+                        <input type="number" id="capacidad" class="form-input" required min="1" placeholder="Número de personas">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Estado *</label>
+                        <select id="estado" class="form-select" required>
+                            <option value="Disponible">Disponible</option>
+                            <option value="Mantenimiento">En Mantenimiento</option>
+                            <option value="Fuera de Servicio">Fuera de Servicio</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">Descripción</label>
+                        <textarea id="descripcion" class="form-textarea" placeholder="Descripción del espacio..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="modalSubmitBtn">Crear Espacio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Función para abrir modal de creación
+        function abrirModalCrear() {
+            document.getElementById('modalTitle').textContent = '🏢 Crear Nuevo Espacio';
+            document.getElementById('modalSubmitBtn').textContent = 'Crear Espacio';
+            document.getElementById('espacioForm').reset();
+            document.getElementById('espacioId').value = '';
+            document.getElementById('espacioModal').style.display = 'flex';
+        }
+
+        // Función para abrir modal de edición
+        async function editarEspacio(espacioId) {
+            try {
+                const response = await fetch(`/api/espacios/${espacioId}/`);
+                const espacioData = await response.json();
+                
+                if (espacioData.success) {
+                    const espacio = espacioData.espacio;
+                    
+                    document.getElementById('modalTitle').textContent = '✏️ Editar Espacio';
+                    document.getElementById('modalSubmitBtn').textContent = 'Guardar Cambios';
+                    document.getElementById('espacioId').value = espacio.id;
+                    document.getElementById('nombre').value = espacio.nombre || '';
+                    document.getElementById('tipo').value = espacio.tipo || '';
+                    document.getElementById('edificio').value = espacio.edificio || '';
+                    document.getElementById('piso').value = espacio.piso || '';
+                    document.getElementById('capacidad').value = espacio.capacidad || '';
+                    document.getElementById('estado').value = espacio.estado || 'Disponible';
+                    document.getElementById('descripcion').value = espacio.descripcion || '';
+                    
+                    document.getElementById('espacioModal').style.display = 'flex';
+                } else {
+                    alert('Error al cargar datos del espacio: ' + espacioData.error);
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error);
+            }
+        }
+
+        // Función para cambiar estado del espacio
+        async function cambiarEstadoEspacio(espacioId) {
+            try {
+                const response = await fetch(`/api/espacios/${espacioId}/`);
+                const espacioData = await response.json();
+                
+                if (espacioData.success) {
+                    const espacio = espacioData.espacio;
+                    const nuevoEstado = espacio.estado === 'Disponible' ? 'Mantenimiento' : 'Disponible';
+                    const confirmacion = confirm(`¿Cambiar estado de "${espacio.nombre}" a "${nuevoEstado}"?`);
+                    
+                    if (confirmacion) {
+                        const updateResponse = await fetch(`/api/espacios/${espacioId}/actualizar/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCSRFToken()
+                            },
+                            body: JSON.stringify({
+                                estado: nuevoEstado
+                            })
+                        });
+                        
+                        const data = await updateResponse.json();
+                        
+                        if (data.success) {
+                            alert('Estado actualizado exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    }
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error);
+            }
+        }
+
+        // Función para eliminar espacio
+        async function eliminarEspacio(espacioId) {
+            try {
+                const response = await fetch(`/api/espacios/${espacioId}/`);
+                const espacioData = await response.json();
+                
+                if (espacioData.success) {
+                    const espacio = espacioData.espacio;
+                    const confirmacion = confirm(`¿Estás seguro de eliminar el espacio "${espacio.nombre}"? Esta acción no se puede deshacer.`);
+                    
+                    if (confirmacion) {
+                        const deleteResponse = await fetch(`/api/espacios/${espacioId}/eliminar/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCSRFToken()
+                            }
+                        });
+                        
+                        const data = await deleteResponse.json();
+                        
+                        if (data.success) {
+                            alert('Espacio eliminado exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    }
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error);
+            }
+        }
+
+        // Función para cerrar modal
+        function cerrarModal() {
+            document.getElementById('espacioModal').style.display = 'none';
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('espacioForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const espacioId = document.getElementById('espacioId').value;
+            const formData = {
+                nombre: document.getElementById('nombre').value,
+                tipo: document.getElementById('tipo').value,
+                edificio: document.getElementById('edificio').value,
+                piso: document.getElementById('piso').value ? parseInt(document.getElementById('piso').value) : null,
+                capacidad: parseInt(document.getElementById('capacidad').value),
+                estado: document.getElementById('estado').value,
+                descripcion: document.getElementById('descripcion').value
+            };
+            
+            const url = espacioId ? `/api/espacios/${espacioId}/actualizar/` : '/api/espacios/crear/';
+            const method = espacioId ? 'POST' : 'POST';
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(espacioId ? 'Espacio actualizado exitosamente' : 'Espacio creado exitosamente');
+                    cerrarModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error);
+            }
+        });
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('espacioModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+    </script>
+</body>
+</html>

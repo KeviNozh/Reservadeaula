@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Reserva - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .status-badge {
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-approved { background: #D1FAE5; color: #065F46; }
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-rejected { background: #FEE2E2; color: #991B1B; }
+        .status-cancelled { background: #F3F4F6; color: #6B7280; }
+        
+        .reservation-id {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-danger { background: #DC2626; color: white; }
+        .btn-primary { background: #2563EB; color: white; }
+        .btn-secondary { background: #6B7280; color: white; }
+        .btn-success { background: #10B981; color: white; }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #111827;
+            border-bottom: 2px solid #E5E7EB;
+            padding-bottom: 8px;
+        }
+        
+        .space-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .space-info h4 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        
+        .space-description {
+            color: #6B7280;
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+        
+        .info-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #6B7280;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+            min-width: 120px;
+        }
+        
+        .info-value {
+            color: #6B7280;
+        }
+        
+        /* Timeline */
+        .timeline-card {
+            grid-column: 1 / -1;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #E5E7EB;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2563EB;
+        }
+        
+        .timeline-item.completed::before {
+            background: #10B981;
+            border-color: #10B981;
+        }
+        
+        .timeline-content {
+            background: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #2563EB;
+        }
+        
+        .timeline-content.completed {
+            border-left-color: #10B981;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-date {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        /* Observaciones */
+        .observations {
+            background: #FEF9E7;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #F59E0B;
+            margin-top: 16px;
+        }
+        
+        .observations h4 {
+            color: #92400E;
+            margin-bottom: 8px;
+        }
+        
+        .observations p {
+            color: #78350F;
+        }
+        
+        .notes-section {
+            margin-top: 16px;
+        }
+        
+        .notes-section textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .save-notes {
+            margin-top: 8px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* Modal de confirmación */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Alertas -->
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-error" id="errorAlert"></div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="status-badge" id="statusBadge">CARGANDO...</div>
+                <div class="reservation-id">ID: <span id="reservationId">RES-{{ reserva.id }}</span></div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger" onclick="cancelarReserva()" id="cancelBtn">❌ Cancelar Reserva</button>
+                <button class="btn btn-success" onclick="duplicarReserva()" id="duplicateBtn">📋 Duplicar</button>
+                <button class="btn btn-secondary" onclick="imprimirReserva()" id="printBtn">🖨️ Imprimir</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Información del Espacio -->
+            <div class="card">
+                <h3>📍 Información del Espacio</h3>
+                <div class="space-image">
+                    {% if reserva.espacio.tipo == 'Sala de Reuniones' %}
+                        🏛️
+                    {% elif reserva.espacio.tipo == 'Auditorio' %}
+                        🎭
+                    {% elif reserva.espacio.tipo == 'Laboratorio' %}
+                        🔬
+                    {% elif reserva.espacio.tipo == 'Oficina' %}
+                        💼
+                    {% elif reserva.espacio.tipo == 'Aula' %}
+                        🏫
+                    {% else %}
+                        🏢
+                    {% endif %}
+                </div>
+                <div class="space-info">
+                    <h4 id="spaceName">{{ reserva.espacio.nombre }}</h4>
+                    <p class="space-description" id="spaceDescription">
+                        {{ reserva.espacio.descripcion|default:"Espacio disponible para reuniones y eventos." }}
+                    </p>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📍</div>
+                        <div class="info-label">Ubicación:</div>
+                        <div class="info-value" id="spaceLocation">
+                            {% if reserva.espacio.edificio and reserva.espacio.piso %}
+                                {{ reserva.espacio.edificio }}, Piso {{ reserva.espacio.piso }}
+                            {% elif reserva.espacio.edificio %}
+                                {{ reserva.espacio.edificio }}
+                            {% else %}
+                                Edificio Principal
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">👥</div>
+                        <div class="info-label">Capacidad:</div>
+                        <div class="info-value" id="spaceCapacity">{{ reserva.espacio.capacidad }} personas</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">⚙️</div>
+                        <div class="info-label">Equipamiento:</div>
+                        <div class="info-value" id="spaceEquipment">
+                            {% if reserva.espacio.equipamientos.all %}
+                                {% for equipamiento in reserva.espacio.equipamientos.all %}
+                                    {{ equipamiento.nombre_equipo }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Equipamiento básico
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Temporal y Detalles -->
+            <div class="card">
+                <h3>⏰ Detalles de la Reserva</h3>
+                
+                <div style="margin-bottom: 24px;">
+                    <h4 style="color: #374151; margin-bottom: 12px;">Información Temporal</h4>
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-label">Fecha:</div>
+                        <div class="info-value" id="reservationDate">
+                            {{ reserva.fecha_reserva|date:"l, d F Y" }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">🕐</div>
+                        <div class="info-label">Hora:</div>
+                        <div class="info-value" id="reservationTime">
+                            {{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fin|time:"H:i" }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">⏱️</div>
+                        <div class="info-label">Duración:</div>
+                        <div class="info-value" id="reservationDuration">
+                            {{ reserva_data.duracion }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: #374151; margin-bottom: 12px;">Detalles Adicionales</h4>
+                    <div class="info-item">
+                        <div class="info-icon">🎯</div>
+                        <div class="info-label">Propósito:</div>
+                        <div class="info-value" id="reservationPurpose">{{ reserva.proposito }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">👥</div>
+                        <div class="info-label">Asistentes:</div>
+                        <div class="info-value" id="reservationAttendees">{{ reserva.num_asistentes }} personas</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">👤</div>
+                        <div class="info-label">Solicitante:</div>
+                        <div class="info-value" id="reservationUser">
+                            {{ user.get_full_name|default:user.username }}<br>
+                            <small style="color: #9CA3AF;">{{ user.email }}<br>Usuario registrado</small>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📝</div>
+                        <div class="info-label">Fecha solicitud:</div>
+                        <div class="info-value" id="requestDate">
+                            {{ reserva.fecha_solicitud|date:"d F, H:i" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline de Estados -->
+        <div class="card timeline-card">
+            <h3>📊 Timeline de Estados</h3>
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <div class="timeline-content completed">
+                        <div class="timeline-title">✅ Solicitud Enviada</div>
+                        <div class="timeline-date">{{ reserva.fecha_solicitud|date:"d F, H:i" }}</div>
+                    </div>
+                </div>
+                
+                {% if reserva.estado != 'Pendiente' %}
+                <div class="timeline-item completed">
+                    <div class="timeline-content completed">
+                        <div class="timeline-title">
+                            {% if reserva.estado == 'Aprobada' %}
+                                ✅ Aprobada
+                            {% elif reserva.estado == 'Rechazada' %}
+                                ❌ Rechazada
+                            {% elif reserva.estado == 'Cancelada' %}
+                                🚫 Cancelada
+                            {% endif %}
+                        </div>
+                        <div class="timeline-date">
+                            {% if reserva.id_aprobador %}
+                                Por: {{ reserva.id_aprobador.get_full_name|default:reserva.id_aprobador.username }}
+                            {% else %}
+                                Procesada por el sistema
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Observaciones -->
+            {% if reserva.comentario_admin %}
+            <div class="observations">
+                <h4>💬 Comentarios del Administrador</h4>
+                <p id="adminComments">{{ reserva.comentario_admin }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="notes-section">
+                <h4 style="margin-bottom: 8px;">📝 Notas del Usuario</h4>
+                <textarea placeholder="Agregar notas personales sobre esta reserva..." id="userNotes"></textarea>
+                <div class="save-notes">
+                    <button class="btn btn-primary btn-small" onclick="guardarNotas()">💾 Guardar Notas</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirmar Acción</h3>
+            <p id="modalMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-primary" id="confirmActionBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de la reserva desde Django
+        const reservaData = {
+            id: {{ reserva.id }},
+            estado: "{{ reserva.estado|lower }}",
+            espacio: {
+                id: {{ reserva.espacio.id }},
+                nombre: "{{ reserva.espacio.nombre }}",
+                tipo: "{{ reserva.espacio.tipo }}"
+            }
+        };
+
+        // Inicializar la página con los datos
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarEstadoBotones();
+            cargarNotasGuardadas();
+        });
+
+        function actualizarEstadoBotones() {
+            const cancelBtn = document.getElementById('cancelBtn');
+            const duplicateBtn = document.getElementById('duplicateBtn');
+            const statusBadge = document.getElementById('statusBadge');
+
+            // Actualizar badge de estado
+            statusBadge.className = 'status-badge ';
+            switch(reservaData.estado) {
+                case 'aprobada':
+                    statusBadge.classList.add('status-approved');
+                    statusBadge.textContent = 'APROBADA';
+                    break;
+                case 'pendiente':
+                    statusBadge.classList.add('status-pending');
+                    statusBadge.textContent = 'PENDIENTE';
+                    break;
+                case 'rechazada':
+                    statusBadge.classList.add('status-rejected');
+                    statusBadge.textContent = 'RECHAZADA';
+                    cancelBtn.disabled = true;
+                    cancelBtn.textContent = '❌ Reserva Rechazada';
+                    break;
+                case 'cancelada':
+                    statusBadge.classList.add('status-cancelled');
+                    statusBadge.textContent = 'CANCELADA';
+                    cancelBtn.disabled = true;
+                    cancelBtn.textContent = '❌ Reserva Cancelada';
+                    duplicateBtn.disabled = true;
+                    break;
+            }
+
+            // Deshabilitar cancelación si no está pendiente o aprobada
+            if (reservaData.estado !== 'pendiente' && reservaData.estado !== 'aprobada') {
+                cancelBtn.disabled = true;
+            }
+        }
+
+        // Función para obtener el token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'success') {
+            const alert = document.getElementById(tipo === 'success' ? 'successAlert' : 'errorAlert');
+            alert.textContent = mensaje;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Función para mostrar modal de confirmación
+        function mostrarModal(titulo, mensaje, callback) {
+            document.getElementById('modalTitle').textContent = titulo;
+            document.getElementById('modalMessage').textContent = mensaje;
+            
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            confirmBtn.onclick = callback;
+            
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        // Función para cancelar reserva
+        function cancelarReserva() {
+            if (reservaData.estado === 'cancelada') {
+                mostrarAlerta('Esta reserva ya está cancelada.', 'error');
+                return;
+            }
+
+            if (reservaData.estado === 'rechazada') {
+                mostrarAlerta('No se puede cancelar una reserva rechazada.', 'error');
+                return;
+            }
+
+            mostrarModal(
+                'Cancelar Reserva',
+                '¿Estás seguro de que deseas cancelar esta reserva? Esta acción no se puede deshacer.',
+                function() {
+                    realizarCancelacion();
+                }
+            );
+        }
+
+        async function realizarCancelacion() {
+            try {
+                // Mostrar loading
+                document.body.classList.add('loading');
+                const cancelBtn = document.getElementById('cancelBtn');
+                const originalText = cancelBtn.innerHTML;
+                cancelBtn.innerHTML = '⏳ Cancelando...';
+                cancelBtn.disabled = true;
+
+                // Llamar a la API de cancelación CORRECTA
+                const response = await fetch(`/api/reservas/${reservaData.id}/cancelar/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Actualizar estado local
+                    reservaData.estado = 'cancelada';
+                    actualizarEstadoBotones();
+                    
+                    mostrarAlerta('✅ Reserva cancelada exitosamente');
+                    cerrarModal();
+                    
+                    // Recargar la página después de 2 segundos para mostrar cambios
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Error al cancelar la reserva');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarAlerta('❌ Error al cancelar la reserva: ' + error.message, 'error');
+                
+                // Restaurar botón
+                const cancelBtn = document.getElementById('cancelBtn');
+                cancelBtn.innerHTML = originalText;
+                cancelBtn.disabled = false;
+            } finally {
+                document.body.classList.remove('loading');
+                cerrarModal();
+            }
+        }
+
+        // Función para duplicar reserva
+        function duplicarReserva() {
+            if (reservaData.estado === 'cancelada') {
+                mostrarAlerta('No se puede duplicar una reserva cancelada.', 'error');
+                return;
+            }
+
+            // Redirigir a la página de crear reserva con los datos prellenados
+            const params = new URLSearchParams({
+                espacio_id: reservaData.espacio.id,
+                duplicar: reservaData.id
+            });
+            
+            window.location.href = `/crear-reserva/?${params}`;
+        }
+
+        // Función para imprimir reserva
+        function imprimirReserva() {
+            // Abrir ventana de impresión con los datos actuales
+            const ventanaImpresion = window.open('', '_blank');
+            const contenido = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Comprobante de Reserva - RES-${reservaData.id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
+                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+                        .section { margin-bottom: 20px; }
+                        .section h3 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                        .info-item { display: flex; margin-bottom: 8px; }
+                        .info-label { font-weight: bold; min-width: 150px; }
+                        .status { padding: 5px 10px; border-radius: 10px; font-weight: bold; text-align: center; display: inline-block; }
+                        .approved { background: #d1fae5; color: #065f46; }
+                        .pending { background: #fef3c7; color: #92400e; }
+                        .rejected { background: #fee2e2; color: #991b1b; }
+                        .cancelled { background: #f3f4f6; color: #6b7280; }
+                        @media print {
+                            body { margin: 10px; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Comprobante de Reserva</h1>
+                        <p><strong>ID:</strong> RES-${reservaData.id}</p>
+                        <div class="status ${reservaData.estado}">
+                            ${reservaData.estado.toUpperCase()}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Información del Espacio</h3>
+                        <div class="info-item">
+                            <span class="info-label">Espacio:</span>
+                            <span>${document.getElementById('spaceName').textContent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ubicación:</span>
+                            <span>${document.getElementById('spaceLocation').textContent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Capacidad:</span>
+                            <span>${document.getElementById('spaceCapacity').textContent}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Detalles de la Reserva</h3>
+                        <div class="info-item">
+                            <span class="info-label">Fecha:</span>
+                            <span>${document.getElementById('reservationDate').textContent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Horario:</span>
+                            <span>${document.getElementById('reservationTime').textContent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Duración:</span>
+                            <span>${document.getElementById('reservationDuration').textContent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Asistentes:</span>
+                            <span>${document.getElementById('reservationAttendees').textContent}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Propósito:</span>
+                            <span>${document.getElementById('reservationPurpose').textContent}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Información del Solicitante</h3>
+                        <div class="info-item">
+                            <span class="info-label">Nombre:</span>
+                            <span>${document.getElementById('reservationUser').textContent.split('\\n')[0]}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="section no-print">
+                        <p><em>Documento generado el ${new Date().toLocaleDateString('es-CL')}</em></p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            ventanaImpresion.document.write(contenido);
+            ventanaImpresion.document.close();
+            ventanaImpresion.focus();
+            ventanaImpresion.print();
+        }
+
+        // Función para guardar notas
+        function guardarNotas() {
+            const notas = document.getElementById('userNotes').value;
+            // Guardar en localStorage
+            localStorage.setItem(`notas_reserva_${reservaData.id}`, notas);
+            mostrarAlerta('✅ Notas guardadas correctamente');
+        }
+
+        // Cargar notas guardadas
+        function cargarNotasGuardadas() {
+            const notasGuardadas = localStorage.getItem(`notas_reserva_${reservaData.id}`);
+            if (notasGuardadas) {
+                document.getElementById('userNotes').value = notasGuardadas;
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('confirmationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .action-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .action-btn.secondary {
+            background: #6b7280;
+        }
+
+        .action-btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        /* Notifications Container */
+        .notifications-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Filters */
+        .filters-section {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Notifications List */
+        .notifications-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .notification-item:hover {
+            background: #f9fafb;
+        }
+
+        .notification-item.unread {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+        }
+
+        .notification-item.read {
+            opacity: 0.7;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .notification-icon.reserva_aprobada { background: #d1fae5; color: #10b981; }
+        .notification-icon.reserva_rechazada { background: #fee2e2; color: #dc2626; }
+        .notification-icon.reserva_creada { background: #dbeafe; color: #2563eb; }
+        .notification-icon.reserva_cancelada { background: #fef3c7; color: #f59e0b; }
+        .notification-icon.mantenimiento { background: #ede9fe; color: #8b5cf6; }
+        .notification-icon.sistema { background: #e5e7eb; color: #6b7280; }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #111827;
+            font-size: 16px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .notification-message {
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .notification-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #dc2626;
+            color: white;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notification-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .notification-item {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
+            <a href="{% url 'notificaciones' %}" class="nav-item active">Notificaciones</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <span>›</span>
+            <span>Notificaciones</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">🔔 Notificaciones</h1>
+                <div class="header-actions">
+                    <button class="action-btn secondary" onclick="markAllAsRead()">
+                        📭 Marcar todas como leídas
+                    </button>
+                    <button class="action-btn" onclick="refreshNotifications()">
+                        🔄 Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Container -->
+        <div class="notifications-container">
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">📋 Filtro por tipo</label>
+                        <select class="filter-select" id="typeFilter" onchange="filterNotifications()">
+                            <option value="">Todos los tipos</option>
+                            <option value="reserva_aprobada">Reservas Aprobadas</option>
+                            <option value="reserva_rechazada">Reservas Rechazadas</option>
+                            <option value="reserva_creada">Reservas Creadas</option>
+                            <option value="reserva_cancelada">Reservas Canceladas</option>
+                            <option value="mantenimiento">Mantenimiento</option>
+                            <option value="sistema">Sistema</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">👁️ Estado</label>
+                        <select class="filter-select" id="statusFilter" onchange="filterNotifications()">
+                            <option value="">Todas</option>
+                            <option value="unread">No leídas</option>
+                            <option value="read">Leídas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notificationsList">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando notificaciones...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Estado global
+        let notifications = [];
+        let filteredNotifications = [];
+
+        // Iconos por tipo de notificación
+        const notificationIcons = {
+            'reserva_aprobada': '✅',
+            'reserva_rechazada': '❌',
+            'reserva_creada': '📋',
+            'reserva_cancelada': '📝',
+            'reserva_pendiente': '⏰',
+            'mantenimiento': '🔧',
+            'incidencia': '⚠️',
+            'sistema': '🔔'
+        };
+
+        // Cargar notificaciones al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+        });
+
+        // Cargar notificaciones desde la API
+        async function loadNotifications() {
+            try {
+                showLoading();
+                
+                const response = await fetch('/api/notificaciones/');
+                const data = await response.json();
+
+                if (data.success) {
+                    notifications = data.notificaciones;
+                    filteredNotifications = [...notifications];
+                    renderNotifications();
+                } else {
+                    showError('Error al cargar las notificaciones');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión');
+            }
+        }
+
+        // Renderizar notificaciones
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            
+            if (filteredNotifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔔</div>
+                        <h3 class="empty-state-title">No hay notificaciones</h3>
+                        <p class="empty-state-text">No tienes notificaciones en este momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredNotifications.forEach(notif => {
+                const icon = notificationIcons[notif.tipo] || '🔔';
+                const timeAgo = getTimeAgo(notif.fecha_creacion);
+                const unreadBadge = !notif.leida ? '<span class="notification-badge">NUEVO</span>' : '';
+                
+                html += `
+                    <div class="notification-item ${notif.leida ? 'read' : 'unread'}" 
+                         onclick="markAsRead(${notif.id}, this)" 
+                         data-notification-id="${notif.id}">
+                        <div class="notification-icon ${notif.tipo}">
+                            ${icon}
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <div class="notification-title">
+                                    ${notif.titulo} ${unreadBadge}
+                                </div>
+                                <div class="notification-time">${timeAgo}</div>
+                            </div>
+                            <div class="notification-message">
+                                ${notif.mensaje}
+                                ${notif.espacio_nombre ? `<br><small><strong>Espacio:</strong> ${notif.espacio_nombre}</small>` : ''}
+                            </div>
+                            <div class="notification-actions">
+                                ${notif.reserva_id ? `<a href="/detalle-reserva/?id=${notif.reserva_id}" class="action-link">Ver reserva</a>` : ''}
+                                <a href="#" class="action-link" onclick="event.stopPropagation(); deleteNotification(${notif.id})">Eliminar</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Filtrar notificaciones
+        function filterNotifications() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredNotifications = notifications.filter(notif => {
+                const typeMatch = !typeFilter || notif.tipo === typeFilter;
+                const statusMatch = !statusFilter || 
+                    (statusFilter === 'unread' && !notif.leida) ||
+                    (statusFilter === 'read' && notif.leida);
+                
+                return typeMatch && statusMatch;
+            });
+
+            renderNotifications();
+        }
+
+        // Marcar notificación como leída
+        async function markAsRead(notificationId, element) {
+            try {
+                const response = await fetch(`/api/notificaciones/${notificationId}/marcar-leida/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Actualizar UI
+                    element.classList.remove('unread');
+                    element.classList.add('read');
+                    
+                    // Actualizar datos locales
+                    const notifIndex = notifications.findIndex(n => n.id === notificationId);
+                    if (notifIndex !== -1) {
+                        notifications[notifIndex].leida = true;
+                    }
+                    
+                    // Actualizar contador global (si existe)
+                    updateUnreadCount();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Marcar todas como leídas
+        async function markAllAsRead() {
+            try {
+                const response = await fetch('/api/notificaciones/marcar-todas-leidas/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Recargar notificaciones
+                    loadNotifications();
+                    updateUnreadCount();
+                    showSuccess(`${data.count} notificaciones marcadas como leídas`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al marcar notificaciones como leídas');
+            }
+        }
+
+        // Eliminar notificación
+        async function deleteNotification(notificationId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+                return;
+            }
+
+            try {
+                // En una implementación real, aquí llamarías a la API para eliminar
+                // Por ahora, solo la removemos del frontend
+                notifications = notifications.filter(n => n.id !== notificationId);
+                filteredNotifications = filteredNotifications.filter(n => n.id !== notificationId);
+                renderNotifications();
+                showSuccess('Notificación eliminada');
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al eliminar notificación');
+            }
+        }
+
+        // Actualizar contador de no leídas
+        function updateUnreadCount() {
+            const unreadCount = notifications.filter(n => !n.leida).length;
+            
+            // Actualizar título de la página
+            document.title = unreadCount > 0 
+                ? `(${unreadCount}) Notificaciones - Sistema de Reservas`
+                : 'Notificaciones - Sistema de Reservas';
+            
+            // Actualizar badge en el header (si existe)
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                badge.textContent = unreadCount;
+                badge.style.display = unreadCount > 0 ? 'block' : 'none';
+            }
+        }
+
+        // Refrescar notificaciones
+        function refreshNotifications() {
+            loadNotifications();
+            showSuccess('Notificaciones actualizadas');
+        }
+
+        // Utilidades
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Ahora mismo';
+            if (diffMins < 60) return `Hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+            if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+            if (diffDays < 7) return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+            
+            return date.toLocaleDateString('es-ES');
+        }
+
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function showLoading() {
+            document.getElementById('notificationsList').innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando notificaciones...</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('notificationsList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">❌</div>
+                    <h3 class="empty-state-title">Error</h3>
+                    <p class="empty-state-text">${message}</p>
+                    <button class="action-btn" onclick="loadNotifications()" style="margin-top: 16px;">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+        }
+
+        function showSuccess(message) {
+            // Mostrar notificación temporal
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

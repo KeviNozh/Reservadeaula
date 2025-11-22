@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuario - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* Buttons */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            margin-top: 16px;
+        }
+
+        /* User Info */
+        .user-info {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .user-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
+            <a href="{% url 'espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">Notificaciones</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="{% url 'gestion_usuarios' %}">Gestión de Usuarios</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Editar Usuario</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">✏️ Editar Usuario</h1>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <div id="alertMessage" class="alert"></div>
+
+            <!-- Información del usuario -->
+            <div class="user-info" id="userInfo">
+                <div class="user-info-item">
+                    <span class="info-label">Usuario:</span>
+                    <span class="info-value" id="infoUsername">Cargando...</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value" id="infoEmail">Cargando...</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="info-label">Fecha de registro:</span>
+                    <span class="info-value" id="infoDateJoined">Cargando...</span>
+                </div>
+            </div>
+
+            <form id="editUserForm">
+                <input type="hidden" id="userId" name="userId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="first_name">Nombre <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="first_name" name="first_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="last_name">Apellido <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="last_name" name="last_name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email <span class="required">*</span></label>
+                    <input type="email" class="form-input" id="email" name="email" required>
+                    <div class="form-help">El email también se usa como nombre de usuario</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="rol">Rol <span class="required">*</span></label>
+                        <select class="form-select" id="rol" name="rol" required>
+                            <option value="">Seleccionar rol...</option>
+                            <option value="Usuario">Usuario</option>
+                            <option value="Docente">Docente</option>
+                            <option value="Investigacion">Investigación</option>
+                            <option value="Administrativo">Administrativo</option>
+                            <option value="Aprobador">Aprobador</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="departamento">Departamento</label>
+                        <input type="text" class="form-input" id="departamento" name="departamento">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'gestion_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+
+            <div class="loading" id="loadingIndicator">
+                <span>⏳ Guardando cambios...</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Función para obtener el token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Función para mostrar alertas
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            setTimeout(() => { alertDiv.style.display = 'none'; }, 5000);
+        }
+
+        // Obtener ID del usuario de la URL
+        function getUserIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Cargar datos del usuario
+        async function loadUserData() {
+            const userId = getUserIdFromURL();
+            
+            if (!userId) {
+                showAlert('Error: No se especificó el ID del usuario', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/usuarios/${userId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const usuario = data.usuario;
+                    
+                    // Llenar información del usuario
+                    document.getElementById('userId').value = usuario.id;
+                    document.getElementById('infoUsername').textContent = usuario.username;
+                    document.getElementById('infoEmail').textContent = usuario.email;
+                    document.getElementById('infoDateJoined').textContent = usuario.date_joined || 'N/A';
+                    
+                    // Llenar formulario
+                    document.getElementById('first_name').value = usuario.first_name || '';
+                    document.getElementById('last_name').value = usuario.last_name || '';
+                    document.getElementById('email').value = usuario.email || '';
+                    document.getElementById('rol').value = usuario.rol || '';
+                    document.getElementById('departamento').value = usuario.departamento || '';
+                    
+                } else {
+                    showAlert('Error al cargar datos del usuario: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error de conexión al cargar datos del usuario', 'error');
+            }
+        }
+
+        // Enviar formulario
+        document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.textContent = '⏳ Guardando...';
+            submitBtn.disabled = true;
+            loadingIndicator.style.display = 'flex';
+
+            const userId = document.getElementById('userId').value;
+            const formData = {
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                email: document.getElementById('email').value,
+                rol: document.getElementById('rol').value,
+                departamento: document.getElementById('departamento').value
+            };
+
+            try {
+                const response = await fetch(`/api/usuarios/${userId}/actualizar/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('✅ ' + data.message, 'success');
+                    setTimeout(() => {
+                        window.location.href = "{% url 'gestion_usuarios' %}";
+                    }, 1500);
+                } else {
+                    showAlert('❌ Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión al guardar cambios', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                loadingIndicator.style.display = 'none';
+            }
+        });
+
+        // Cargar datos al iniciar la página
+        document.addEventListener('DOMContentLoaded', loadUserData);
+    </script>
+</body>
+</html>

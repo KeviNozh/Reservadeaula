@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Nuevos estilos para filtros */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-input, .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .results-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Table Section (estilos existentes) */
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .table-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .user-table th {
+            background: #f9fafb;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .user-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .user-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .user-status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .rol-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .table-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
+            <a href="{% url 'espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">Notificaciones</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Gestión de Usuarios</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">👥 Gestión de Usuarios</h1>
+            </div>
+        </div>
+
+        <!-- Sección de Filtros (NUEVA) -->
+        <div class="filters-section">
+            <h3 style="margin-bottom: 16px; color: #111827;">🔍 Filtrar Usuarios</h3>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Buscar por nombre, email o usuario</label>
+                    <input type="text" class="filter-input" id="searchInput" 
+                           placeholder="Ej: Juan, juan@email.com...">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Filtrar por Rol</label>
+                    <select class="filter-select" id="rolFilter">
+                        <option value="">Todos los roles</option>
+                        <option value="Usuario">Usuario</option>
+                        <option value="Docente">Docente</option>
+                        <option value="Investigacion">Investigación</option>
+                        <option value="Administrativo">Administrativo</option>
+                        <option value="Aprobador">Aprobador</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Filtrar por Estado</label>
+                    <select class="filter-select" id="estadoFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">&nbsp;</label>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" onclick="filtrarUsuarios()">
+                            🔍 Aplicar Filtros
+                        </button>
+                        <button class="btn btn-secondary" onclick="limpiarFiltros()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading-indicator" id="loadingIndicator">
+                <span>⏳ Cargando...</span>
+            </div>
+        </div>
+
+        <!-- Información de resultados -->
+        <div class="results-info" id="resultsInfo">
+            <strong>📊 Resultados de la búsqueda:</strong>
+            <span id="resultsCount">0</span> usuarios encontrados
+            <button class="btn btn-secondary" onclick="mostrarTodos()" style="margin-left: auto; padding: 4px 12px; font-size: 12px;">
+                👁️ Mostrar todos
+            </button>
+        </div>
+
+        <!-- Tabla de usuarios existente -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2 class="table-title">Lista de Usuarios Registrados</h2>
+                <div class="table-actions">
+                    <button class="btn btn-success" onclick="exportarUsuarios()">
+                        📊 Exportar Reporte
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 500;">{{ usuario.username }}</div>
+                            </td>
+                            <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>
+                                <span class="rol-badge">{{ usuario.perfilusuario.rol }}</span>
+                            </td>
+                            <td>
+                                <span class="user-status-badge {% if usuario.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                    {% if usuario.is_active %}✅ Activo{% else %}❌ Inactivo{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ usuario.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-action" onclick="editarUsuario({{ usuario.id }})" title="Editar">
+                                        ✏️
+                                    </button>
+                                    <button class="btn-action {% if usuario.is_active %}btn-danger{% else %}btn-success{% endif %}" 
+                                            onclick="cambiarEstadoUsuario({{ usuario.id }}, {% if usuario.is_active %}false{% else %}true{% endif %})"
+                                            title="{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                        {% if usuario.is_active %}❌{% else %}✅{% endif %}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">
+                                No hay usuarios registrados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    // Función para obtener el token CSRF
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Función para editar usuario - CONEXIÓN REAL CON TU API
+    async function editarUsuario(userId) {
+        try {
+            console.log('📝 Editando usuario ID:', userId);
+            
+            // Obtener datos del usuario primero
+            const response = await fetch(`/api/usuarios/${userId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Aquí deberías abrir tu modal de edición con los datos
+                // Por ahora, redirigir a la página de edición si existe
+                window.location.href = `/gestion-usuarios/editar/?id=${userId}`;
+            } else {
+                alert('Error al cargar datos del usuario: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión al cargar usuario');
+        }
+    }
+
+    // Función para cambiar estado de usuario - CONEXIÓN REAL CON TU API
+    async function cambiarEstadoUsuario(userId, nuevoEstado) {
+        const accion = nuevoEstado ? 'activar' : 'desactivar';
+        
+        if (!confirm(`¿Estás seguro de que quieres ${accion} este usuario?`)) {
+            return;
+        }
+
+        try {
+            console.log(`🔄 Cambiando estado usuario ${userId} a: ${nuevoEstado}`);
+            
+            const response = await fetch(`/api/usuarios/${userId}/cambiar-estado/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    activo: nuevoEstado
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`✅ Usuario ${accion}do exitosamente`);
+                // Recargar los datos filtrados o la página
+                if (document.getElementById('searchInput').value || 
+                    document.getElementById('rolFilter').value || 
+                    document.getElementById('estadoFilter').value) {
+                    filtrarUsuarios(); // Recargar filtros si hay alguno activo
+                } else {
+                    location.reload(); // Recargar página si no hay filtros
+                }
+            } else {
+                alert('❌ Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión al cambiar estado del usuario');
+        }
+    }
+
+    // Función para filtrar usuarios
+    async function filtrarUsuarios() {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsInfo = document.getElementById('resultsInfo');
+        const tableBody = document.getElementById('usersTableBody');
+        
+        // Mostrar loading
+        loadingIndicator.style.display = 'flex';
+        tableBody.innerHTML = '';
+
+        try {
+            // Obtener valores de los filtros
+            const searchTerm = document.getElementById('searchInput').value;
+            const rolFilter = document.getElementById('rolFilter').value;
+            const estadoFilter = document.getElementById('estadoFilter').value;
+
+            // Construir URL con parámetros
+            const params = new URLSearchParams();
+            if (searchTerm) params.append('search', searchTerm);
+            if (rolFilter) params.append('rol', rolFilter);
+            if (estadoFilter) params.append('estado', estadoFilter);
+
+            const response = await fetch(`/api/usuarios/filtrar/?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Actualizar información de resultados
+                document.getElementById('resultsCount').textContent = data.total;
+                resultsInfo.style.display = 'flex';
+
+                // Actualizar tabla
+                if (data.usuarios.length > 0) {
+                    tableBody.innerHTML = data.usuarios.map(usuario => `
+                        <tr>
+                            <td>
+                                <div style="font-weight: 500;">${usuario.username}</div>
+                            </td>
+                            <td>${usuario.first_name || ''} ${usuario.last_name || ''}</td>
+                            <td>${usuario.email}</td>
+                            <td>
+                                <span class="rol-badge">${usuario.rol}</span>
+                            </td>
+                            <td>
+                                <span class="user-status-badge ${usuario.is_active ? 'status-active' : 'status-inactive'}">
+                                    ${usuario.is_active ? '✅ Activo' : '❌ Inactivo'}
+                                </span>
+                            </td>
+                            <td>${usuario.date_joined}</td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-action" onclick="editarUsuario(${usuario.id})" title="Editar">
+                                        ✏️
+                                    </button>
+                                    <button class="btn-action ${usuario.is_active ? 'btn-danger' : 'btn-success'}" 
+                                            onclick="cambiarEstadoUsuario(${usuario.id}, ${!usuario.is_active})"
+                                            title="${usuario.is_active ? 'Desactivar' : 'Activar'}">
+                                        ${usuario.is_active ? '❌' : '✅'}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">
+                                🔍 No se encontraron usuarios con los filtros aplicados
+                            </td>
+                        </tr>
+                    `;
+                }
+            } else {
+                alert('Error al filtrar usuarios: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión al filtrar usuarios');
+        } finally {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    // Función para limpiar filtros
+    function limpiarFiltros() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('rolFilter').value = '';
+        document.getElementById('estadoFilter').value = '';
+        document.getElementById('resultsInfo').style.display = 'none';
+        
+        // Recargar la página para mostrar todos los usuarios
+        location.reload();
+    }
+
+    // Función para mostrar todos los usuarios
+    function mostrarTodos() {
+        limpiarFiltros();
+    }
+
+    // Búsqueda en tiempo real (opcional)
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            if (this.value.length >= 3 || this.value.length === 0) {
+                filtrarUsuarios();
+            }
+        }, 500);
+    });
+
+    // También filtrar cuando cambien los selects
+    document.getElementById('rolFilter').addEventListener('change', filtrarUsuarios);
+    document.getElementById('estadoFilter').addEventListener('change', filtrarUsuarios);
+
+    function exportarUsuarios() {
+        // Tu función existente para exportar
+        console.log('Exportar usuarios');
+        // window.location.href = '/reportes/generar-pdf/usuarios/';
+    }
+
+    // Inicializar - cargar todos los usuarios al inicio
+    document.addEventListener('DOMContentLoaded', function() {
+        // Opcional: Si quieres que se carguen filtrados automáticamente
+        // filtrarUsuarios();
+    });
+</script
+</body>
+</html>

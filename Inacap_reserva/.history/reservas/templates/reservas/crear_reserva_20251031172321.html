@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Reserva - Sistema de Reservas</title>
+    <style>
+        /* Tus estilos CSS existentes se mantienen igual */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* ... (todos tus estilos CSS se mantienen igual) ... */
+
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #dc2626;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 10000;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Panel -->
+    <div class="debug-panel" onclick="debugForm()">
+        🐛 Debug Form
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+        </div>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+<span>›</span>
+            <a href="{% url 'crear_reserva' %}">Reservar</a>
+            <span>›</span>
+            <span>Nueva Reserva</span>
+        </nav>
+
+        <!-- Step Wizard -->
+        <div class="step-wizard">
+            <div class="wizard-header">
+                <h1 class="wizard-title">Nueva Reserva</h1>
+                <p class="wizard-subtitle">Completa los siguientes pasos para solicitar tu reserva</p>
+            </div>
+
+            <div class="steps-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Espacio</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step pending" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Fecha/Hora</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step pending" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Detalles</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step pending" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Confirmar</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Step 1: Space Selection -->
+            <div id="step1" class="form-step active" data-step="1">
+                <h2 class="step-title">Selecciona un Espacio</h2>
+
+                <!-- Filters -->
+                <div class="filters-section">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">👥 Capacidad</label>
+                            <select class="filter-select" id="capacityFilter">
+                                <option value="">Cualquier capacidad</option>
+                                <option value="1-10">1-10 personas</option>
+                                <option value="11-25">11-25 personas</option>
+                                <option value="26-50">26-50 personas</option>
+                                <option value="50+">Más de 50</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">🏢 Edificio</label>
+                            <select class="filter-select" id="buildingFilter">
+                                <option value="">Todos los edificios</option>
+                                <option value="a">Edificio A</option>
+                                <option value="b">Edificio B</option>
+                                <option value="c">Edificio C</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">🔧 Equipamiento</label>
+                            <select class="filter-select" id="equipmentFilter">
+                                <option value="">Sin filtro</option>
+                                <option value="projector">Proyector</option>
+                                <option value="wifi">WiFi</option>
+                                <option value="ac">Aire Acondicionado</option>
+                                <option value="whiteboard">Pizarra</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spaces Grid -->
+                <div class="spaces-grid" id="spacesGrid">
+                    {% for espacio in espacios %}
+                    <div class="space-card" data-space-id="{{ espacio.id }}">
+                        <div class="space-image">
+                            {% if espacio.tipo == 'Sala de Reuniones' %}
+                                🏛️
+                            {% elif espacio.tipo == 'Auditorio' %}
+                                🎭
+                            {% elif espacio.tipo == 'Laboratorio' %}
+                                🔬
+                            {% elif espacio.tipo == 'Oficina' %}
+                                💼
+                            {% elif espacio.tipo == 'Aula' %}
+                                🏫
+                            {% else %}
+                                🏢
+                            {% endif %}
+                            <div class="space-status available">Disponible</div>
+                        </div>
+                        <div class="space-content">
+                            <h3 class="space-name">{{ espacio.nombre }}</h3>
+                            <div class="space-location">
+                                <span>📍</span>
+                                <span>
+                                    {% if espacio.edificio and espacio.piso %}
+                                        {{ espacio.edificio }}, Piso {{ espacio.piso }}
+                                    {% elif espacio.edificio %}
+                                        {{ espacio.edificio }}
+                                    {% else %}
+                                        Ubicación no especificada
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="space-details">
+                                <div class="space-detail">
+                                    <span>👥</span>
+                                    <span>{{ espacio.capacidad }} personas</span>
+                                </div>
+                                <div class="space-detail">
+                                    <span>📐</span>
+                                    <span>{{ espacio.tipo }}</span>
+                                </div>
+                            </div>
+
+                            {% if espacio.descripcion %}
+                            <p style="color: #6b7280; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">
+                                {{ espacio.descripcion }}
+                            </p>
+                            {% endif %}
+
+                            <div class="space-equipment">
+                                {% for equipamiento in espacio.equipamientos.all %}
+                                <span class="equipment-tag">{{ equipamiento.nombre_equipo }}</span>
+                                {% empty %}
+                                <span class="equipment-tag">Equipamiento básico</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="space-actions">
+                                <button class="action-btn primary" onclick="selectSpace(this, {{ espacio.id }}, '{{ espacio.nombre }}')">
+                                    Seleccionar
+                                </button>
+                                <button class="action-btn" onclick="verDetallesEspacio({{ espacio.id }})">
+                                    Ver Detalles
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div style="text-align: center; padding: 40px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">🏢</div>
+                            <h3 style="color: #6b7280; margin-bottom: 8px;">No hay espacios disponibles</h3>
+                            <p style="color: #9ca3af; margin-bottom: 20px;">
+                                Todos los espacios están ocupados o en mantenimiento.
+                            </p>
+                            <a href="{% url 'dashboard' %}" class="action-btn primary">
+                                Volver al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div> <!-- Cierre del Step 1 -->
+
+            <!-- Step 2: Date and Time -->
+            <div id="step2" class="form-step" data-step="2">
+                <h2 class="step-title">Selecciona Fecha y Hora</h2>
+
+                <div class="datetime-grid">
+                    <div class="form-group">
+                        <label class="form-label">📅 Fecha de la Reserva</label>
+                        <input type="date" class="form-input" id="reservationDate" min="{{ today }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">⏰ Hora de Inicio</label>
+                        <select class="form-input" id="startTime">
+                            <option value="">Selecciona hora</option>
+                            <option value="08:00">08:00</option>
+                            <option value="08:30">08:30</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">⏰ Hora de Fin</label>
+                        <select class="form-input" id="endTime">
+                            <option value="">Selecciona hora</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                            <option value="18:30">18:30</option>
+                            <option value="19:00">19:00</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">⏱️ Duración</label>
+                        <input type="text" class="form-input" id="duration" readonly placeholder="Selecciona horas para calcular">
+                    </div>
+                </div>
+
+                <div class="availability-check">
+                    <div class="availability-status available">
+                        ✅ Horario disponible para el espacio seleccionado
+                    </div>
+                </div>
+
+                <div class="recurring-options">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="recurring">
+                        <label for="recurring">🔄 Reserva recurrente</label>
+                    </div>
+                    <div id="recurringDetails" style="display: none;">
+                        <div class="form-group" style="margin-top: 12px;">
+                            <label class="form-label">Repetir cada:</label>
+                            <select class="form-input">
+                                <option value="weekly">Semanal</option>
+                                <option value="biweekly">Cada 2 semanas</option>
+                                <option value="monthly">Mensual</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Cierre del Step 2 -->
+
+            <!-- Step 3: Details -->
+            <div id="step3" class="form-step" data-step="3">
+                <h2 class="step-title">Detalles de la Reserva</h2>
+
+                <div class="form-group">
+                    <label class="form-label">📝 Propósito de la Reserva *</label>
+                    <textarea class="form-input form-textarea" id="purpose" placeholder="Describe brevemente el propósito de tu reserva..." required></textarea>
+                </div>
+
+                <div class="datetime-grid">
+                    <div class="form-group">
+                        <label class="form-label">👥 Número de Asistentes *</label>
+                        <input type="number" class="form-input" id="attendees" placeholder="0" min="1" max="200" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📞 Contacto Responsable</label>
+                        <input type="tel" class="form-input" id="contact" placeholder="+56 9 1234 5678">
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="specialEquipment">
+                    <label for="specialEquipment">🔧 Requiere equipos especiales</label>
+                </div>
+
+                <div class="special-equipment" id="specialEquipmentDetails">
+                    <div class="form-group">
+                        <label class="form-label">Detalles del equipamiento especial</label>
+                        <textarea class="form-input" placeholder="Especifica qué equipos adicionales necesitas..."></textarea>
+                    </div>
+                </div>
+            </div> <!-- Cierre del Step 3 -->
+
+            <!-- Step 4: Confirmation -->
+            <div id="step4" class="form-step" data-step="4">
+                <h2 class="step-title">Confirmar Reserva</h2>
+
+                <div class="reservation-summary">
+                    <h3 class="summary-title">Resumen de la Reserva</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">Espacio</div>
+                            <div class="summary-value" id="summarySpace">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Fecha</div>
+                            <div class="summary-value" id="summaryDate">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Horario</div>
+                            <div class="summary-value" id="summaryTime">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Duración</div>
+                            <div class="summary-value" id="summaryDuration">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Asistentes</div>
+                            <div class="summary-value" id="summaryAttendees">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Propósito</div>
+                            <div class="summary-value" id="summaryPurpose">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <h4 class="terms-title">📋 Términos y Condiciones</h4>
+                    <div class="terms-text">
+                        <p>Al enviar esta solicitud de reserva, acepto los siguientes términos:</p>
+                        <ul style="margin: 12px 0 12px 20px; line-height: 1.6;">
+                            <li>La reserva está sujeta a aprobación por parte del administrador</li>
+                            <li>Debo llegar puntualmente y utilizar el espacio responsablemente</li>
+                            <li>Cualquier daño será responsabilidad del solicitante</li>
+                            <li>Las cancelaciones deben realizarse con al menos 24 horas de anticipación</li>
+                            <li>El uso del espacio debe cumplir con las políticas institucionales</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="checkbox-group" style="margin-top: 16px;">
+                        <input type="checkbox" id="acceptTerms" required>
+                        <label for="acceptTerms">✅ Acepto los términos y condiciones *</label>
+                    </div>
+                </div>
+            </div> <!-- Cierre del Step 4 -->
+
+            <!-- Form Navigation -->
+            <div class="form-navigation">
+                <button type="button" class="nav-btn secondary" id="prevBtn" style="visibility: hidden;">⬅️ Anterior</button>
+                <button type="button" class="nav-btn primary" id="nextBtn">Siguiente ➡️</button>
+            </div>
+        </div> <!-- Cierre del Form Container -->
+    </main>
+
+<script>
+    // ========== DEBUG FUNCTIONS ==========
+    function debugForm() {
+        console.log("🔍 DEBUG DEL FORMULARIO:");
+        console.log("Paso actual:", currentStep);
+        console.log("Espacio seleccionado:", selectedSpace);
+        console.log("Elementos del formulario:");
+        console.log("- Fecha:", document.getElementById('reservationDate')?.value);
+        console.log("- Hora inicio:", document.getElementById('startTime')?.value);
+        console.log("- Hora fin:", document.getElementById('endTime')?.value);
+        console.log("- Propósito:", document.getElementById('purpose')?.value);
+        console.log("- Asistentes:", document.getElementById('attendees')?.value);
+        
+        alert("Revisa la consola (F12) para ver la información de debug");
+    }
+
+    // ========== FORM WIZARD FUNCTIONALITY ==========
+    let currentStep = 1;
+    let selectedSpace = {
+        id: null,
+        name: null
+    };
+
+    const steps = document.querySelectorAll('.step');
+    const formSteps = document.querySelectorAll('.form-step');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Space selection
+    function selectSpace(button, spaceId, spaceName) {
+        console.log("Seleccionando espacio:", spaceId, spaceName);
+        
+        // Remover selección anterior
+        document.querySelectorAll('.space-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Agregar selección actual
+        const spaceCard = button.closest('.space-card');
+        spaceCard.classList.add('selected');
+        
+        // Guardar datos del espacio seleccionado
+        selectedSpace.id = spaceId;
+        selectedSpace.name = spaceName;
+        
+        console.log('✅ Espacio seleccionado:', selectedSpace);
+        hideError();
+    }
+
+    function verDetallesEspacio(espacioId) {
+        alert(`Mostrando detalles del espacio ID: ${espacioId}`);
+    }
+
+    // Date and time handling
+    const startTimeSelect = document.getElementById('startTime');
+    const endTimeSelect = document.getElementById('endTime');
+    const durationInput = document.getElementById('duration');
+
+    function calculateDuration() {
+        const startTime = startTimeSelect.value;
+        const endTime = endTimeSelect.value;
+
+        if (startTime && endTime) {
+            const start = new Date(`2024-01-01T${startTime}`);
+            const end = new Date(`2024-01-01T${endTime}`);
+            const diff = (end - start) / (1000 * 60); // minutes
+
+            if (diff > 0) {
+                const hours = Math.floor(diff / 60);
+                const minutes = diff % 60;
+                durationInput.value = `${hours}h ${minutes > 0 ? minutes + 'm' : ''}`;
+            } else {
+                durationInput.value = 'Horario inválido';
+            }
+        }
+    }
+
+    startTimeSelect.addEventListener('change', calculateDuration);
+    endTimeSelect.addEventListener('change', calculateDuration);
+
+    // Navigation functions
+    function showStep(step) {
+        console.log(`🔄 Mostrando paso ${step}`);
+        
+        // Actualizar indicadores de pasos
+        steps.forEach((s, index) => {
+            const stepNumber = parseInt(s.dataset.step);
+            s.classList.remove('active', 'completed');
+            
+            if (stepNumber < step) {
+                s.classList.add('completed');
+            } else if (stepNumber === step) {
+                s.classList.add('active');
+            } else {
+                s.classList.add('pending');
+            }
+        });
+
+        // Mostrar/ocultar pasos del formulario
+        formSteps.forEach((s, index) => {
+            const stepNumber = parseInt(s.dataset.step);
+            s.classList.toggle('active', stepNumber === step);
+        });
+
+        // Actualizar botones de navegación
+        prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
+        
+        if (step === 4) {
+            nextBtn.textContent = '✅ Enviar Solicitud';
+            nextBtn.classList.remove('primary');
+            nextBtn.classList.add('success');
+            updateSummary();
+        } else {
+            nextBtn.textContent = 'Siguiente ➡️';
+            nextBtn.classList.remove('success');
+            nextBtn.classList.add('primary');
+        }
+
+        currentStep = step;
+    }
+
+    // Validation functions
+    function validateStep(step) {
+        console.log(`✅ Validando paso ${step}`);
+        hideError();
+        
+        switch(step) {
+            case 1:
+                if (!selectedSpace.id) {
+                    showError('❌ Por favor, selecciona un espacio disponible.');
+                    return false;
+                }
+                console.log("✅ Paso 1 validado - Espacio:", selectedSpace.name);
+                return true;
+                
+            case 2:
+                const date = document.getElementById('reservationDate').value;
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                
+                if (!date) {
+                    showError('❌ Por favor, selecciona una fecha para la reserva.');
+                    return false;
+                }
+                if (!startTime) {
+                    showError('❌ Por favor, selecciona una hora de inicio.');
+                    return false;
+                }
+                if (!endTime) {
+                    showError('❌ Por favor, selecciona una hora de fin.');
+                    return false;
+                }
+                
+                if (startTime >= endTime) {
+                    showError('❌ La hora de fin debe ser posterior a la hora de inicio.');
+                    return false;
+                }
+                
+                console.log("✅ Paso 2 validado - Fecha:", date, "Horario:", startTime, "-", endTime);
+                return true;
+                
+            case 3:
+                const purpose = document.getElementById('purpose').value.trim();
+                const attendees = document.getElementById('attendees').value;
+                
+                if (!purpose) {
+                    showError('❌ Por favor, describe el propósito de la reserva.');
+                    return false;
+                }
+                if (purpose.length < 10) {
+                    showError('❌ El propósito debe tener al menos 10 caracteres.');
+                    return false;
+                }
+                if (!attendees || parseInt(attendees) < 1) {
+                    showError('❌ Por favor, ingresa un número válido de asistentes.');
+                    return false;
+                }
+                
+                console.log("✅ Paso 3 validado - Propósito:", purpose, "Asistentes:", attendees);
+                return true;
+                
+            default:
+                return true;
+        }
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        console.error("❌ Error de validación:", message);
+    }
+
+    function hideError() {
+        errorMessage.style.display = 'none';
+    }
+
+    function updateSummary() {
+        console.log("📊 Actualizando resumen...");
+        document.getElementById('summarySpace').textContent = selectedSpace.name || '-';
+        document.getElementById('summaryDate').textContent = document.getElementById('reservationDate').value || '-';
+        document.getElementById('summaryTime').textContent = 
+            `${document.getElementById('startTime').value} - ${document.getElementById('endTime').value}`;
+        document.getElementById('summaryDuration').textContent = document.getElementById('duration').value || '-';
+        document.getElementById('summaryAttendees').textContent = document.getElementById('attendees').value || '-';
+        document.getElementById('summaryPurpose').textContent = document.getElementById('purpose').value || '-';
+    }
+
+    // ========== CSRF TOKEN ==========
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ========== MAIN RESERVATION FUNCTION ==========
+    async function crearReservaReal() {
+        console.log("🚀 Iniciando creación de reserva...");
+        
+        // Validar términos
+        if (!document.getElementById('acceptTerms').checked) {
+            showError('❌ Por favor, acepta los términos y condiciones para continuar.');
+            return false;
+        }
+
+        // Validar que hay un espacio seleccionado
+        if (!selectedSpace.id) {
+            showError('❌ Por favor, selecciona un espacio.');
+            return false;
+        }
+
+        // Recopilar datos del formulario
+        const reservaData = {
+            espacio_id: selectedSpace.id,
+            fecha_reserva: document.getElementById('reservationDate').value,
+            hora_inicio: document.getElementById('startTime').value,
+            hora_fin: document.getElementById('endTime').value,
+            proposito: document.getElementById('purpose').value,
+            num_asistentes: parseInt(document.getElementById('attendees').value)
+        };
+
+        console.log('📤 Datos a enviar:', reservaData);
+
+        // Validaciones finales
+        if (!reservaData.fecha_reserva || !reservaData.hora_inicio || !reservaData.hora_fin) {
+            showError('❌ Por favor, completa la fecha y hora de la reserva.');
+            return false;
+        }
+
+        if (!reservaData.proposito || reservaData.proposito.length < 10) {
+            showError('❌ Por favor, proporciona un propósito más detallado (mínimo 10 caracteres).');
+            return false;
+        }
+
+        // Mostrar loading
+        nextBtn.innerHTML = '⏳ Creando reserva...';
+        nextBtn.disabled = true;
+
+        try {
+            console.log('📤 Enviando datos al servidor...');
+            
+            const response = await fetch('/api/crear-reserva/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(reservaData)
+            });
+
+            const data = await response.json();
+            console.log('📥 Respuesta del servidor:', data);
+
+            if (data.success) {
+                console.log('✅ Reserva creada exitosamente. Redirigiendo...');
+                window.location.href = data.redirect_url || `/reserva-exitosa/?reserva_id=${data.reserva_id}`;
+            } else {
+                console.error('❌ Error en la respuesta:', data);
+                showError('❌ Error al crear la reserva: ' + (data.message || data.error || 'Error desconocido'));
+                nextBtn.innerHTML = '✅ Enviar Solicitud';
+                nextBtn.disabled = false;
+            }
+
+        } catch (error) {
+            console.error('❌ Error de conexión:', error);
+            showError('❌ Error de conexión. Intenta nuevamente.');
+            nextBtn.innerHTML = '✅ Enviar Solicitud';
+            nextBtn.disabled = false;
+        }
+    }
+
+    // ========== EVENT LISTENERS ==========
+    nextBtn.addEventListener('click', function() {
+        console.log(`🖱️ Clic en Siguiente - Paso actual: ${currentStep}`);
+        
+        if (currentStep === 4) {
+            crearReservaReal();
+        } else {
+            if (validateStep(currentStep)) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+    });
+
+    prevBtn.addEventListener('click', function() {
+        console.log(`🖱️ Clic en Anterior - Paso actual: ${currentStep}`);
+        if (currentStep > 1) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+
+    // ========== INITIALIZATION ==========
+    console.log("🎯 Inicializando formulario de reserva...");
+    showStep(1);
+
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reservationDate').min = today;
+</script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificaciones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    .container {
+      width: 70%;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .filters button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #e6e6e6;
+    }
+
+    .filters button.active {
+      background: #0056d2;
+      color: white;
+    }
+
+    .notification {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 6px solid;
+    }
+
+    .aprobada { border-color: #28a745; }
+    .nueva { border-color: #007bff; }
+    .recordatorio { border-color: #ffc107; }
+    .rechazada { border-color: #dc3545; }
+
+    .notification small {
+      color: gray;
+      display: block;
+      margin-top: 6px;
+    }
+
+    .actions {
+      margin-top: 10px;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-primary { background: #0056d2; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: black; }
+
+    /* Panel lateral */
+    .sidebar {
+      width: 30%;
+      background: white;
+      padding: 20px;
+      border-left: 1px solid #ddd;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 15px;
+    }
+
+    .preference {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+
+    .toggle {
+      width: 40px;
+      height: 20px;
+      background: #ddd;
+      border-radius: 15px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle::after {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+
+    .toggle.active {
+      background: #28a745;
+    }
+
+    .toggle.active::after {
+      left: 21px;
+    }
+
+    .frecuencia {
+      margin-top: 20px;
+    }
+
+    .frecuencia label {
+      display: block;
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>ðŸ”” Notificaciones (5)</h2>
+
+    <!-- Filtros -->
+    <div class="filters">
+      <button class="active">Todas</button>
+      <button>Sin leer</button>
+      <button>Reservas</button>
+      <button>Recordatorios</button>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="notification aprobada">
+      <b>Reserva Aprobada</b>
+      <p>Tu solicitud para la Sala de Conferencias A el 22 de marzo ha sido aprobada.</p>
+      <small>Hace 5 minutos</small>
+      <div class="actions">
+        <button class="btn-primary">Ver detalles</button>
+        <button class="btn-success">Agregar al calendario</button>
+      </div>
+    </div>
+
+
+    <div class="notification recordatorio">
+      <b>Recordatorio de Reserva</b>
+      <p>Tu reserva en el Laboratorio 3 comenzarÃ¡ en 30 minutos.</p>
+      <small>Hace 20 minutos</small>
+      <div class="actions">
+        <button class="btn-primary">Ver detalles</button>
+        <button class="btn-warning">Posponer recordatorio</button>
+      </div>
+    </div>
+
+    <div class="notification rechazada">
+      <b>Reserva Rechazada</b>
+      <p>Tu solicitud para la Sala de Juntas B ha sido rechazada. Motivo: Conflicto de horarios.</p>
+      <small>Hace 1 hora</small>
+      <div class="actions">
+        <button class="btn-primary">Ver detalles</button>
+        <button class="btn-warning">Solicitar otro horario</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel lateral -->
+  <div class="sidebar">
+    <h3>âš™ï¸ Preferencias</h3>
+
+
+    <div class="preference">
+      <span>Reservas aprobadas</span>
+      <div class="toggle active"></div>
+    </div>
+
+    <div class="preference">
+      <span>Reservas rechazadas</span>
+      <div class="toggle"></div>
+    </div>
+
+    <div class="preference">
+      <span>Recordatorios</span>
+      <div class="toggle active"></div>
+    </div>
+
+    <!-- Frecuencia -->
+    <div class="frecuencia">
+      <h4>ðŸ“… Frecuencia</h4>
+      <label><input type="radio" name="frecuencia" checked> Inmediata</label>
+      <label><input type="radio" name="frecuencia"> Resumen diario</label>
+      <label><input type="radio" name="frecuencia"> Resumen semanal</label>
+    </div>

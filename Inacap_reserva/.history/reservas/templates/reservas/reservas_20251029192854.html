@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Reservas - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+            position: relative;
+        }
+
+        .user-menu:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #374151;
+            transition: background 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+        }
+
+        .dropdown-item.logout {
+            color: #dc2626;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .status-tabs {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .status-tab {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .status-tab.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Reservations List */
+        .reservations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .reservation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .reservation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservation-card.approved {
+            border-left-color: #10b981;
+        }
+
+        .reservation-card.pending {
+            border-left-color: #f59e0b;
+        }
+
+        .reservation-card.rejected {
+            border-left-color: #dc2626;
+        }
+
+        .reservation-card.cancelled {
+            border-left-color: #6b7280;
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .reservation-info {
+            flex: 1;
+        }
+
+        .reservation-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .reservation-datetime {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .reservation-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .reservation-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-badge.cancelled {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .reservation-id {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .reservation-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-icon {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .reservation-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .action-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .action-btn.primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .action-btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .action-btn.danger {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        .action-btn.danger:hover {
+            background: #b91c1c;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .empty-state-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .reservation-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .reservation-meta {
+                align-items: flex-start;
+            }
+
+            .reservation-details {
+                grid-template-columns: 1fr;
+            }
+
+            .reservation-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div class="logo-text">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item active">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
+        </nav>
+        
+        <div class="user-menu" id="userMenu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span class="user-name">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="dropdownMenu">
+                <div class="dropdown-item">
+                    <span>👤</span>
+                    Mi Perfil
+                </div>
+                <div class="dropdown-item">
+                    <span>⚙️</span>
+                    Configuración
+                </div>
+                <a href="{% url 'logout' %}" class="dropdown-item logout">
+                    <span>🚪</span>
+                    Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📋 Historial de Reservas</h1>
+            <p class="page-subtitle">
+                Gestiona y revisa todas tus solicitudes de reserva
+            </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="status-tabs">
+                <button class="status-tab active" data-status="all">Todas</button>
+                <button class="status-tab" data-status="approved">Aprobadas</button>
+                <button class="status-tab" data-status="pending">Pendientes</button>
+                <button class="status-tab" data-status="rejected">Rechazadas</button>
+                <button class="status-tab" data-status="cancelled">Canceladas</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha desde</label>
+                    <input type="date" class="filter-input" id="dateFrom">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha hasta</label>
+                    <input type="date" class="filter-input" id="dateTo">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">🏢 Espacio</label>
+                    <select class="filter-select" id="spaceFilter">
+                        <option value="">Todos los espacios</option>
+                        <option value="sala-a">Sala de Conferencias A</option>
+                        <option value="auditorio">Auditorio Principal</option>
+                        <option value="lab-3">Laboratorio 3</option>
+                        <option value="sala-b">Sala de Juntas B</option>
+                        <option value="aula-magna">Aula Magna</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">🔍 Buscar</label>
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Buscar por ID o propósito...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservations List -->
+        <div class="reservations-list" id="reservationsList">
+            <!-- Reservation 1 -->
+            <div class="reservation-card approved" data-status="approved">
+                <div class="reservation-header">
+                    <div class="reservation-info">
+                        <div class="reservation-title">Sala de Conferencias A</div>
+                        <div class="reservation-datetime">📅 Hoy, 15 Mar 2024 • ⏰ 14:00 - 16:00</div>
+                        <div class="reservation-user">
+                            <span>👤 Solicitante: Tú</span>
+                        </div>
+                    </div>
+                    <div class="reservation-meta">
+                        <span class="status-badge approved">Aprobada</span>
+                        <span class="reservation-id">#RES-2024-0315</span>
+                    </div>
+                </div>
+
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-label">Asistentes:</span>
+                        <span class="detail-value">15 personas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span class="detail-label">Duración:</span>
+                        <span class="detail-value">2 horas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📝</span>
+                        <span class="detail-label">Solicitado:</span>
+                        <span class="detail-value">12 Mar, 10:30</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">✅</span>
+                        <span class="detail-label">Aprobado:</span>
+                        <span class="detail-value">13 Mar, 09:15</span>
+                    </div>
+                </div>
+
+                <div class="reservation-actions">
+                    <button class="action-btn">
+                        <span>👁️</span>
+                        Ver Detalles
+                    </button>
+                    <button class="action-btn danger">
+                        <span>❌</span>
+                        Cancelar
+                    </button>
+                    <button class="action-btn primary">
+                        <span>📅</span>
+                        Agregar al Calendario
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reservation 2 -->
+            <div class="reservation-card pending" data-status="pending">
+                <div class="reservation-header">
+                    <div class="reservation-info">
+                        <div class="reservation-title">Auditorio Principal</div>
+                        <div class="reservation-datetime">📅 Mañana, 16 Mar 2024 • ⏰ 09:00 - 12:00</div>
+                        <div class="reservation-user">
+                            <span>👤 Solicitante: Tú</span>
+                        </div>
+                    </div>
+                    <div class="reservation-meta">
+                        <span class="status-badge pending">Pendiente</span>
+                        <span class="reservation-id">#RES-2024-0316</span>
+                    </div>
+                </div>
+
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-label">Asistentes:</span>
+                        <span class="detail-value">80 personas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span class="detail-label">Duración:</span>
+                        <span class="detail-value">3 horas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📝</span>
+                        <span class="detail-label">Solicitado:</span>
+                        <span class="detail-value">14 Mar, 15:45</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏳</span>
+                        <span class="detail-label">Estado:</span>
+                        <span class="detail-value">En revisión</span>
+                    </div>
+                </div>
+
+                <div class="reservation-actions">
+                    <button class="action-btn">
+                        <span>👁️</span>
+                        Ver Detalles
+                    </button>
+                    <button class="action-btn danger">
+                        <span>❌</span>
+                        Cancelar
+                    </button>
+                    <button class="action-btn" disabled>
+                        <span>⏳</span>
+                        Esperando Aprobación
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reservation 3 -->
+            <div class="reservation-card approved" data-status="approved">
+                <div class="reservation-header">
+                    <div class="reservation-info">
+                        <div class="reservation-title">Laboratorio 3</div>
+                        <div class="reservation-datetime">📅 20 Mar 2024 • ⏰ 13:00 - 15:00</div>
+                        <div class="reservation-user">
+                            <span>👤 Solicitante: Tú</span>
+                        </div>
+                    </div>
+                    <div class="reservation-meta">
+                        <span class="status-badge approved">Aprobada</span>
+                        <span class="reservation-id">#RES-2024-0320</span>
+                    </div>
+                </div>
+
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-label">Asistentes:</span>
+                        <span class="detail-value">25 personas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span class="detail-label">Duración:</span>
+                        <span class="detail-value">2 horas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📝</span>
+                        <span class="detail-label">Solicitado:</span>
+                        <span class="detail-value">10 Mar, 14:20</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">✅</span>
+                        <span class="detail-label">Aprobado:</span>
+                        <span class="detail-value">11 Mar, 11:30</span>
+                    </div>
+                </div>
+
+                <div class="reservation-actions">
+                    <button class="action-btn">
+                        <span>👁️</span>
+                        Ver Detalles
+                    </button>
+                    <button class="action-btn danger">
+                        <span>❌</span>
+                        Cancelar
+                    </button>
+                    <button class="action-btn primary">
+                        <span>📅</span>
+                        Agregar al Calendario
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reservation 4 -->
+            <div class="reservation-card rejected" data-status="rejected">
+                <div class="reservation-header">
+                    <div class="reservation-info">
+                        <div class="reservation-title">Sala de Juntas B</div>
+                        <div class="reservation-datetime">📅 22 Mar 2024 • ⏰ 10:00 - 11:30</div>
+                        <div class="reservation-user">
+                            <span>👤 Solicitante: Tú</span>
+                        </div>
+                    </div>
+                    <div class="reservation-meta">
+                        <span class="status-badge rejected">Rechazada</span>
+                        <span class="reservation-id">#RES-2024-0322</span>
+                    </div>
+                </div>
+
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-label">Asistentes:</span>
+                        <span class="detail-value">8 personas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span class="detail-label">Duración:</span>
+                        <span class="detail-value">1.5 horas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📝</span>
+                        <span class="detail-label">Solicitado:</span>
+                        <span class="detail-value">08 Mar, 16:10</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">❌</span>
+                        <span class="detail-label">Motivo:</span>
+                        <span class="detail-value">Conflicto de horarios</span>
+                    </div>
+                </div>
+
+                <div class="reservation-actions">
+                    <button class="action-btn">
+                        <span>👁️</span>
+                        Ver Detalles
+                    </button>
+                    <button class="action-btn primary">
+                        <span>🔄</span>
+                        Solicitar Nuevamente
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State (hidden by default) -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">📋</div>
+            <h2 class="empty-state-title">No hay reservas encontradas</h2>
+            <p class="empty-state-text">
+                No se encontraron reservas que coincidan con los filtros seleccionados.
+            </p>
+            <a href="{% url 'crear_reserva' %}" class="empty-state-btn">
+                <span>➕</span>
+                Crear Nueva Reserva
+            </a>
+        </div>
+    </main>
+
+    <script>
+        // User menu dropdown functionality
+        const userMenu = document.getElementById('userMenu');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+
+        userMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            dropdownMenu.classList.remove('show');
+        });
+
+        // Status tabs functionality
+        const statusTabs = document.querySelectorAll('.status-tab');
+        const reservationCards = document.querySelectorAll('.reservation-card');
+        const emptyState = document.getElementById('emptyState');
+        const reservationsList = document.getElementById('reservationsList');
+
+        statusTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const status = this.dataset.status;
+                
+                // Update active tab
+                statusTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Filter reservations
+                filterReservations(status);
+            });
+        });
+
+        function filterReservations(status) {
+            let visibleCount = 0;
+            
+            reservationCards.forEach(card => {
+                const cardStatus = card.dataset.status;
+                
+                if (status === 'all' || cardStatus === status) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Show/hide empty state
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+                reservationsList.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                reservationsList.style.display = 'flex';
+            }
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            reservationCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Space filter functionality
+        const spaceFilter = document.getElementById('spaceFilter');
+        spaceFilter.addEventListener('change', function() {
+            const selectedSpace = this.value;
+            
+            if (!selectedSpace) {
+                // Show all if no space selected
+                reservationCards.forEach(card => card.style.display = 'block');
+                return;
+            }
+            
+            reservationCards.forEach(card => {
+                const title = card.querySelector('.reservation-title').textContent.toLowerCase();
+                if (title.includes(selectedSpace)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Date filter functionality
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+
+        function applyDateFilter() {
+            const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
+            const toDate = dateTo.value ? new Date(dateTo.value) : null;
+            
+            // This is a simplified date filter - in a real app you would parse dates from reservation data
+            console.log('Date filter applied:', { fromDate, toDate });
+        }
+
+        dateFrom.addEventListener('change', applyDateFilter);
+        dateTo.addEventListener('change', applyDateFilter);
+
+        // Action buttons functionality
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (this.disabled) return;
+                
+                const action = this.textContent.trim();
+                const reservationCard = this.closest('.reservation-card');
+                const reservationId = reservationCard.querySelector('.reservation-id').textContent;
+                
+                // Simulate different actions
+                switch(true) {
+                    case action.includes('Cancelar'):
+                        if (confirm(`¿Estás seguro de que deseas cancelar la reserva ${reservationId}?`)) {
+                            this.innerHTML = '⏳ Cancelando...';
+                            this.disabled = true;
+                            setTimeout(() => {
+                                alert(`Reserva ${reservationId} cancelada exitosamente`);
+                                reservationCard.remove();
+                            }, 1500);
+                        }
+                        break;
+                        
+                    case action.includes('Ver Detalles'):
+                        alert(`Mostrando detalles de la reserva ${reservationId}`);
+                        break;
+                        
+                    case action.includes('Agregar al Calendario'):
+                        alert(`Reserva ${reservationId} agregada a tu calendario`);
+                        break;
+                        
+                    case action.includes('Solicitar Nuevamente'):
+                        window.location.href = "{% url 'crear_reserva' %}";
+                        break;
+                }
+            });
+        });
+
+        // Initialize
+        filterReservations('all');
+    </script>
+</body>
+</html>

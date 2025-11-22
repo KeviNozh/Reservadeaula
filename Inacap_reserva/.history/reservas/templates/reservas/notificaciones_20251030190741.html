@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificaciones</title>
+  <style>
+    /* Tus estilos CSS se mantienen igual */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    .container {
+      width: 70%;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filters button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #e6e6e6;
+      transition: background 0.3s;
+    }
+
+    .filters button:hover {
+      background: #d4d4d4;
+    }
+
+    .filters button.active {
+      background: #0056d2;
+      color: white;
+    }
+
+    .notification {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 6px solid;
+      display: block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .notification.hidden {
+      display: none;
+    }
+
+    .pendiente { border-color: #ffc107; }
+    .aprobada { border-color: #28a745; }
+    .rechazada { border-color: #dc3545; }
+
+    .notification.unread {
+      background: #f8f9fa;
+      border-left-width: 8px;
+    }
+
+    .notification small {
+      color: gray;
+      display: block;
+      margin-top: 6px;
+    }
+
+    .actions {
+      margin-top: 10px;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+
+    .actions button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary { background: #0056d2; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: black; }
+    .btn-secondary { background: #6c757d; color: white; }
+
+    .sidebar {
+      width: 30%;
+      background: white;
+      padding: 20px;
+      border-left: 1px solid #ddd;
+      min-height: 100vh;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 15px;
+    }
+
+    .preference {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      align-items: center;
+    }
+
+    .toggle {
+      width: 40px;
+      height: 20px;
+      background: #ddd;
+      border-radius: 15px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle::after {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+
+    .toggle.active {
+      background: #28a745;
+    }
+
+    .toggle.active::after {
+      left: 21px;
+    }
+
+    .frecuencia {
+      margin-top: 20px;
+    }
+
+    .frecuencia label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6c757d;
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 20px;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .refresh-btn {
+      background: #0056d2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-approved { background: #d4edda; color: #155724; }
+    .badge-rejected { background: #f8d7da; color: #721c24; }
+
+    .debug-info {
+      background: #e9ecef;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔔 Notificaciones (<span id="notification-count">0</span>)</h2>
+
+    <div class="filters">
+      <button class="active" data-filter="all">Todas</button>
+      <button data-filter="unread">Sin leer</button>
+      <button data-filter="pending">Pendientes</button>
+      <button data-filter="approved">Aprobadas</button>
+      <button data-filter="rejected">Rechazadas</button>
+    </div>
+
+    <div id="debug-info" class="debug-info" style="display: none;">
+      <strong>Debug Info:</strong>
+      <div id="debug-content"></div>
+    </div>
+
+    <div id="notifications-container">
+      <div class="loading">Cargando notificaciones...</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <h3>⚙️ Preferencias</h3>
+
+    <div class="preference">
+      <span>Notificaciones de reservas</span>
+      <div class="toggle active" data-pref="reservas"></div>
+    </div>
+
+    <div class="preference">
+      <span>Recordatorios</span>
+      <div class="toggle active" data-pref="recordatorios"></div>
+    </div>
+
+    <div class="frecuencia">
+      <h4>📅 Frecuencia</h4>
+      <label><input type="radio" name="frecuencia" value="immediate" checked> Inmediata</label>
+      <label><input type="radio" name="frecuencia" value="daily"> Resumen diario</label>
+      <label><input type="radio" name="frecuencia" value="weekly"> Resumen semanal</label>
+    </div>
+  </div>
+
+  <script>
+    // Configuración de la API - CONECTA CON TU DJANGO
+    const API_BASE_URL = 'http://localhost:8000/api'; // Ajusta según tu URL
+    const CSRF_TOKEN = getCookie('csrftoken'); // Para autenticación Django
+
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Headers para las peticiones API
+    const API_HEADERS = {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': CSRF_TOKEN
+    };
+
+    // Función para cargar notificaciones desde la API de Django
+    async function loadNotificationsFromAPI() {
+      try {
+        console.log('🔄 Cargando notificaciones desde API Django...');
+        
+        // Opción 1: Cargar desde el endpoint de notificaciones
+        const response = await fetch(`${API_BASE_URL}/notificaciones/`, {
+          method: 'GET',
+          headers: API_HEADERS,
+          credentials: 'include' // Incluir cookies de sesión
+        });
+
+        if (response.ok) {
+          const notificaciones = await response.json();
+          console.log('✅ Notificaciones cargadas desde API:', notificaciones);
+          return notificaciones;
+        } else {
+          // Si falla, intentar cargar desde reservas
+          console.log('⚠️ Falló notificaciones, cargando desde reservas...');
+          return await loadReservasFromAPI();
+        }
+        
+      } catch (error) {
+        console.error('❌ Error cargando notificaciones:', error);
+        // Fallback: cargar desde reservas
+        return await loadReservasFromAPI();
+      }
+    }
+
+    // Función para cargar reservas desde la API de Django
+    async function loadReservasFromAPI() {
+      try {
+        console.log('🔄 Cargando reservas desde API Django...');
+        
+        const response = await fetch(`${API_BASE_URL}/reservas/`, {
+          method: 'GET',
+          headers: API_HEADERS,
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const reservas = await response.json();
+          console.log('✅ Reservas cargadas desde API:', reservas);
+          return reservas;
+        } else {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('❌ Error cargando reservas:', error);
+        throw error;
+      }
+    }
+
+    // Función para formatear fecha y hora
+    function formatDateTime(dateString) {
+      try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return `Hace unos segundos`;
+        if (diffMins < 60) return `Hace ${diffMins} minutos`;
+        if (diffHours < 24) return `Hace ${diffHours} horas`;
+        if (diffDays === 1) return `Ayer`;
+        return `Hace ${diffDays} días`;
+      } catch (error) {
+        return 'Fecha no disponible';
+      }
+    }
+
+    // Función para formatear fecha en formato legible
+    function formatFecha(fecha) {
+      if (!fecha) return 'Fecha no especificada';
+      
+      // Si ya está en formato DD/MM/YYYY, dejarlo igual
+      if (fecha.includes('/')) return fecha;
+      
+      // Convertir de YYYY-MM-DD a DD/MM/YYYY
+      const partes = fecha.split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return fecha;
+    }
+
+    // Función para formatear hora
+    function formatHora(hora) {
+      if (!hora) return 'Hora no especificada';
+      
+      // Si ya tiene formato, dejarlo igual
+      if (hora.includes(':')) {
+        return hora.substring(0, 5); // Tomar solo HH:MM
+      }
+      return hora;
+    }
+
+    // Función para generar notificaciones desde los datos de la API
+    function generateNotificationsFromAPIData(data) {
+      const notifications = [];
+      
+      console.log('🔄 Generando notificaciones desde datos API:', data);
+      
+      // Verificar si son notificaciones o reservas
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          // Si es una notificación del modelo Notificacion
+          if (item.tipo && item.titulo) {
+            const notification = {
+              id: item.id,
+              type: mapNotificationType(item.tipo),
+              class: mapNotificationClass(item.tipo),
+              title: item.titulo,
+              message: item.mensaje,
+              timestamp: item.fecha_creacion,
+              read: item.leida,
+              actions: getActionsForType(item.tipo, item.reserva),
+              reservaData: item
+            };
+            notifications.push(notification);
+          }
+          // Si es una reserva del modelo Reserva
+          else if (item.espacio_nombre && item.fecha_reserva) {
+            const fechaFormateada = formatFecha(item.fecha_reserva);
+            const horaInicio = formatHora(item.hora_inicio);
+            const horaFin = formatHora(item.hora_fin);
+            
+            const notification = {
+              id: item.id,
+              type: item.estado.toLowerCase(),
+              class: mapReservaClass(item.estado),
+              title: `📋 Reserva ${mapEstadoTitulo(item.estado)} <span class="badge badge-${item.estado.toLowerCase()}">${item.estado}</span>`,
+              message: `Tu reserva para <strong>${item.espacio_nombre}</strong> el <strong>${fechaFormateada}</strong> de <strong>${horaInicio} - ${horaFin}</strong>`,
+              timestamp: item.fecha_solicitud,
+              read: false, // Las reservas no tienen campo leído
+              actions: getActionsForReserva(item.estado, item.id),
+              reservaData: item
+            };
+            notifications.push(notification);
+          }
+        });
+      }
+      
+      return notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+
+    // Funciones de mapeo
+    function mapNotificationType(tipo) {
+      const map = {
+        'reserva_aprobada': 'approved',
+        'reserva_rechazada': 'rejected', 
+        'reserva_pendiente': 'pending',
+        'reserva_creada': 'pending'
+      };
+      return map[tipo] || 'pending';
+    }
+
+    function mapNotificationClass(tipo) {
+      const map = {
+        'reserva_aprobada': 'aprobada',
+        'reserva_rechazada': 'rechazada',
+        'reserva_pendiente': 'pendiente',
+        'reserva_creada': 'pendiente'
+      };
+      return map[tipo] || 'pendiente';
+    }
+
+    function mapReservaClass(estado) {
+      const map = {
+        'Aprobada': 'aprobada',
+        'Rechazada': 'rechazada', 
+        'Pendiente': 'pendiente',
+        'Cancelada': 'rechazada'
+      };
+      return map[estado] || 'pendiente';
+    }
+
+    function mapEstadoTitulo(estado) {
+      const map = {
+        'Pendiente': 'Pendiente',
+        'Aprobada': 'Aprobada',
+        'Rechazada': 'Rechazada',
+        'Cancelada': 'Cancelada'
+      };
+      return map[estado] || 'Pendiente';
+    }
+
+    function getActionsForType(tipo, reservaId) {
+      const baseActions = [
+        { text: 'Ver detalles', class: 'btn-primary', action: 'view' }
+      ];
+      
+      if (tipo === 'reserva_pendiente' || tipo === 'reserva_creada') {
+        baseActions.push({ text: 'Cancelar reserva', class: 'btn-danger', action: 'cancel' });
+      }
+      
+      return baseActions;
+    }
+
+    function getActionsForReserva(estado, reservaId) {
+      const actions = [
+        { text: 'Ver detalles', class: 'btn-primary', action: 'view' }
+      ];
+      
+      if (estado === 'Pendiente') {
+        actions.push({ text: 'Cancelar reserva', class: 'btn-danger', action: 'cancel' });
+      }
+      
+      return actions;
+    }
+
+    // Función para renderizar notificaciones
+    function renderNotifications(notifications, filter = 'all') {
+      const container = document.getElementById('notifications-container');
+      const countElement = document.getElementById('notification-count');
+      
+      const debugInfo = document.getElementById('debug-info');
+      const debugContent = document.getElementById('debug-content');
+      
+      if (notifications.length > 0) {
+        debugInfo.style.display = 'block';
+        debugContent.innerHTML = `
+          Se encontraron ${notifications.length} notificaciones.<br>
+          Fuente: API Django<br>
+          Primera notificación: ${JSON.stringify(notifications[0].reservaData).substring(0, 100)}...
+        `;
+      } else {
+        debugInfo.style.display = 'none';
+      }
+      
+      let filteredNotifications = notifications;
+      
+      switch(filter) {
+        case 'unread':
+          filteredNotifications = notifications.filter(n => !n.read);
+          break;
+        case 'pending':
+          filteredNotifications = notifications.filter(n => n.type === 'pending');
+          break;
+        case 'approved':
+          filteredNotifications = notifications.filter(n => n.type === 'approved');
+          break;
+        case 'rejected':
+          filteredNotifications = notifications.filter(n => n.type === 'rejected');
+          break;
+      }
+      
+      countElement.textContent = filteredNotifications.length;
+      
+      if (filteredNotifications.length === 0) {
+        let message = '';
+        switch(filter) {
+          case 'unread':
+            message = 'No tienes notificaciones sin leer';
+            break;
+          case 'pending':
+            message = 'No tienes reservas pendientes de revisión';
+            break;
+          case 'approved':
+            message = 'No tienes reservas aprobadas';
+            break;
+          case 'rejected':
+            message = 'No tienes reservas rechazadas';
+            break;
+          default:
+            message = 'No hay notificaciones para mostrar';
+        }
+        container.innerHTML = `<div class="empty-state">${message}</div>`;
+        return;
+      }
+      
+      container.innerHTML = filteredNotifications.map(notif => `
+        <div class="notification ${notif.class} ${!notif.read ? 'unread' : ''}" 
+             data-type="${notif.type}" 
+             data-read="${notif.read}">
+          <b>${notif.title}</b>
+          <p>${notif.message}</p>
+          <small>${formatDateTime(notif.timestamp)}</small>
+          <div class="actions">
+            ${notif.actions.map(action => 
+              `<button class="${action.class}" 
+                      data-action="${action.action}" 
+                      data-reserva-id="${notif.id}">
+                ${action.text}
+              </button>`
+            ).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Inicializar la aplicación
+    document.addEventListener('DOMContentLoaded', async function() {
+      let allNotifications = [];
+      let currentFilter = 'all';
+      
+      try {
+        // Cargar datos desde la API de Django
+        const apiData = await loadNotificationsFromAPI();
+        allNotifications = generateNotificationsFromAPIData(apiData);
+        renderNotifications(allNotifications, currentFilter);
+        
+        if (apiData.length === 0) {
+          document.getElementById('notifications-container').innerHTML = `
+            <div class="empty-state">
+              <p>No tienes notificaciones</p>
+              <p><small>Cuando crees una reserva, aparecerá aquí</small></p>
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        console.error('❌ Error cargando notificaciones:', error);
+        document.getElementById('notifications-container').innerHTML = `
+          <div class="error-state">
+            Error al cargar las notificaciones: ${error.message}<br>
+            <small>Asegúrate de que el servidor Django esté ejecutándose en http://localhost:8000</small>
+            <button class="refresh-btn" onclick="location.reload()">Reintentar</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Funcionalidad para los filtros
+      document.querySelectorAll('.filters button').forEach(button => {
+        button.addEventListener('click', function() {
+          document.querySelectorAll('.filters button').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          
+          this.classList.add('active');
+          currentFilter = this.getAttribute('data-filter');
+          renderNotifications(allNotifications, currentFilter);
+        });
+      });
+
+      // Funcionalidad para los botones de acción
+      document.addEventListener('click', function(e) {
+        const button = e.target.closest('.actions button');
+        if (button) {
+          const action = button.getAttribute('data-action');
+          const reservaId = button.getAttribute('data-reserva-id');
+          const notificacion = allNotifications.find(n => n.id == reservaId);
+          
+          if (notificacion) {
+            const data = notificacion.reservaData;
+            switch(action) {
+              case 'view':
+                if (data.espacio_nombre) {
+                  // Es una reserva
+                  alert(`📋 Detalles de la reserva:\n\nID: ${data.id}\nEspacio: ${data.espacio_nombre}\nFecha: ${formatFecha(data.fecha_reserva)}\nHorario: ${formatHora(data.hora_inicio)} - ${formatHora(data.hora_fin)}\nEstado: ${data.estado}\nPropósito: ${data.proposito || 'No especificado'}\nAsistentes: ${data.num_asistentes || 'No especificado'}`);
+                } else {
+                  // Es una notificación
+                  alert(`📋 Detalles de la notificación:\n\nTítulo: ${data.titulo}\nMensaje: ${data.mensaje}\nTipo: ${data.tipo}\nFecha: ${formatDateTime(data.fecha_creacion)}`);
+                }
+                break;
+              case 'cancel':
+                if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
+                  cancelarReserva(reservaId);
+                }
+                break;
+            }
+          }
+        }
+      });
+    });
+
+    // Función para cancelar reserva via API
+    async function cancelarReserva(reservaId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/reservas/${reservaId}/cancelar/`, {
+          method: 'POST',
+          headers: API_HEADERS,
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          alert('Reserva cancelada correctamente');
+          location.reload();
+        } else {
+          alert('Error al cancelar la reserva');
+        }
+      } catch (error) {
+        console.error('Error cancelando reserva:', error);
+        alert('Error al cancelar la reserva');
+      }
+    }
+
+    // Función para debug
+    function debugAPI() {
+      console.log('🔍 Debug de API');
+      loadNotificationsFromAPI().then(data => {
+        console.log('Datos de API:', data);
+        alert(`Datos cargados: ${data.length} elementos. Revisa la consola para detalles.`);
+      });
+    }
+  </script>
+
+  <div style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px;">
+    <button onclick="debugAPI()" style="padding: 10px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      🔍 Debug API
+    </button>
+    <button onclick="location.reload()" style="padding: 10px; background: #0056d2; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      🔄 Recargar
+    </button>
+  </div>
+</body>
+</html>

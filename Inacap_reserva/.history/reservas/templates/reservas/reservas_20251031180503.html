@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Reservas - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+            position: relative;
+        }
+
+        .user-menu:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #374151;
+            transition: background 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+        }
+
+        .dropdown-item.logout {
+            color: #dc2626;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .status-tabs {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .status-tab {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .status-tab.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Reservations List */
+        .reservations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .reservation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .reservation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservation-card.approved {
+            border-left-color: #10b981;
+        }
+
+        .reservation-card.pending {
+            border-left-color: #f59e0b;
+        }
+
+        .reservation-card.rejected {
+            border-left-color: #dc2626;
+        }
+
+        .reservation-card.cancelled {
+            border-left-color: #6b7280;
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .reservation-info {
+            flex: 1;
+        }
+
+        .reservation-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .reservation-datetime {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .reservation-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .reservation-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-badge.cancelled {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .reservation-id {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .reservation-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-icon {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .reservation-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .action-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .action-btn.primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .action-btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .action-btn.danger {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        .action-btn.danger:hover {
+            background: #b91c1c;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .empty-state-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .reservation-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .reservation-meta {
+                align-items: flex-start;
+            }
+
+            .reservation-details {
+                grid-template-columns: 1fr;
+            }
+
+            .reservation-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div class="logo-text">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item active">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
+            <a href="{% url 'espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">Notificaciones</a>
+        </nav>
+        <div class="user-menu">
+
+</div>
+
+        <div class="user-menu" id="userMenu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span class="user-name">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="dropdownMenu">
+                <div class="dropdown-item">
+                    <span>👤</span>
+                    Mi Perfil
+                </div>
+                <div class="dropdown-item">
+                    <span>⚙️</span>
+                    Configuración
+                </div>
+                <a href="{% url 'logout' %}" class="dropdown-item logout">
+                    <span>🚪</span>
+                    Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📋 Historial de Reservas</h1>
+            <p class="page-subtitle">
+                Gestiona y revisa todas tus solicitudes de reserva
+            </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="status-tabs">
+                <button class="status-tab active" data-status="all">Todas</button>
+                <button class="status-tab" data-status="approved">Aprobadas</button>
+                <button class="status-tab" data-status="pending">Pendientes</button>
+                <button class="status-tab" data-status="rejected">Rechazadas</button>
+                <button class="status-tab" data-status="cancelled">Canceladas</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha desde</label>
+                    <input type="date" class="filter-input" id="dateFrom">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha hasta</label>
+                    <input type="date" class="filter-input" id="dateTo">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">🏢 Espacio</label>
+                    <select class="filter-select" id="spaceFilter">
+                        <option value="">Todos los espacios</option>
+                        {% for reserva in reservas %}
+                            {% ifchanged reserva.espacio.nombre %}
+                                <option value="{{ reserva.espacio.id }}">{{ reserva.espacio.nombre }}</option>
+                            {% endifchanged %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">🔍 Buscar</label>
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Buscar por ID o propósito...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservations List -->
+        <div class="reservations-list" id="reservationsList">
+            {% for reserva in reservas %}
+            <div class="reservation-card {{ reserva.estado|lower }}" 
+                data-status="{{ reserva.estado|lower }}" 
+                data-space="{{ reserva.espacio.id }}"
+                data-date="{{ reserva.fecha_reserva|date:'Y-m-d' }}"
+                data-id="{{ reserva.id }}"
+                data-purpose="{{ reserva.proposito|lower }}">
+                <div class="reservation-header">
+                    <div class="reservation-info">
+                        <div class="reservation-title">{{ reserva.espacio.nombre }}</div>
+                        <div class="reservation-datetime">
+                            📅 {{ reserva.fecha_reserva|date:"l, d M Y" }} • ⏰ {{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fin|time:"H:i" }}
+                        </div>
+                        <div class="reservation-user">
+                            <span>👤 Solicitante: Tú</span>
+                        </div>
+                    </div>
+                    <div class="reservation-meta">
+                        <span class="status-badge {{ reserva.estado|lower }}">
+                            {{ reserva.estado }}
+                        </span>
+                        <span class="reservation-id">#{{ reserva.id }}</span>
+                    </div>
+                </div>
+
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-label">Asistentes:</span>
+                        <span class="detail-value">{{ reserva.num_asistentes }} personas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span class="detail-label">Duración:</span>
+                        <span class="detail-value">
+                            {% with inicio=reserva.hora_inicio fin=reserva.hora_fin %}
+                                {{ fin.hour|add:fin.minute|divisibleby:60 }} horas
+                            {% endwith %}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📝</span>
+                        <span class="detail-label">Solicitado:</span>
+                        <span class="detail-value">{{ reserva.fecha_solicitud|date:"d M, H:i" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🎯</span>
+                        <span class="detail-label">Propósito:</span>
+                        <span class="detail-value">{{ reserva.proposito }}</span>
+                    </div>
+                </div>
+
+                <div class="reservation-actions">
+                    <button class="action-btn" onclick="verDetalles({{ reserva.id }})">
+                        <span>👁️</span>
+                        Ver Detalles
+                    </button>
+                    {% if reserva.estado == 'Pendiente' or reserva.estado == 'Aprobada' %}
+                    <button class="action-btn danger" onclick="cancelarReserva({{ reserva.id }})">
+                        <span>❌</span>
+                        Cancelar
+                    </button>
+                    {% endif %}
+                    {% if reserva.estado == 'Aprobada' %}
+                    <button class="action-btn primary">
+                        <span>📅</span>
+                        Agregar al Calendario
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h2 class="empty-state-title">No hay reservas encontradas</h2>
+                <p class="empty-state-text">
+                    Aún no has realizado ninguna reserva.
+                </p>
+                <a href="{% url 'crear_reserva' %}" class="empty-state-btn">
+                    <span>➕</span>
+                    Crear Nueva Reserva
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+    // User menu dropdown functionality
+    const userMenu = document.getElementById('userMenu');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    if (userMenu && dropdownMenu) {
+        userMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            dropdownMenu.classList.remove('show');
+        });
+    }
+
+    // Funciones para manejar reservas
+    function verDetalles(reservaId) {
+        window.location.href = `/detalle-reserva/?id=${reservaId}`;
+    }
+
+    function cancelarReserva(reservaId) {
+        if (confirm('¿Estás seguro de que deseas cancelar esta reserva?')) {
+            fetch(`/api/reservas/${reservaId}/cancelar/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Reserva cancelada exitosamente');
+                    location.reload();
+                } else {
+                    alert('Error al cancelar la reserva: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cancelar la reserva');
+            });
+        }
+    }
+
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ========== SISTEMA DE FILTRADO CORREGIDO ==========
+    
+    let currentFilters = {
+        status: 'all',
+        dateFrom: '',
+        dateTo: '',
+        space: '',
+        search: ''
+    };
+
+    // Filtros por estado - CORREGIDO
+    document.querySelectorAll('.status-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const status = this.dataset.status;
+            currentFilters.status = status;
+            
+            // Update active tab
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            applyFilters();
+        });
+    });
+
+    // Filtro por fecha desde - CORREGIDO
+    document.getElementById('dateFrom').addEventListener('change', function() {
+        currentFilters.dateFrom = this.value;
+        applyFilters();
+    });
+
+    // Filtro por fecha hasta - CORREGIDO
+    document.getElementById('dateTo').addEventListener('change', function() {
+        currentFilters.dateTo = this.value;
+        applyFilters();
+    });
+
+    // Filtro por espacio - CORREGIDO
+    document.getElementById('spaceFilter').addEventListener('change', function() {
+        currentFilters.space = this.value;
+        applyFilters();
+    });
+
+    // Filtro de búsqueda - CORREGIDO
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        currentFilters.search = e.target.value.toLowerCase().trim();
+        applyFilters();
+    });
+
+    // Función principal de filtrado - COMPLETAMENTE CORREGIDA
+    function applyFilters() {
+        const cards = document.querySelectorAll('.reservation-card');
+        let visibleCount = 0;
+        
+        cards.forEach(card => {
+            if (!card.dataset.status) {
+                console.warn('Tarjeta sin data-status:', card);
+                return;
+            }
+            
+            const cardStatus = card.dataset.status;
+            const cardSpace = card.dataset.space || '';
+            const cardDate = card.dataset.date || '';
+            const cardId = card.dataset.id || '';
+            const cardPurpose = card.dataset.purpose || '';
+            
+            let show = true;
+            
+            // 1. Filtro por estado - CORREGIDO
+            if (currentFilters.status !== 'all') {
+                // Mapeo de estados en español a inglés para coincidir con data-status
+                const statusMap = {
+                    'approved': 'aprobada',
+                    'pending': 'pendiente', 
+                    'rejected': 'rechazada',
+                    'cancelled': 'cancelada'
+                };
+                
+                const targetStatus = statusMap[currentFilters.status] || currentFilters.status;
+                if (cardStatus !== targetStatus) {
+                    show = false;
+                }
+            }
+            
+            // 2. Filtro por espacio - CORREGIDO
+            if (currentFilters.space && cardSpace !== currentFilters.space) {
+                show = false;
+            }
+            
+            // 3. Filtro por fecha desde - CORREGIDO
+            if (currentFilters.dateFrom && cardDate < currentFilters.dateFrom) {
+                show = false;
+            }
+            
+            // 4. Filtro por fecha hasta - CORREGIDO
+            if (currentFilters.dateTo && cardDate > currentFilters.dateTo) {
+                show = false;
+            }
+            
+            // 5. Filtro de búsqueda - CORREGIDO
+            if (currentFilters.search) {
+                const searchTerm = currentFilters.search;
+                const matchesId = cardId.toString().includes(searchTerm);
+                const matchesPurpose = cardPurpose.includes(searchTerm);
+                
+                if (!matchesId && !matchesPurpose) {
+                    show = false;
+                }
+            }
+            
+            // Aplicar visibilidad
+            if (show) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        updateEmptyState(visibleCount);
+    }
+
+    // Actualizar estado vacío - CORREGIDO
+    function updateEmptyState(visibleCount) {
+        const reservationsList = document.getElementById('reservationsList');
+        const existingCards = document.querySelectorAll('.reservation-card').length;
+        const existingEmptyState = document.querySelector('.empty-state.filter-empty-state');
+        
+        // Si no hay tarjetas visibles pero sí existen reservas, mostrar estado de filtro vacío
+        if (visibleCount === 0 && existingCards > 0) {
+            if (!existingEmptyState) {
+                const emptyHtml = `
+                    <div class="empty-state filter-empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h2 class="empty-state-title">No hay reservas encontradas</h2>
+                        <p class="empty-state-text">
+                            No se encontraron reservas que coincidan con los filtros seleccionados.
+                        </p>
+                        <button class="empty-state-btn" onclick="resetFilters()">
+                            <span>🔄</span>
+                            Restablecer Filtros
+                        </button>
+                    </div>
+                `;
+                reservationsList.insertAdjacentHTML('beforeend', emptyHtml);
+            }
+        } else {
+            // Remover estado vacío de filtros si ahora hay reservas visibles
+            if (existingEmptyState) {
+                existingEmptyState.remove();
+            }
+        }
+        
+        // Si no hay reservas en absoluto, mantener el estado vacío original
+        if (existingCards === 0) {
+            const originalEmptyState = document.querySelector('.empty-state');
+            if (originalEmptyState && !originalEmptyState.classList.contains('filter-empty-state')) {
+                originalEmptyState.style.display = 'block';
+            }
+        }
+    }
+
+    // Restablecer filtros - CORREGIDO
+    function resetFilters() {
+        // Restablecer valores de los filtros en la UI
+        document.querySelectorAll('.status-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector('.status-tab[data-status="all"]').classList.add('active');
+        
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        document.getElementById('spaceFilter').value = '';
+        document.getElementById('searchInput').value = '';
+        
+        // Restablecer filtros actuales
+        currentFilters = {
+            status: 'all',
+            dateFrom: '',
+            dateTo: '',
+            space: '',
+            search: ''
+        };
+        
+        // Aplicar filtros (mostrar todo)
+        applyFilters();
+    }
+
+    // Inicializar filtros al cargar la página - CORREGIDO
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha máxima como hoy para filtro de fecha hasta
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateTo').max = today;
+        
+        // Aplicar filtros iniciales
+        applyFilters();
+        
+        console.log('Sistema de filtrado inicializado correctamente');
+    });
+
+    // Función de depuración para verificar datos de las tarjetas
+    function debugCards() {
+        const cards = document.querySelectorAll('.reservation-card');
+        console.log('=== DEBUG DE TARJETAS DE RESERVA ===');
+        cards.forEach((card, index) => {
+            console.log(`Tarjeta ${index + 1}:`, {
+                status: card.dataset.status,
+                space: card.dataset.space,
+                date: card.dataset.date,
+                id: card.dataset.id,
+                purpose: card.dataset.purpose
+            });
+        });
+        console.log('=== FIN DEBUG ===');
+    }
+
+    // Ejecutar debug (opcional - quitar en producción)
+    // setTimeout(debugCards, 1000);
+</script>
+</body>
+</html>

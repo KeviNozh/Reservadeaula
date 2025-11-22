@@ -1,0 +1,158 @@
+<!-- En notificaciones.html - Template mejorado -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - Sistema de Reservas</title>
+    <style>
+        /* Tus estilos actuales... */
+        .notification-item {
+            border-left: 4px solid;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .notification-item.reserva_aprobada { border-left-color: #10B981; }
+        .notification-item.reserva_rechazada { border-left-color: #EF4444; }
+        .notification-item.reserva_creada { border-left-color: #3B82F6; }
+        .notification-item.reserva_cancelada { border-left-color: #6B7280; }
+        
+        .notification-space {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .notification-date {
+            color: #6B7280;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tu header actual... -->
+    
+    <div class="main-content">
+        <h1>📧 Notificaciones</h1>
+        
+        <div class="notification-actions">
+            <button onclick="marcarTodasLeidas()" class="btn">📭 Marcar todas como leídas</button>
+            <button onclick="recargarNotificaciones()" class="btn">🔄 Actualizar</button>
+        </div>
+        
+        <div id="notificacionesList">
+            <!-- Las notificaciones se cargarán aquí -->
+        </div>
+    </div>
+
+    <script>
+        function cargarNotificaciones() {
+            fetch('/api/notificaciones/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const contenedor = document.getElementById('notificacionesList');
+                        contenedor.innerHTML = '';
+                        
+                        if (data.notificaciones.length === 0) {
+                            contenedor.innerHTML = '<div class="empty-state">No hay notificaciones</div>';
+                            return;
+                        }
+                        
+                        data.notificaciones.forEach(notif => {
+                            const notifElement = document.createElement('div');
+                            notifElement.className = `notification-item ${notif.tipo} ${notif.leida ? 'leida' : 'no-leida'}`;
+                            
+                            let espacioInfo = '';
+                            if (notif.espacio_nombre) {
+                                espacioInfo = `<div class="notification-space">Espacio: ${notif.espacio_nombre}</div>`;
+                            }
+                            
+                            notifElement.innerHTML = `
+                                <div class="notification-header">
+                                    <strong>${notif.titulo}</strong>
+                                    <span class="notification-date">${notif.fecha_creacion_formateada}</span>
+                                </div>
+                                ${espacioInfo}
+                                <div class="notification-message">${notif.mensaje}</div>
+                                <div class="notification-actions">
+                                    <button onclick="marcarLeida(${notif.id})" class="btn-small">
+                                        ${notif.leida ? '✅ Leída' : '📌 Marcar como leída'}
+                                    </button>
+                                </div>
+                            `;
+                            
+                            contenedor.appendChild(notifElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando notificaciones:', error);
+                });
+        }
+        
+        function marcarLeida(notificacionId) {
+            fetch(`/api/notificaciones/${notificacionId}/marcar-leida/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cargarNotificaciones(); // Recargar la lista
+                }
+            });
+        }
+        
+        function marcarTodasLeidas() {
+            fetch('/api/notificaciones/marcar-todas-leidas/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cargarNotificaciones(); // Recargar la lista
+                }
+            });
+        }
+        
+        function recargarNotificaciones() {
+            cargarNotificaciones();
+        }
+        
+        // Cargar notificaciones al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarNotificaciones();
+            // Actualizar cada 30 segundos
+            setInterval(cargarNotificaciones, 30000);
+        });
+        
+        // Función para obtener token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

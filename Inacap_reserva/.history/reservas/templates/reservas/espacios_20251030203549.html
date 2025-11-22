@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espacios Disponibles - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* Spaces Grid */
+        .spaces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .space-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .space-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .space-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            position: relative;
+        }
+
+        .space-status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .space-status.available {
+            background: #10b981;
+            color: white;
+        }
+
+        .space-status.maintenance {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .space-status.unavailable {
+            background: #ef4444;
+            color: white;
+        }
+
+        .space-content {
+            padding: 20px;
+        }
+
+        .space-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .space-location {
+            color: #6b7280;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .space-details {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .space-detail {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .space-equipment {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .equipment-tag {
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .space-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            color: #374151;
+        }
+
+        .action-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .action-btn.primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .action-btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .spaces-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .space-details {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .space-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
+            <a href="{% url 'espacios' %}" class="nav-item active">Espacios</a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">Notificaciones</a>
+        </nav>
+
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🏢 Espacios Disponibles</h1>
+            <p class="page-subtitle">Explora y conoce todos los espacios disponibles para reservar</p>
+        </div>
+
+        <!-- Spaces Grid -->
+        <div class="spaces-grid">
+            {% for espacio in espacios %}
+            <div class="space-card">
+                <div class="space-image">
+                    {% if espacio.tipo == 'Sala de Reuniones' %}
+                        🏛️
+                    {% elif espacio.tipo == 'Auditorio' %}
+                        🎭
+                    {% elif espacio.tipo == 'Laboratorio' %}
+                        🔬
+                    {% elif espacio.tipo == 'Oficina' %}
+                        💼
+                    {% elif espacio.tipo == 'Aula' %}
+                        🏫
+                    {% else %}
+                        🏢
+                    {% endif %}
+                    <div class="space-status available">Disponible</div>
+                </div>
+                <div class="space-content">
+                    <h3 class="space-name">{{ espacio.nombre }}</h3>
+                    <div class="space-location">
+                        <span>📍</span>
+                        <span>
+                            {% if espacio.edificio and espacio.piso %}
+                                {{ espacio.edificio }}, Piso {{ espacio.piso }}
+                            {% elif espacio.edificio %}
+                                {{ espacio.edificio }}
+                            {% else %}
+                                Ubicación no especificada
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="space-details">
+                        <div class="space-detail">
+                            <span>👥</span>
+                            <span>{{ espacio.capacidad }} personas</span>
+                        </div>
+                        <div class="space-detail">
+                            <span>📐</span>
+                            <span>{{ espacio.tipo }}</span>
+                        </div>
+                    </div>
+
+                    {% if espacio.descripcion %}
+                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">
+                        {{ espacio.descripcion }}
+                    </p>
+                    {% endif %}
+
+                    <div class="space-equipment">
+                        {% for equipamiento in espacio.equipamientos.all %}
+                        <span class="equipment-tag">{{ equipamiento.nombre_equipo }}</span>
+                        {% empty %}
+                        <span class="equipment-tag">Equipamiento básico</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="space-actions">
+                        <a href="{% url 'crear_reserva' %}?espacio_id={{ espacio.id }}" class="action-btn primary">
+                            Reservar
+                        </a>
+                        <button class="action-btn" onclick="verDetallesEspacio({{ espacio.id }})">
+                            Ver Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🏢</div>
+                <h2 class="empty-state-title">No hay espacios disponibles</h2>
+                <p class="empty-state-text">
+                    Actualmente no hay espacios disponibles para reservar.
+                </p>
+                <a href="{% url 'dashboard' %}" class="action-btn primary">
+                    Volver al Dashboard
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        function verDetallesEspacio(espacioId) {
+            alert(`Mostrando detalles del espacio ID: ${espacioId}`);
+            // En una implementación real, esto abriría un modal o redirigiría a una página de detalles
+        }
+
+        // Agregar funcionalidad de búsqueda si es necesario
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de espacios cargada correctamente');
+        });
+    </script>
+</body>
+</html>

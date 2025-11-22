@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revisar Solicitud</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Header */
+        .page-header {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .breadcrumb {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        .breadcrumb a {
+            color: #2563EB;
+            text-decoration: none;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-secondary { background: #6B7280; color: white; }
+        .btn-primary { background: #2563EB; color: white; }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+        
+        /* Left Panel - Request Details */
+        .request-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .card-content {
+            padding: 24px;
+        }
+        
+        /* User Info Card */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-details h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .user-details p {
+            color: #6B7280;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: #F9FAFB;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+        
+        /* Request Details */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .detail-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+        
+        .detail-icon {
+            width: 20px;
+            height: 20px;
+            color: #6B7280;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+            min-width: 100px;
+        }
+        
+        .detail-value {
+            color: #111827;
+        }
+        
+        .space-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 200px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .space-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .space-description {
+            color: #6B7280;
+            margin-bottom: 16px;
+        }
+        
+        .equipment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .equipment-tag {
+            background: #EFF6FF;
+            color: #2563EB;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .purpose-text {
+            background: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            color: #374151;
+            line-height: 1.6;
+            border-left: 4px solid #2563EB;
+        }
+        
+        /* Right Panel - Decision Tools */
+        .decision-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Calendar */
+        .mini-calendar {
+            background: #F9FAFB;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #374151;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .calendar-day {
+            padding: 8px 4px;
+            border-radius: 4px;
+        }
+        
+        .calendar-day.header {
+            font-weight: 600;
+            color: #6B7280;
+        }
+        
+        .calendar-day.available {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .calendar-day.occupied {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .calendar-day.partial {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .calendar-day.today {
+            background: #2563EB;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .calendar-legend {
+            margin-top: 12px;
+            font-size: 11px;
+            color: #6B7280;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Conflicts */
+        .conflict-alert {
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #92400E;
+            margin-bottom: 8px;
+        }
+        
+        .conflict-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid #F59E0B;
+        }
+        
+        .conflict-time {
+            font-size: 12px;
+            color: #78350F;
+        }
+        
+        .conflict-title {
+            font-weight: 500;
+            color: #92400E;
+        }
+        
+        /* Existing Reservations */
+        .reservation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #F3F4F6;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .reservation-time {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        .reservation-title {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-confirmed {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        /* Verification Tools */
+        .verification-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .verify-btn {
+            background: #EFF6FF;
+            border: 1px solid #2563EB;
+            color: #2563EB;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .verify-btn:hover {
+            background: #2563EB;
+            color: white;
+        }
+        
+        /* Decision Form */
+        .decision-form {
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .decision-options {
+            margin-bottom: 20px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .radio-option:hover {
+            border-color: #D1D5DB;
+        }
+        
+        .radio-option.selected {
+            border-color: #2563EB;
+            background: #EFF6FF;
+        }
+        
+        .radio-option input[type="radio"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .option-info {
+            flex: 1;
+        }
+        
+        .option-title {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .option-description {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        .option-icon {
+            font-size: 20px;
+        }
+        
+        .approve { color: #10B981; }
+        .approve-conditional { color: #F59E0B; }
+        .reject { color: #DC2626; }
+        .request-info { color: #2563EB; }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .required {
+            color: #DC2626;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .checkbox-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-success { background: #10B981; color: white; }
+        .btn-outline { background: white; color: #6B7280; border: 2px solid #E5E7EB; }
+        
+        .btn-outline:hover { background: #F9FAFB; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-left">
+                <h1>📋 Revisar Solicitud</h1>
+                <div class="breadcrumb">
+                    <a href="#">Solicitudes</a> > <a href="#">Pendientes</a> > Revisar #REQ-2025-0234
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary">⬅️ Volver a la Lista</button>
+                <button class="btn btn-primary">📧 Contactar Usuario</button>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Panel - Request Details -->
+            <div class="request-panel">
+                <!-- User Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>👤</span>
+                        <h3 class="card-title">Información del Solicitante</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="user-info">
+                            <div class="user-avatar">MR</div>
+                            <div class="user-details">
+                                <h3>María Rodríguez</h3>
+                                <p>📧 maria.rodriguez@empresa.com</p>
+                                <p>📞 +56 9 8765 4321</p>
+                                <p>🏢 Tecnología - Desarrollo</p>
+                                <p>🆔 ID: USR-001</p>
+                            </div>
+                        </div>
+                        
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">45</div>
+                                <div class="stat-label">Total Reservas</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">95%</div>
+                                <div class="stat-label">Tasa Aprobación</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">2</div>
+                                <div class="stat-label">Este Mes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Details -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>📋</span>
+                        <h3 class="card-title">Detalles de la Reserva</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="space-preview">🏢</div>
+                        <div class="space-name">Sala de Conferencias A1</div>
+                        <div class="space-description">
+                            Sala equipada con proyector 4K, sistema de audio profesional y capacidad para videoconferencias. 
+                            Ubicada en Edificio Principal, Piso 2.
+                        </div>
+                        
+                        <div class="equipment-tags">
+                            <div class="equipment-tag">📺 Proyector 4K</div>
+                            <div class="equipment-tag">🎤 Sistema Audio</div>
+                            <div class="equipment-tag">📶 WiFi</div>
+                            <div class="equipment-tag">❄️ Aire Acondicionado</div>
+                            <div class="equipment-tag">📹 Videoconferencia</div>
+                        </div>
+                        
+                        <div class="detail-grid">
+                            <div class="detail-section">
+                                <h4>⏰ Información Temporal</h4>
+                                <div class="detail-item">
+                                    <span class="detail-icon">📅</span>
+                                    <span class="detail-label">Fecha:</span>
+                                    <span class="detail-value">Viernes, 22 Mar 2025</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">🕐</span>
+                                    <span class="detail-label">Hora:</span>
+                                    <span class="detail-value">14:00 - 16:00</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">⏱️</span>
+                                    <span class="detail-label">Duración:</span>
+                                    <span class="detail-value">2 horas</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">📝</span>
+                                    <span class="detail-label">Solicitado:</span>
+                                    <span class="detail-value">15 Mar, 12:30</span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-section">
+                                <h4>👥 Detalles Adicionales</h4>
+                                <div class="detail-item">
+                                    <span class="detail-icon">👥</span>
+                                    <span class="detail-label">Asistentes:</span>
+                                    <span class="detail-value">15 personas</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">🏢</span>
+                                    <span class="detail-label">Capacidad:</span>
+                                    <span class="detail-value">20 personas</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">🆔</span>
+                                    <span class="detail-label">ID Solicitud:</span>
+                                    <span class="detail-value">REQ-2025-0234</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">⚡</span>
+                                    <span class="detail-label">Prioridad:</span>
+                                    <span class="detail-value" style="color: #DC2626; font-weight: 600;">Alta</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 style="margin-bottom: 12px;">🎯 Propósito de la Reunión</h4>
+                            <div class="purpose-text">
+                                Presentación del nuevo producto Q2 al equipo ejecutivo. Necesitamos el proyector 4K para mostrar demos interactivas y el sistema de audio para videoconferencia con stakeholders remotos. La reunión incluye una sesión de Q&A y toma de decisiones estratégicas para el lanzamiento.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Communication History -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>💬</span>
+                        <h3 class="card-title">Historial de Comunicación</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="color: #6B7280; text-align: center; padding: 20px;">
+                            No hay comunicación previa para esta solicitud
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Decision Tools -->
+            <div class="decision-panel">
+                <!-- Calendar -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>📅</span>
+                        <h3 class="card-title">Verificación de Disponibilidad</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="mini-calendar">
+                            <div class="calendar-header">Marzo 2025</div>
+                            <div class="calendar-grid">
+                                <div class="calendar-day header">L</div>
+                                <div class="calendar-day header">M</div>
+                                <div class="calendar-day header">X</div>
+                                <div class="calendar-day header">J</div>
+                                <div class="calendar-day header">V</div>
+                                <div class="calendar-day header">S</div>
+                                <div class="calendar-day header">D</div>
+                                
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day"></div>
+                                <div class="calendar-day available">1</div>
+                                <div class="calendar-day available">2</div>
+                                
+                                <div class="calendar-day occupied">3</div>
+                                <div class="calendar-day available">4</div>
+                                <div class="calendar-day partial">5</div>
+                                <div class="calendar-day available">6</div>
+                                <div class="calendar-day available">7</div>
+                                <div class="calendar-day available">8</div>
+                                <div class="calendar-day available">9</div>
+                                
+                                <div class="calendar-day available">10</div>
+                                <div class="calendar-day occupied">11</div>
+                                <div class="calendar-day available">12</div>
+                                <div class="calendar-day partial">13</div>
+                                <div class="calendar-day available">14</div>
+                                <div class="calendar-day today">15</div>
+                                <div class="calendar-day available">16</div>
+                                
+                                <div class="calendar-day available">17</div>
+                                <div class="calendar-day occupied">18</div>
+                                <div class="calendar-day available">19</div>
+                                <div class="calendar-day available">20</div>
+                                <div class="calendar-day available">21</div>
+                                <div class="calendar-day available" style="border: 2px solid #DC2626;">22</div>
+                                <div class="calendar-day available">23</div>
+                            </div>
+                            <div class="calendar-legend">
+                                <span>🟢 Disponible</span>
+                                <span>🟡 Parcial</span>
+                                <span>🔴 Ocupado</span>
+                                <span>🔵 Hoy</span>
+                            </div>
+                        </div>
+                        
+                        <div class="verification-tools">
+                            <button class="verify-btn">🔄 Verificar Disponibilidad en Tiempo Real</button>
+                            <button class="verify-btn">👤 Ver Perfil Completo del Usuario</button>
+                            <button class="verify-btn">📊 Historial de Reservas del Usuario</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conflicts Alert -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>⚠️</span>
+                        <h3 class="card-title">Verificación de Conflictos</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="conflict-alert">
+                            <div class="alert-header">
+                                <span>⚠️</span>
+                                <span>Conflictos Detectados</span>
+                            </div>
+                            <div class="conflict-item">
+                                <div class="conflict-time">22 Mar, 15:30 - 16:30</div>
+                                <div class="conflict-title">Mantenimiento Programado - Proyector</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="margin-bottom: 12px; color: #374151;">📋 Reservas Existentes del Día</h4>
+                            <div class="reservation-item">
+                                <div>
+                                    <div class="reservation-time">09:00 - 10:30</div>
+                                    <div class="reservation-title">Reunión de Equipo</div>
+                                </div>
+                                <span class="status-badge status-confirmed">Confirmada</span>
+                            </div>
+                            <div class="reservation-item">
+                                <div>
+                                    <div class="reservation-time">11:00 - 12:00</div>
+                                    <div class="reservation-title">Entrevistas</div>
+                                </div>
+                                <span class="status-badge status-confirmed">Confirmada</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decision Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>⚖️</span>
+                        <h3 class="card-title">Tomar Decisión</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="decision-form">
+                            <div class="decision-options">
+                                <div class="radio-option" onclick="selectOption(this, 'approve')">
+                                    <input type="radio" name="decision" value="approve">
+                                    <div class="option-info">
+                                        <div class="option-title">Aprobar</div>
+                                        <div class="option-description">Autorizar la reserva tal como fue solicitada</div>
+                                    </div>
+                                    <div class="option-icon approve">✅</div>
+                                </div>
+                                
+                                <div class="radio-option" onclick="selectOption(this, 'approve-conditional')">
+                                    <input type="radio" name="decision" value="approve-conditional">
+                                    <div class="option-info">
+                                        <div class="option-title">Aprobar con Condiciones</div>
+                                        <div class="option-description">Aprobar con modificaciones o restricciones</div>
+                                    </div>
+                                    <div class="option-icon approve-conditional">⚠️</div>
+                                </div>
+                                
+                                <div class="radio-option" onclick="selectOption(this, 'reject')">
+                                    <input type="radio" name="decision" value="reject">
+                                    <div class="option-info">
+                                        <div class="option-title">Rechazar</div>
+                                        <div class="option-description">Denegar la solicitud de reserva</div>
+                                    </div>
+                                    <div class="option-icon reject">❌</div>
+                                </div>
+                                
+                                <div class="radio-option" onclick="selectOption(this, 'request-info')">
+                                    <input type="radio" name="decision" value="request-info">
+                                    <div class="option-info">
+                                        <div class="option-title">Solicitar Más Información</div>
+                                        <div class="option-description">Pedir detalles adicionales antes de decidir</div>
+                                    </div>
+                                    <div class="option-icon request-info">💬</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="comments" class="form-label">
+                                    Comentarios <span class="required">*</span>
+                                </label>
+                                <textarea 
+                                    id="comments" 
+                                    class="form-control" 
+                                    placeholder="Proporciona detalles sobre tu decisión..."
+                                    required
+                                ></textarea>
+                            </div>
+                            
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="autoNotify" checked>
+                                <label for="autoNotify">Enviar notificación automática al usuario</label>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button class="btn btn-success" onclick="processDecision()" disabled id="processBtn">
+                                    ⚖️ Procesar Solicitud
+                                </button>
+                                <button class="btn btn-secondary">💾 Guardar como Borrador</button>
+                                <button class="btn btn-outline">❌ Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedDecision = null;
+        
+        function selectOption(element, decision) {
+            // Remove previous selection
+            document.querySelectorAll('.radio-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Select current option
+            element.classList.add('selected');
+            element.querySelector('input[type="radio"]').checked = true;
+            selectedDecision = decision;
+            
+            // Enable process button
+            document.getElementById('processBtn').disabled = false;
+            
+            // Update placeholder text based on decision
+            const textarea = document.getElementById('comments');
+            const placeholders = {
+                'approve': 'Solicitud aprobada. Puedes agregar comentarios adicionales...',
+                'approve-conditional': 'Especifica las condiciones o modificaciones requeridas...',
+                'reject': 'Explica el motivo del rechazo (requerido)...',
+                'request-info': 'Especifica qué información adicional necesitas...'
+            };
+            
+            textarea.placeholder = placeholders[decision];
+            
+            // Make comments required for rejection
+            if (decision === 'reject') {
+                textarea.required = true;
+            } else {
+                textarea.required = false;
+            }
+        }
+        
+        function processDecision() {
+            const comments = document.getElementById('comments').value.trim();
+            const autoNotify = document.getElementById('autoNotify').checked;
+            
+            if (!selectedDecision) {
+                alert('Por favor, selecciona una decisión.');
+                return;
+            }
+            
+            if (selectedDecision === 'reject' && comments.length < 10) {
+                alert('Para rechazar una solicitud, debes proporcionar un motivo detallado (mínimo 10 caracteres).');
+                return;
+            }
+            
+            // Show confirmation modal (simulated)
+            const decisionNames = {
+                'approve': 'aprobada',
+                'approve-conditional': 'aprobada con condiciones',
+                'reject': 'rechazada',
+                'request-info': 'marcada para solicitar más información'
+            };
+            
+            const confirmMessage = `¿Confirmas que deseas procesar esta solicitud como "${decisionNames[selectedDecision]}"?
+            
+${autoNotify ? 'Se enviará una notificación automática al usuario.' : 'No se enviará notificación automática.'}`;
+            
+            if (confirm(confirmMessage)) {
+                // Simulate processing
+                document.getElementById('processBtn').innerHTML = '⏳ Procesando...';
+                document.getElementById('processBtn').disabled = true;
+                
+                setTimeout(() => {
+                    alert(`¡Solicitud procesada exitosamente! La solicitud ha sido ${decisionNames[selectedDecision]}.`);
+                    // In a real app, this would redirect to the requests list
+                }, 1500);
+            }
+        }
+        
+        // Enable process button when comments are added for rejection
+        document.getElementById('comments').addEventListener('input', function() {
+            const processBtn = document.getElementById('processBtn');
+            if (selectedDecision === 'reject') {
+                processBtn.disabled = this.value.trim().length < 10;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrador - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .nav-item {
+            color: #6B7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: #2563EB;
+            background: #EFF6FF;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .notification-badge {
+            position: relative;
+            background: #F3F4F6;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .notification-badge:hover {
+            background: #E5E7EB;
+        }
+        
+        .badge-count {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #DC2626;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .admin-avatar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .admin-avatar:hover {
+            background: #F3F4F6;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+        
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .metric-icon.pending { background: #FEF3C7; color: #F59E0B; }
+        .metric-icon.success { background: #D1FAE5; color: #10B981; }
+        .metric-icon.info { background: #DBEAFE; color: #2563EB; }
+        .metric-icon.purple { background: #EDE9FE; color: #7C3AED; }
+        
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #111827;
+            line-height: 1;
+        }
+        
+        .metric-label {
+            color: #6B7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .metric-change {
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        .metric-change.positive { color: #10B981; }
+        .metric-change.negative { color: #DC2626; }
+        
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .chart-period {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563EB;
+            font-size: 48px;
+        }
+        
+        /* Activity Section */
+        .activity-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .activity-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .activity-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .view-all {
+            color: #2563EB;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .activity-content {
+            padding: 20px;
+        }
+        
+        /* Alerts */
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 12px;
+        }
+        
+        .alert-icon {
+            color: #F59E0B;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .alert-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400E;
+            margin-bottom: 4px;
+        }
+        
+        .alert-content p {
+            font-size: 13px;
+            color: #78350F;
+        }
+        
+        /* Quick Actions */
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+        
+        .quick-action:hover {
+            background: #F3F4F6;
+            color: #2563EB;
+        }
+        
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            background: #EFF6FF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563EB;
+        }
+        
+        .action-text {
+            font-weight: 500;
+        }
+        
+        /* Recent Activity */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #F3F4F6;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-avatar {
+            width: 32px;
+            height: 32px;
+            background: #E5E7EB;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .activity-details {
+            flex: 1;
+        }
+        
+        .activity-description {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                🏢 Panel Administrativo
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'admin_dashboard' %}" class="nav-item active">Dashboard</a>
+                <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
+                <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+                <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+                <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+            </nav>
+            
+            <div class="header-right">
+                <div class="notification-badge">
+                    🔔
+                    <span class="badge-count" id="notificationCount">0</span>
+                </div>
+                
+                <div class="admin-avatar">
+                    <div class="avatar">
+                        {% if user.first_name and user.last_name %}
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        {% else %}
+                            {{ user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <span>
+                        {% if user.first_name %}
+                            {{ user.first_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
+                    </span>
+                    <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-title">📊 Dashboard Administrativo</div>
+        <div class="page-subtitle">
+            Bienvenido, 
+            {% if user.first_name %}
+                {{ user.first_name }} {{ user.last_name }}
+            {% else %}
+                {{ user.username }}
+            {% endif %}
+            - Vista general del sistema de reservas
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div>
+                        <div class="metric-value" id="pendingRequests">0</div>
+                        <div class="metric-label">Solicitudes Pendientes</div>
+                        <div class="metric-change positive">
+                            ⬆️ <span id="pendingChange">+0</span> desde ayer
+                        </div>
+                    </div>
+                    <div class="metric-icon pending">⏰</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div>
+                        <div class="metric-value" id="todayReservations">0</div>
+                        <div class="metric-label">Reservas Hoy</div>
+                        <div class="metric-change positive">
+                            ⬆️ <span id="todayChange">+0</span> desde ayer
+                        </div>
+                    </div>
+                    <div class="metric-icon success">📅</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div>
+                        <div class="metric-value" id="occupancyRate">0%</div>
+                        <div class="metric-label">Ocupación Promedio</div>
+                        <div class="metric-change positive">
+                            ⬆️ <span id="occupancyChange">+0%</span> esta semana
+                        </div>
+                    </div>
+                    <div class="metric-icon info">📊</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div>
+                        <div class="metric-value" id="activeUsers">0</div>
+                        <div class="metric-label">Usuarios Activos</div>
+                        <div class="metric-change positive">
+                            ⬆️ <span id="usersChange">+0</span> este mes
+                        </div>
+                    </div>
+                    <div class="metric-icon purple">👥</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📊 Ocupación por Espacio</div>
+                    <div class="chart-period">Últimos 7 días</div>
+                </div>
+                <div class="chart-placeholder">📊 Gráfico de Ocupación</div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">🔄 Estados de Solicitudes</div>
+                    <div class="chart-period">Este mes</div>
+                </div>
+                <div class="chart-placeholder" style="height: 200px;">🥧 Gráfico de Estados</div>
+                <div style="margin-top: 16px; font-size: 14px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #10B981;">✅ Aprobadas: <span id="approvedCount">0</span></span>
+                        <span id="approvedPercent">0%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #F59E0B;">⏰ Pendientes: <span id="pendingCount">0</span></span>
+                        <span id="pendingPercent">0%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #DC2626;">❌ Rechazadas: <span id="rejectedCount">0</span></span>
+                        <span id="rejectedPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Section -->
+        <div class="activity-section">
+            <!-- Alerts -->
+            <div class="activity-card">
+                <div class="activity-header">
+                    <div class="activity-title">🚨 Alertas y Notificaciones</div>
+                    <a href="{% url 'notificaciones' %}" class="view-all">Ver todas</a>
+                </div>
+                <div class="activity-content">
+                    <div class="alert-item">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <h4>Conflicto de Reserva</h4>
+                            <p>Sala A1 tiene reservas superpuestas el <span id="conflictDate">20/03</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert-item">
+                        <div class="alert-icon">🔧</div>
+                        <div class="alert-content">
+                            <h4>Equipo Fuera de Servicio</h4>
+                            <p>Proyector en Sala B2 requiere mantenimiento</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4 style="margin-bottom: 12px; color: #374151;">⚡ Acciones Rápidas</h4>
+                        
+                        <a href="{% url 'solicitudes_pendientes' %}" class="quick-action">
+                            <div class="action-icon">📋</div>
+                            <div class="action-text">Revisar solicitudes pendientes</div>
+                        </a>
+                        
+                        <a href="#" class="quick-action">
+                            <div class="action-icon">📝</div>
+                            <div class="action-text">Registrar incidencia</div>
+                        </a>
+                        
+                        <a href="{% url 'reportes' %}" class="quick-action">
+                            <div class="action-icon">📊</div>
+                            <div class="action-text">Generar reporte mensual</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="activity-card">
+                <div class="activity-header">
+                    <div class="activity-title">⏱️ Actividad Reciente</div>
+                    <a href="#" class="view-all">Ver completa</a>
+                </div>
+                <div class="activity-content" id="recentActivity">
+                    <!-- La actividad se cargará dinámicamente -->
+                    <div class="activity-item">
+                        <div class="activity-avatar">AM</div>
+                        <div class="activity-details">
+                            <div class="activity-description">Aprobó solicitud de Sala A1</div>
+                            <div class="activity-time">Hace 15 minutos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar">JM</div>
+                        <div class="activity-details">
+                            <div class="activity-description">Rechazó solicitud de Sala B3</div>
+                            <div class="activity-time">Hace 32 minutos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar">SY</div>
+                        <div class="activity-details">
+                            <div class="activity-description">Creó nuevo espacio: Sala C4</div>
+                            <div class="activity-time">Hace 1 hora</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Cargar estadísticas al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardStats();
+            loadRecentActivity();
+        });
+
+        // Cargar estadísticas del dashboard
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/dashboard/stats/');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.stats;
+                    
+                    // Actualizar métricas
+                    document.getElementById('pendingRequests').textContent = stats.reservas_pendientes_aprobacion || 0;
+                    document.getElementById('todayReservations').textContent = stats.reservas_hoy || 15;
+                    document.getElementById('occupancyRate').textContent = stats.ocupacion_promedio || '78%';
+                    document.getElementById('activeUsers').textContent = stats.usuarios_activos || 342;
+                    
+                    // Actualizar contadores de estados
+                    document.getElementById('approvedCount').textContent = stats.aprobadas || 156;
+                    document.getElementById('pendingCount').textContent = stats.reservas_pendientes_aprobacion || 45;
+                    document.getElementById('rejectedCount').textContent = stats.rechazadas || 28;
+                    
+                    // Actualizar porcentajes
+                    const total = (stats.aprobadas || 156) + (stats.reservas_pendientes_aprobacion || 45) + (stats.rechazadas || 28);
+                    if (total > 0) {
+                        document.getElementById('approvedPercent').textContent = Math.round((stats.aprobadas || 156) / total * 100) + '%';
+                        document.getElementById('pendingPercent').textContent = Math.round((stats.reservas_pendientes_aprobacion || 45) / total * 100) + '%';
+                        document.getElementById('rejectedPercent').textContent = Math.round((stats.rechazadas || 28) / total * 100) + '%';
+                    }
+                    
+                    // Actualizar notificaciones
+                    document.getElementById('notificationCount').textContent = stats.notificaciones_sin_leer || 0;
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
+        }
+
+        // Cargar actividad reciente
+        async function loadRecentActivity() {
+            try {
+                // En una implementación real, esto vendría de una API
+                const activity = [
+                    { user: 'AM', action: 'Aprobó solicitud de Sala A1', time: 'Hace 15 minutos' },
+                    { user: 'JM', action: 'Rechazó solicitud de Sala B3', time: 'Hace 32 minutos' },
+                    { user: 'SY', action: 'Creó nuevo espacio: Sala C4', time: 'Hace 1 hora' },
+                    { user: 'AG', action: 'Canceló reserva en Auditorio', time: 'Hace 2 horas' },
+                    { user: 'RM', action: 'Actualizó equipamiento Sala A2', time: 'Hace 3 horas' }
+                ];
+                
+                const container = document.getElementById('recentActivity');
+                container.innerHTML = '';
+                
+                activity.forEach(item => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item';
+                    activityItem.innerHTML = `
+                        <div class="activity-avatar">${item.user}</div>
+                        <div class="activity-details">
+                            <div class="activity-description">${item.action}</div>
+                            <div class="activity-time">${item.time}</div>
+                        </div>
+                    `;
+                    container.appendChild(activityItem);
+                });
+            } catch (error) {
+                console.error('Error cargando actividad:', error);
+            }
+        }
+
+        // Actualizar cada 30 segundos
+        setInterval(loadDashboardStats, 30000);
+    </script>
+</body>
+</html>

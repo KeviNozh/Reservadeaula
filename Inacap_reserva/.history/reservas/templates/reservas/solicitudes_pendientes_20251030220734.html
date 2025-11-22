@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes Pendientes - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #dc2626;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #dc2626;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Requests Table */
+        .requests-table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: #f8fafc;
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .action-btn.primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .action-btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .requests-table th,
+        .requests-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .requests-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .requests-table td {
+            color: #111827;
+        }
+
+        .request-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .request-space {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .request-user {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .request-date {
+            font-weight: 500;
+        }
+
+        .request-time {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn.approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn.approve:hover {
+            background: #059669;
+        }
+
+        .btn.reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn.reject:hover {
+            background: #dc2626;
+        }
+
+        .btn.view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn.view:hover {
+            background: #2563eb;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .requests-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item active">Solicitudes</a>
+            <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+            <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <span>›</span>
+            <span>Solicitudes Pendientes</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="page-title">📋 Solicitudes Pendientes</h1>
+                    <p class="page-subtitle">Revisa y gestiona las solicitudes de reserva pendientes de aprobación</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPending">0</div>
+                        <div class="stat-label">Total Pendientes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayPending">0</div>
+                        <div class="stat-label">Hoy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">🏢 Espacio</label>
+                    <select class="filter-select" id="spaceFilter">
+                        <option value="">Todos los espacios</option>
+                        <option value="sala_a1">Sala A1</option>
+                        <option value="sala_a2">Sala A2</option>
+                        <option value="sala_b1">Sala B1</option>
+                        <option value="auditorio">Auditorio</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha</label>
+                    <select class="filter-select" id="dateFilter">
+                        <option value="">Todas las fechas</option>
+                        <option value="today">Hoy</option>
+                        <option value="tomorrow">Mañana</option>
+                        <option value="this_week">Esta semana</option>
+                        <option value="next_week">Próxima semana</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">👤 Usuario</label>
+                    <select class="filter-select" id="userFilter">
+                        <option value="">Todos los usuarios</option>
+                        <option value="docente">Docentes</option>
+                        <option value="estudiante">Estudiantes</option>
+                        <option value="administrativo">Administrativos</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">🔍 Búsqueda</label>
+                    <input type="text" class="filter-input" id="searchFilter" placeholder="Buscar solicitud...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="requests-table-container">
+            <div class="table-header">
+                <div class="table-title">Solicitudes de Reserva</div>
+                <div class="table-actions">
+                    <button class="action-btn" onclick="refreshRequests()">🔄 Actualizar</button>
+                    <button class="action-btn primary" onclick="exportRequests()">📊 Exportar</button>
+                </div>
+            </div>
+
+            <div id="requestsTableContainer">
+                <!-- La tabla se cargará dinámicamente -->
+                <table class="requests-table">
+                    <thead>
+                        <tr>
+                            <th>Solicitante</th>
+                            <th>Espacio</th>
+                            <th>Fecha</th>
+                            <th>Horario</th>
+                            <th>Asistentes</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTableBody">
+                        <!-- Las filas se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Cargar solicitudes al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPendingRequests();
+        });
+
+        // Cargar solicitudes pendientes
+        async function loadPendingRequests() {
+            try {
+                // Simular carga de datos
+                const requests = [
+                    {
+                        id: 1,
+                        user: 'María González',
+                        email: 'maria.gonzalez@inacap.cl',
+                        space: 'Sala de Reuniones A1',
+                        date: '2024-03-20',
+                        startTime: '09:00',
+                        endTime: '11:00',
+                        attendees: 8,
+                        purpose: 'Reunión de equipo de proyecto'
+                    },
+                    {
+                        id: 2,
+                        user: 'Carlos López',
+                        email: 'carlos.lopez@inacap.cl',
+                        space: 'Auditorio Principal',
+                        date: '2024-03-21',
+                        startTime: '14:00',
+                        endTime: '16:30',
+                        attendees: 45,
+                        purpose: 'Presentación de investigación'
+                    },
+                    {
+                        id: 3,
+                        user: 'Ana Martínez',
+                        email: 'ana.martinez@inacap.cl',
+                        space: 'Sala B2',
+                        date: '2024-03-22',
+                        startTime: '10:30',
+                        endTime: '12:00',
+                        attendees: 12,
+                        purpose: 'Capacitación docente'
+                    }
+                ];
+
+                updateRequestsTable(requests);
+                updateStats(requests.length);
+
+            } catch (error) {
+                console.error('Error cargando solicitudes:', error);
+                showEmptyState('Error al cargar las solicitudes');
+            }
+        }
+
+        // Actualizar tabla de solicitudes
+        function updateRequestsTable(requests) {
+            const tbody = document.getElementById('requestsTableBody');
+            
+            if (requests.length === 0) {
+                showEmptyState('No hay solicitudes pendientes');
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            requests.forEach(request => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="request-info">
+                            <div class="request-user">${request.user}</div>
+                            <div style="font-size: 12px; color: #6b7280;">${request.email}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="request-space">${request.space}</div>
+                    </td>
+                    <td>
+                        <div class="request-date">${formatDate(request.date)}</div>
+                    </td>
+                    <td>
+                        <div class="request-time">${request.startTime} - ${request.endTime}</div>
+                    </td>
+                    <td>${request.attendees} personas</td>
+                    <td>
+                        <span class="status-badge pending">⏰ Pendiente</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn view" onclick="viewRequest(${request.id})">👁️ Ver</button>
+                            <button class="btn approve" onclick="approveRequest(${request.id})">✅ Aprobar</button>
+                            <button class="btn reject" onclick="rejectRequest(${request.id})">❌ Rechazar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Mostrar estado vacío
+        function showEmptyState(message) {
+            const container = document.getElementById('requestsTableContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-title">${message}</div>
+                    <div class="empty-state-text">No hay solicitudes pendientes de aprobación en este momento.</div>
+                </div>
+            `;
+        }
+
+        // Actualizar estadísticas
+        function updateStats(total) {
+            document.getElementById('totalPending').textContent = total;
+            document.getElementById('todayPending').textContent = Math.min(total, 3); // Simular algunas de hoy
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('es-ES', options);
+        }
+
+        // Funciones de acción
+        function viewRequest(requestId) {
+            window.location.href = `/revisar-solicitud/?id=${requestId}`;
+        }
+
+        async function approveRequest(requestId) {
+            if (confirm('¿Estás seguro de que deseas aprobar esta solicitud?')) {
+                try {
+                    const response = await fetch(`/api/reservas/${requestId}/aprobar/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('✅ Solicitud aprobada exitosamente');
+                        loadPendingRequests(); // Recargar la lista
+                    } else {
+                        alert('❌ Error: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('❌ Error de conexión');
+                }
+            }
+        }
+
+        async function rejectRequest(requestId) {
+            const motivo = prompt('Por favor, ingresa el motivo del rechazo:');
+            if (motivo) {
+                try {
+                    const response = await fetch(`/api/reservas/${requestId}/rechazar/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({ motivo: motivo })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('✅ Solicitud rechazada exitosamente');
+                        loadPendingRequests(); // Recargar la lista
+                    } else {
+                        alert('❌ Error: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('❌ Error de conexión');
+                }
+            }
+        }
+
+        function refreshRequests() {
+            loadPendingRequests();
+        }
+
+        function exportRequests() {
+            alert('📊 Función de exportación en desarrollo...');
+        }
+
+        // Función para obtener CSRF token
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

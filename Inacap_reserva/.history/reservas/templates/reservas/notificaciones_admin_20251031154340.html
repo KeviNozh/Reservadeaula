@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - Admin</title>
+    <style>
+        .notification-item {
+            border-left: 4px solid;
+            margin-bottom: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .notification-high { border-left-color: #dc2626; }
+        .notification-medium { border-left-color: #f59e0b; }
+        .notification-low { border-left-color: #10b981; }
+        .notification-unread { background: #f0f9ff; }
+    </style>
+</head>
+<body>
+    <h1>Notificaciones del Sistema</h1>
+    
+    <div class="notification-actions">
+        <button onclick="markAllAsRead()" class="btn">📭 Marcar todas como leídas</button>
+        <button onclick="loadNotifications()" class="btn">🔄 Actualizar</button>
+    </div>
+
+    <div id="notificationsList">
+        Cargando notificaciones...
+    </div>
+
+    <script>
+    function loadNotifications() {
+        fetch('/api/notificaciones-admin/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderNotifications(data.notificaciones);
+                }
+            });
+    }
+
+    function renderNotifications(notifications) {
+        const container = document.getElementById('notificationsList');
+        
+        if (notifications.length === 0) {
+            container.innerHTML = '<p>No hay notificaciones</p>';
+            return;
+        }
+
+        let html = '';
+        notifications.forEach(notif => {
+            const priorityClass = `notification-${notif.prioridad}`;
+            const unreadClass = notif.leida ? '' : 'notification-unread';
+            
+            html += `
+                <div class="notification-item ${priorityClass} ${unreadClass}" onclick="markAsRead(${notif.id})">
+                    <strong>${notif.titulo}</strong>
+                    <p>${notif.mensaje}</p>
+                    <small>${notif.fecha_creacion} - Prioridad: ${notif.prioridad}</small>
+                    ${notif.usuario_relacionado ? `<br><small>Usuario: ${notif.usuario_relacionado.nombre_completo}</small>` : ''}
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function markAsRead(notificationId) {
+        fetch(`/api/notificaciones-admin/${notificationId}/marcar-leida/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
+            loadNotifications();
+            loadAdminNotifications(); // Actualizar badge
+        });
+    }
+
+    function markAllAsRead() {
+        fetch('/api/notificaciones-admin/marcar-todas-leidas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
+            loadNotifications();
+            loadAdminNotifications(); // Actualizar badge
+        });
+    }
+
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    // Cargar notificaciones al iniciar
+    loadNotifications();
+    </script>
+</body>
+</html>

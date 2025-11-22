@@ -1,0 +1,1291 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Notificaciones - Sistema de Reservas</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #f9fafb;
+                color: #111827;
+            }
+
+            /* Header */
+            .header {
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 0 24px;
+                height: 64px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .logo {
+                width: 40px;
+                height: 40px;
+                background: #2563eb;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+            }
+
+            .user-menu {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                background: #10b981;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 600;
+            }
+
+            /* Main Content */
+            .main-content {
+                padding: 24px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 32px;
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .page-title {
+                font-size: 28px;
+                font-weight: 700;
+                color: #111827;
+            }
+
+            .notification-count {
+                background: #dc2626;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 16px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .header-actions {
+                display: flex;
+                gap: 12px;
+            }
+
+            .header-btn {
+                padding: 10px 16px;
+                border: 2px solid #e5e7eb;
+                background: white;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .header-btn:hover {
+                border-color: #2563eb;
+                color: #2563eb;
+            }
+
+            .header-btn.primary {
+                background: #2563eb;
+                color: white;
+                border-color: #2563eb;
+            }
+
+            .header-btn.primary:hover {
+                background: #1d4ed8;
+            }
+
+            /* Content Layout */
+            .content-layout {
+                display: grid;
+                grid-template-columns: 1fr 300px;
+                gap: 24px;
+            }
+
+            /* Notifications Panel */
+            .notifications-panel {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .panel-header {
+                padding: 20px 24px;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                align-items: center;
+                justify-content: between;
+                gap: 16px;
+            }
+
+            .filter-tabs {
+                display: flex;
+                background: #f3f4f6;
+                border-radius: 8px;
+                padding: 4px;
+                flex: 1;
+            }
+
+            .filter-tab {
+                flex: 1;
+                padding: 8px 12px;
+                border: none;
+                background: none;
+                border-radius: 6px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                font-size: 14px;
+                position: relative;
+            }
+
+            .filter-tab.active {
+                background: white;
+                color: #2563eb;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+
+            .filter-tab .badge {
+                background: #dc2626;
+                color: white;
+                font-size: 10px;
+                padding: 2px 6px;
+                border-radius: 8px;
+                margin-left: 4px;
+            }
+
+            .filter-tab.active .badge {
+                background: #2563eb;
+            }
+
+            /* Notifications List */
+            .notifications-list {
+                max-height: 600px;
+                overflow-y: auto;
+            }
+
+            .notification-item {
+                padding: 16px 24px;
+                border-bottom: 1px solid #f3f4f6;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                position: relative;
+            }
+
+            .notification-item:hover {
+                background: #f9fafb;
+            }
+
+            .notification-item.unread {
+                background: #fffbeb;
+                border-left: 4px solid #f59e0b;
+            }
+
+            .notification-item.unread::before {
+                content: '';
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                width: 8px;
+                height: 8px;
+                background: #dc2626;
+                border-radius: 50%;
+            }
+
+            .notification-content {
+                display: flex;
+                gap: 12px;
+            }
+
+            .notification-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                flex-shrink: 0;
+            }
+
+            .notification-icon.reservation {
+                background: #dbeafe;
+                color: #2563eb;
+            }
+
+            .notification-icon.approval {
+                background: #d1fae5;
+                color: #059669;
+            }
+
+            .notification-icon.rejection {
+                background: #fee2e2;
+                color: #dc2626;
+            }
+
+            .notification-icon.reminder {
+                background: #fef3c7;
+                color: #d97706;
+            }
+
+            .notification-icon.maintenance {
+                background: #fed7aa;
+                color: #ea580c;
+            }
+
+            .notification-icon.system {
+                background: #f3f4f6;
+                color: #6b7280;
+            }
+
+            .notification-details {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .notification-title {
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 4px;
+                line-height: 1.4;
+            }
+
+            .notification-description {
+                font-size: 14px;
+                color: #6b7280;
+                margin-bottom: 8px;
+                line-height: 1.4;
+            }
+
+            .notification-meta {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 12px;
+                color: #9ca3af;
+            }
+
+            .notification-time {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .notification-actions {
+                display: flex;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .quick-action {
+                padding: 6px 12px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .quick-action:hover {
+                border-color: #2563eb;
+                color: #2563eb;
+            }
+
+            .quick-action.primary {
+                background: #2563eb;
+                color: white;
+                border-color: #2563eb;
+            }
+
+            .quick-action.primary:hover {
+                background: #1d4ed8;
+            }
+
+            .quick-action.success {
+                background: #10b981;
+                color: white;
+                border-color: #10b981;
+            }
+
+            .quick-action.success:hover {
+                background: #059669;
+            }
+
+            .quick-action.danger {
+                background: #dc2626;
+                color: white;
+                border-color: #dc2626;
+            }
+
+            .quick-action.danger:hover {
+                background: #b91c1c;
+            }
+
+            /* Empty State */
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                color: #6b7280;
+            }
+
+            .empty-state-icon {
+                font-size: 48px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
+
+            .empty-state-title {
+                font-size: 18px;
+                font-weight: 500;
+                margin-bottom: 8px;
+            }
+
+            .empty-state-text {
+                font-size: 14px;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .sidebar-section {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            /* Notification Preferences */
+            .preference-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 0;
+                border-bottom: 1px solid #f3f4f6;
+            }
+
+            .preference-item:last-child {
+                border-bottom: none;
+            }
+
+            .preference-info {
+                flex: 1;
+            }
+
+            .preference-name {
+                font-weight: 500;
+                color: #111827;
+                margin-bottom: 2px;
+            }
+
+            .preference-description {
+                font-size: 12px;
+                color: #6b7280;
+            }
+
+            .preference-toggles {
+                display: flex;
+                gap: 8px;
+            }
+
+            .toggle-btn {
+                padding: 4px 8px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 4px;
+                font-size: 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                color: #6b7280;
+            }
+
+            .toggle-btn.active {
+                background: #2563eb;
+                color: white;
+                border-color: #2563eb;
+            }
+
+            /* Frequency Settings */
+            .frequency-setting {
+                margin-bottom: 16px;
+            }
+
+            .frequency-label {
+                font-size: 14px;
+                font-weight: 500;
+                color: #374151;
+                margin-bottom: 8px;
+            }
+
+            .frequency-options {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .frequency-option {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+
+            .frequency-option:hover {
+                background: #f9fafb;
+            }
+
+            .frequency-option input[type="radio"] {
+                width: 16px;
+                height: 16px;
+            }
+
+            /* Do Not Disturb */
+            .dnd-section {
+                background: #f9fafb;
+                border-radius: 8px;
+                padding: 16px;
+                margin-top: 16px;
+            }
+
+            .dnd-header {
+                display: flex;
+                align-items: center;
+                justify-content: between;
+                margin-bottom: 12px;
+            }
+
+            .dnd-toggle {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .switch {
+                position: relative;
+                width: 44px;
+                height: 24px;
+                background: #e5e7eb;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+
+            .switch.active {
+                background: #10b981;
+            }
+
+            .switch::before {
+                content: '';
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 20px;
+                height: 20px;
+                background: white;
+                border-radius: 50%;
+                transition: transform 0.3s ease;
+            }
+
+            .switch.active::before {
+                transform: translateX(20px);
+            }
+
+            .time-inputs {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .time-input {
+                padding: 8px;
+                border: 1px solid #e5e7eb;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+
+            /* Quick Stats */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .stat-item {
+                text-align: center;
+                padding: 12px;
+                background: #f9fafb;
+                border-radius: 8px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+                font-weight: 700;
+                color: #111827;
+            }
+
+            .stat-label {
+                font-size: 12px;
+                color: #6b7280;
+                margin-top: 4px;
+            }
+
+            /* Responsive */
+            @media (max-width: 1024px) {
+                .content-layout {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .main-content {
+                    padding: 16px;
+                }
+
+                .page-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .filter-tabs {
+                    flex-wrap: wrap;
+                }
+
+                .filter-tab {
+                    min-width: 80px;
+                    flex: none;
+                }
+
+                .notification-content {
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .notification-actions {
+                    flex-wrap: wrap;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo">SR</div>
+            </div>
+            
+            <div class="user-menu">
+                <div class="user-avatar">JD</div>
+                <span>Juan Domínguez</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1 class="page-title">Notificaciones</h1>
+                    <span class="notification-count">12</span>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" id="markAllRead">
+                        ✓ Marcar todas como leídas
+                    </button>
+                    <button class="header-btn" id="clearOld">
+                        🗑️ Limpiar antiguas
+                    </button>
+                    <button class="header-btn primary" id="openSettings">
+                        ⚙️ Configurar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Layout -->
+            <div class="content-layout">
+                <!-- Notifications Panel -->
+                <div class="notifications-panel">
+                    <div class="panel-header">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">
+                                Todas
+                                <span class="badge">12</span>
+                            </button>
+                            <button class="filter-tab" data-filter="unread">
+                                Sin leer
+                                <span class="badge">8</span>
+                            </button>
+                            <button class="filter-tab" data-filter="reservations">
+                                Reservas
+                            </button>
+                            <button class="filter-tab" data-filter="system">
+                                Sistema
+                            </button>
+                            <button class="filter-tab" data-filter="reminders">
+                                Recordatorios
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- Notification Items -->
+                        <div class="notification-item unread" data-type="approval">
+                            <div class="notification-content">
+                                <div class="notification-icon approval">✅</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Reserva Aprobada</div>
+                                    <div class="notification-description">
+                                        Tu solicitud para la Sala de Conferencias A el 22 de marzo ha sido aprobada.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 5 minutos</span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button class="quick-action primary">Ver detalles</button>
+                                        <button class="quick-action">Agregar al calendario</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item unread" data-type="reservation">
+                            <div class="notification-content">
+                                <div class="notification-icon reservation">📅</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Nueva Solicitud de Reserva</div>
+                                    <div class="notification-description">
+                                        María González ha solicitado reservar el Auditorio Principal para mañana.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 15 minutos</span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button class="quick-action success">Aprobar</button>
+                                        <button class="quick-action danger">Rechazar</button>
+                                        <button class="quick-action">Ver solicitud</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item unread" data-type="reminder">
+                            <div class="notification-content">
+                                <div class="notification-icon reminder">⏰</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Recordatorio de Reserva</div>
+                                    <div class="notification-description">
+                                        Tu reserva en el Laboratorio 3 comenzará en 30 minutos.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 30 minutos</span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button class="quick-action primary">Ver ubicación</button>
+                                        <button class="quick-action">Posponer recordatorio</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item" data-type="rejection">
+                            <div class="notification-content">
+                                <div class="notification-icon rejection">❌</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Reserva Rechazada</div>
+                                    <div class="notification-description">
+                                        Tu solicitud para la Sala de Juntas B ha sido rechazada. Motivo: Conflicto de horarios.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 1 hora</span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button class="quick-action primary">Ver alternativas</button>
+                                        <button class="quick-action">Solicitar otro horario</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item unread" data-type="maintenance">
+                            <div class="notification-content">
+                                <div class="notification-icon maintenance">🔧</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Mantenimiento Programado</div>
+                                    <div class="notification-description">
+                                        El Auditorio Principal estará fuera de servicio mañana por mantenimiento.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 2 horas</span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button class="quick-action primary">Ver espacios alternativos</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item" data-type="system">
+                            <div class="notification-content">
+                                <div class="notification-icon system">⚙️</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Actualización del Sistema</div>
+                                    <div class="notification-description">
+                                        Se han agregado nuevas funcionalidades al sistema de reservas.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 1 día</span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button class="quick-action primary">Ver novedades</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item unread" data-type="reservation">
+                            <div class="notification-content">
+                                <div class="notification-icon reservation">📅</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Cancelación de Reserva</div>
+                                    <div class="notification-description">
+                                        Carlos Mendoza ha cancelado su reserva del Laboratorio 2 para esta tarde.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 3 horas</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item" data-type="approval">
+                            <div class="notification-content">
+                                <div class="notification-icon approval">✅</div>
+                                <div class="notification-details">
+                                    <div class="notification-title">Reserva Confirmada</div>
+                                    <div class="notification-description">
+                                        Has confirmado tu asistencia a la reserva del Aula Magna.
+                                    </div>
+                                    <div class="notification-meta">
+                                        <div class="notification-time">
+                                            <span>🕐</span>
+                                            <span>Hace 5 horas</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Quick Stats -->
+                    <div class="sidebar-section">
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">
+                            <span>🔔</span>
+                            Preferencias
+                        </h3>
+                        
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <div class="preference-name">Nuevas solicitudes</div>
+                                <div class="preference-description">Cuando recibas una nueva solicitud</div>
+                            </div>
+                            <div class="preference-toggles">
+                                <button class="toggle-btn active">📧</button>
+                                <button class="toggle-btn active">🔔</button>
+                                <button class="toggle-btn">📱</button>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <div class="preference-name">Reservas aprobadas</div>
+                                <div class="preference-description">Confirmación de aprobación</div>
+                            </div>
+                            <div class="preference-toggles">
+                                <button class="toggle-btn active">📧</button>
+                                <button class="toggle-btn active">🔔</button>
+                                <button class="toggle-btn">📱</button>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <div class="preference-name">Reservas rechazadas</div>
+                                <div class="preference-description">Notificación de rechazo</div>
+                            </div>
+                            <div class="preference-toggles">
+                                <button class="toggle-btn active">📧</button>
+                                <button class="toggle-btn">🔔</button>
+                                <button class="toggle-btn">📱</button>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <div class="preference-name">Recordatorios</div>
+                                <div class="preference-description">Antes de tus reservas</div>
+                            </div>
+                            <div class="preference-toggles">
+                                <button class="toggle-btn">📧</button>
+                                <button class="toggle-btn active">🔔</button>
+                                <button class="toggle-btn active">📱</button>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <div class="preference-name">Mantenimiento</div>
+                                <div class="preference-description">Espacios fuera de servicio</div>
+                            </div>
+                            <div class="preference-toggles">
+                                <button class="toggle-btn active">📧</button>
+                                <button class="toggle-btn active">🔔</button>
+                                <button class="toggle-btn">📱</button>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <div class="preference-name">Actualizaciones</div>
+                                <div class="preference-description">Novedades del sistema</div>
+                            </div>
+                            <div class="preference-toggles">
+                                <button class="toggle-btn active">📧</button>
+                                <button class="toggle-btn">🔔</button>
+                                <button class="toggle-btn">📱</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Frequency Settings -->
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">
+                            <span>⏰</span>
+                            Frecuencia
+                        </h3>
+                        
+                        <div class="frequency-setting">
+                            <div class="frequency-label">Resumen de notificaciones</div>
+                            <div class="frequency-options">
+                                <label class="frequency-option">
+                                    <input type="radio" name="frequency" value="immediate" checked>
+                                    <span>Inmediata</span>
+                                </label>
+                                <label class="frequency-option">
+                                    <input type="radio" name="frequency" value="daily">
+                                    <span>Resumen diario</span>
+                                </label>
+                                <label class="frequency-option">
+                                    <input type="radio" name="frequency" value="weekly">
+                                    <span>Resumen semanal</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Do Not Disturb -->
+                        <div class="dnd-section">
+                            <div class="dnd-header">
+                                <div class="dnd-toggle">
+                                    <span>😴 No molestar</span>
+                                    <div class="switch" id="dndSwitch"></div>
+                                </div>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" class="time-input" value="22:00" placeholder="Desde">
+                                <input type="time" class="time-input" value="08:00" placeholder="Hasta">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            // Sample notification data
+            const notifications = [
+                {
+                    id: 1,
+                    type: 'approval',
+                    title: 'Reserva Aprobada',
+                    description: 'Tu solicitud para la Sala de Conferencias A el 22 de marzo ha sido aprobada.',
+                    time: 'Hace 5 minutos',
+                    unread: true,
+                    actions: ['Ver detalles', 'Agregar al calendario']
+                },
+                {
+                    id: 2,
+                    type: 'reservation',
+                    title: 'Nueva Solicitud de Reserva',
+                    description: 'María González ha solicitado reservar el Auditorio Principal para mañana.',
+                    time: 'Hace 15 minutos',
+                    unread: true,
+                    actions: ['Aprobar', 'Rechazar', 'Ver solicitud']
+                },
+                {
+                    id: 3,
+                    type: 'reminder',
+                    title: 'Recordatorio de Reserva',
+                    description: 'Tu reserva en el Laboratorio 3 comenzará en 30 minutos.',
+                    time: 'Hace 30 minutos',
+                    unread: true,
+                    actions: ['Ver ubicación', 'Posponer recordatorio']
+                },
+                {
+                    id: 4,
+                    type: 'rejection',
+                    title: 'Reserva Rechazada',
+                    description: 'Tu solicitud para la Sala de Juntas B ha sido rechazada. Motivo: Conflicto de horarios.',
+                    time: 'Hace 1 hora',
+                    unread: false,
+                    actions: ['Ver alternativas', 'Solicitar otro horario']
+                },
+                {
+                    id: 5,
+                    type: 'maintenance',
+                    title: 'Mantenimiento Programado',
+                    description: 'El Auditorio Principal estará fuera de servicio mañana por mantenimiento.',
+                    time: 'Hace 2 horas',
+                    unread: true,
+                    actions: ['Ver espacios alternativos']
+                },
+                {
+                    id: 6,
+                    type: 'system',
+                    title: 'Actualización del Sistema',
+                    description: 'Se han agregado nuevas funcionalidades al sistema de reservas.',
+                    time: 'Hace 1 día',
+                    unread: false,
+                    actions: ['Ver novedades']
+                }
+            ];
+
+            // Filter functionality
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const notificationsList = document.getElementById('notificationsList');
+
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    filterNotifications(filter);
+                });
+            });
+
+            function filterNotifications(filter) {
+                const items = document.querySelectorAll('.notification-item');
+                
+                items.forEach(item => {
+                    const type = item.dataset.type;
+                    const isUnread = item.classList.contains('unread');
+                    
+                    let show = true;
+                    
+                    switch(filter) {
+                        case 'unread':
+                            show = isUnread;
+                            break;
+                        case 'reservations':
+                            show = type === 'reservation' || type === 'approval' || type === 'rejection';
+                            break;
+                        case 'system':
+                            show = type === 'system' || type === 'maintenance';
+                            break;
+                        case 'reminders':
+                            show = type === 'reminder';
+                            break;
+                        case 'all':
+                        default:
+                            show = true;
+                            break;
+                    }
+                    
+                    item.style.display = show ? 'block' : 'none';
+                });
+            }
+
+            // Mark as read functionality
+            const notificationItems = document.querySelectorAll('.notification-item');
+            notificationItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.remove('unread');
+                    updateBadges();
+                });
+            });
+
+            // Header actions
+            document.getElementById('markAllRead').addEventListener('click', function() {
+                notificationItems.forEach(item => {
+                    item.classList.remove('unread');
+                });
+                updateBadges();
+                alert('Todas las notificaciones han sido marcadas como leídas');
+            });
+
+            document.getElementById('clearOld').addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que deseas eliminar las notificaciones antiguas?')) {
+                    // In real implementation, this would remove old notifications
+                    alert('Notificaciones antiguas eliminadas');
+                }
+            });
+
+            document.getElementById('openSettings').addEventListener('click', function() {
+                alert('Abriendo configuración avanzada de notificaciones...');
+            });
+
+            // Update notification badges
+            function updateBadges() {
+                const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+                const totalCount = document.querySelectorAll('.notification-item').length;
+                
+                document.querySelector('.notification-count').textContent = unreadCount;
+                document.querySelector('.filter-tab[data-filter="all"] .badge').textContent = totalCount;
+                document.querySelector('.filter-tab[data-filter="unread"] .badge').textContent = unreadCount;
+                
+                // Update sidebar stats
+                document.querySelector('.stat-item .stat-value').textContent = unreadCount;
+                document.querySelectorAll('.stat-item .stat-value')[1].textContent = totalCount;
+            }
+
+            // Preference toggles
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            });
+
+            // Do not disturb toggle
+            const dndSwitch = document.getElementById('dndSwitch');
+            dndSwitch.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+
+            // Quick actions
+            const quickActions = document.querySelectorAll('.quick-action');
+            quickActions.forEach(action => {
+                action.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const actionText = this.textContent;
+                    
+                    // Simulate different actions
+                    switch(actionText) {
+                        case 'Aprobar':
+                            this.textContent = 'Aprobando...';
+                            this.disabled = true;
+                            setTimeout(() => {
+                                alert('Reserva aprobada exitosamente');
+                                this.parentElement.parentElement.parentElement.parentElement.remove();
+                                updateBadges();
+                            }, 1500);
+                            break;
+                        case 'Rechazar':
+                            if (confirm('¿Estás seguro de que deseas rechazar esta solicitud?')) {
+                                alert('Solicitud rechazada');
+                                this.parentElement.parentElement.parentElement.parentElement.remove();
+                                updateBadges();
+                            }
+                            break;
+                        case 'Ver detalles':
+                            alert('Abriendo detalles de la reserva...');
+                            break;
+                        case 'Ver solicitud':
+                            alert('Abriendo vista detallada de la solicitud...');
+                            break;
+                        case 'Agregar al calendario':
+                            alert('Agregando evento al calendario...');
+                            break;
+                        case 'Ver ubicación':
+                            alert('Mostrando ubicación en el mapa...');
+                            break;
+                        case 'Ver alternativas':
+                            alert('Mostrando espacios alternativos disponibles...');
+                            break;
+                        default:
+                            alert(`Ejecutando acción: ${actionText}`);
+                    }
+                });
+            });
+
+            // Frequency radio buttons
+            const frequencyOptions = document.querySelectorAll('input[name="frequency"]');
+            frequencyOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    console.log(`Frecuencia cambiada a: ${this.value}`);
+                });
+            });
+
+            // Real-time notification simulation
+            function simulateNewNotification() {
+                const newNotification = document.createElement('div');
+                newNotification.className = 'notification-item unread';
+                newNotification.dataset.type = 'reservation';
+                
+                newNotification.innerHTML = `
+                    <div class="notification-content">
+                        <div class="notification-icon reservation">📅</div>
+                        <div class="notification-details">
+                            <div class="notification-title">Nueva Solicitud</div>
+                            <div class="notification-description">
+                                Se ha recibido una nueva solicitud de reserva.
+                            </div>
+                            <div class="notification-meta">
+                                <div class="notification-time">
+                                    <span>🕐</span>
+                                    <span>Ahora</span>
+                                </div>
+                            </div>
+                            <div class="notification-actions">
+                                <button class="quick-action success">Aprobar</button>
+                                <button class="quick-action danger">Rechazar</button>
+                                <button class="quick-action">Ver solicitud</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Insert at the top
+                notificationsList.insertBefore(newNotification, notificationsList.firstChild);
+                
+                // Add click handler
+                newNotification.addEventListener('click', function() {
+                    this.classList.remove('unread');
+                    updateBadges();
+                });
+                
+                // Add quick action handlers
+                newNotification.querySelectorAll('.quick-action').forEach(action => {
+                    action.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        alert(`Ejecutando: ${this.textContent}`);
+                    });
+                });
+                
+                updateBadges();
+                
+                // Show brief highlight animation
+                newNotification.style.backgroundColor = '#fef3c7';
+                setTimeout(() => {
+                    newNotification.style.backgroundColor = '';
+                }, 2000);
+            }
+
+            // Simulate new notifications every 30 seconds (for demo)
+            setInterval(simulateNewNotification, 30000);
+
+            // Initialize
+            updateBadges();
+        </script>
+    </body>
+    </html>="sidebar-title">
+                            <span>📊</span>
+                            Resumen
+                        </h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Sin leer</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Pendientes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">2</div>
+                                <div class="stat-label">Urgentes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Preferences -->
+                    <div class="sidebar-section">
+                        <h3 class

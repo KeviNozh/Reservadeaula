@@ -1,0 +1,339 @@
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    // Obtener eventos desde el contexto de Django
+    var eventos = {{ eventos|safe }};
+    console.log('Eventos cargados:', eventos);
+    
+    // Configurar calendario
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+        },
+        events: eventos,
+        eventClick: function(info) {
+            const evento = info.event;
+            const extendedProps = evento.extendedProps;
+            
+            // Mostrar información detallada de la reserva APROBADA
+            const mensaje = `
+🏢 Espacio: ${extendedProps.espacio_nombre}
+⏰ Horario: ${extendedProps.hora_inicio} - ${extendedProps.hora_fin}
+👤 Reservado por: ${extendedProps.solicitante}
+📝 Propósito: ${extendedProps.proposito}
+✅ Estado: ${extendedProps.estado}
+            `.trim();
+            
+            alert(mensaje);
+        },
+        dateClick: function(info) {
+            updateSelectedDate(info.dateStr);
+            updateDayReservations(info.dateStr);
+        },
+        eventDisplay: 'block',
+        eventColor: '#10b981',  // Verde para todas las reservas aprobadas
+        eventTextColor: '#ffffff'
+    });
+    
+    calendar.render();
+    
+    // === ATAJOS DE TECLADO PARA MESES ===
+    document.addEventListener('keydown', function(e) {
+        // Solo activar si no hay campos de texto enfocados
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+            return;
+        }
+        
+        const key = e.key.toLowerCase();
+        const currentDate = calendar.getDate();
+        const currentYear = currentDate.getFullYear();
+        
+        let targetMonth;
+        
+        // Mapeo de teclas a meses
+        switch(key) {
+            case 'e': targetMonth = 0; break;  // Enero
+            case 'f': targetMonth = 1; break;  // Febrero
+            case 'm': targetMonth = 2; break;  // Marzo
+            case 'a': targetMonth = 3; break;  // Abril
+            case 'y': targetMonth = 4; break;  // Mayo (Y por "May")
+            case 'j': targetMonth = 5; break;  // Junio
+            case 'u': targetMonth = 6; break;  // Julio
+            case 'g': targetMonth = 7; break;  // Agosto
+            case 's': targetMonth = 8; break;  // Septiembre
+            case 'o': targetMonth = 9; break;  // Octubre
+            case 'n': targetMonth = 10; break; // Noviembre
+            case 'd': targetMonth = 11; break; // Diciembre
+            default: return; // Si no es una tecla de mes, salir
+        }
+        
+        // Prevenir el comportamiento por defecto
+        e.preventDefault();
+        
+        // Navegar al mes correspondiente
+        const targetDate = new Date(currentYear, targetMonth, 1);
+        calendar.gotoDate(targetDate);
+        
+        // Mostrar notificación temporal
+        showMonthNotification(targetMonth);
+    });
+    
+    // Función para mostrar notificación del mes
+    function showMonthNotification(monthIndex) {
+        const monthNames = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: fadeInOut 2s ease-in-out;
+        `;
+        
+        notification.textContent = `Navegando a ${monthNames[monthIndex]}`;
+        document.body.appendChild(notification);
+        
+        // Remover después de 2 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 2000);
+    }
+    
+    // Agregar estilos CSS para la animación
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // === AYUDA DE TECLADO (F1) ===
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F1') {
+            e.preventDefault();
+            showKeyboardHelp();
+        }
+    });
+
+    function showKeyboardHelp() {
+        const helpModal = document.createElement('div');
+        helpModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        `;
+
+        const helpContent = document.createElement('div');
+        helpContent.style.cssText = `
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        `;
+
+        helpContent.innerHTML = `
+            <h2 style="margin-bottom: 20px; color: #111827;">⌨️ Atajos de Teclado del Calendario</h2>
+            <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>E</strong> - Enero</span>
+                    <span><strong>J</strong> - Junio</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>F</strong> - Febrero</span>
+                    <span><strong>U</strong> - Julio</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>M</strong> - Marzo</span>
+                    <span><strong>G</strong> - Agosto</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>A</strong> - Abril</span>
+                    <span><strong>S</strong> - Septiembre</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>Y</strong> - Mayo</span>
+                    <span><strong>O</strong> - Octubre</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>N</strong> - Noviembre</span>
+                    <span><strong>D</strong> - Diciembre</span>
+                </div>
+            </div>
+            <div style="padding: 15px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #2563eb;">
+                <strong>💡 Consejo:</strong> Presiona cualquier letra arriba mencionada para navegar instantáneamente al mes correspondiente.
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%;">
+                Cerrar Ayuda
+            </button>
+        `;
+
+        helpModal.appendChild(helpContent);
+        document.body.appendChild(helpModal);
+
+        // Cerrar al hacer clic fuera
+        helpModal.addEventListener('click', function(e) {
+            if (e.target === helpModal) {
+                helpModal.remove();
+            }
+        });
+    }
+
+    // === FUNCIONES EXISTENTES ===
+    // Actualizar fecha seleccionada
+    function updateSelectedDate(dateStr) {
+        const date = new Date(dateStr);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('es-ES', options);
+        document.getElementById('selectedDate').textContent = formattedDate;
+    }
+    
+    // Actualizar reservas del día - MEJORADA para mostrar info completa
+    function updateDayReservations(dateStr) {
+        const dayReservationsEl = document.getElementById('dayReservations');
+        const events = calendar.getEvents();
+        const dayEvents = events.filter(event => {
+            const eventDate = event.start.toISOString().split('T')[0];
+            return eventDate === dateStr;
+        });
+        
+        if (dayEvents.length === 0) {
+            dayReservationsEl.innerHTML = '<div class="empty-state"><p>No hay reservas aprobadas para este día</p></div>';
+        } else {
+            let html = '';
+            dayEvents.forEach(event => {
+                const extendedProps = event.extendedProps;
+                const startTime = event.start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const endTime = event.end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const status = extendedProps.estado || 'Aprobada';
+                
+                html += `
+                    <div class="reservation-item approved">
+                        <div class="reservation-time">${startTime} - ${endTime}</div>
+                        <div class="reservation-space">${extendedProps.espacio_nombre}</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                            👤 ${extendedProps.solicitante}
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">
+                            📝 ${extendedProps.proposito}
+                        </div>
+                    </div>
+                `;
+            });
+            dayReservationsEl.innerHTML = html;
+        }
+    }
+    
+    // Botones de vista
+    const viewToggles = document.querySelectorAll('.view-toggle');
+    viewToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const view = this.dataset.view;
+            
+            // Actualizar botones activos
+            viewToggles.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Cambiar vista del calendario
+            calendar.changeView(view);
+        });
+    });
+    
+    // Filtro de espacio
+    const spaceFilter = document.getElementById('spaceFilter');
+    spaceFilter.addEventListener('change', function() {
+        const selectedSpace = this.value;
+        console.log('🔄 Filtro cambiado. Espacio seleccionado:', selectedSpace);
+        
+        // Obtener todos los eventos
+        const allEvents = {{ eventos|safe }};
+        console.log('📊 Total de eventos:', allEvents.length);
+        
+        if (!selectedSpace) {
+            // Mostrar todos los eventos
+            console.log('✅ Mostrando todos los eventos');
+            calendar.removeAllEvents();
+            calendar.addEventSource(allEvents);
+        } else {
+            // Filtrar eventos por espacio
+            const filteredEvents = allEvents.filter(event => {
+                const espacioId = event.extendedProps?.espacio_id;
+                console.log(`🔍 Comparando: ${espacioId} == ${selectedSpace} (${espacioId == selectedSpace})`);
+                return espacioId == selectedSpace;
+            });
+            
+            console.log('🎯 Eventos filtrados encontrados:', filteredEvents.length);
+            console.log('📋 Eventos filtrados:', filteredEvents);
+            
+            // Limpiar y agregar eventos filtrados
+            calendar.removeAllEvents();
+            if (filteredEvents.length > 0) {
+                calendar.addEventSource(filteredEvents);
+            } else {
+                console.log('ℹ️ No hay eventos para este espacio');
+            }
+        }
+        
+        // Forzar rerender del calendario
+        calendar.render();
+    });
+    
+    // Filtro de mes
+    const monthFilter = document.getElementById('monthFilter');
+    monthFilter.addEventListener('change', function() {
+        const selectedDate = new Date(this.value + '-01');
+        calendar.gotoDate(selectedDate);
+    });
+    
+    // Sincronizar el filtro de mes con la vista actual del calendario
+    calendar.on('datesSet', function(info) {
+        const currentDate = info.view.currentStart;
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const monthYear = `${year}-${month}`;
+        
+        console.log('🔄 Calendario cambió a:', monthYear);
+        
+        // Actualizar el valor del filtro de mes
+        monthFilter.value = monthYear;
+    });
+        
+    // Inicializar con la fecha de hoy
+    updateSelectedDate(new Date().toISOString().split('T')[0]);
+    updateDayReservations(new Date().toISOString().split('T')[0]);
+});

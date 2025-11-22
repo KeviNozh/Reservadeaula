@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Espacios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .page-title-section h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-primary { background: #2563EB; color: white; }
+        .btn-success { background: #10B981; color: white; }
+        .btn-secondary { background: #6B7280; color: white; }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* View Toggle */
+        .view-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: #F3F4F6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        
+        .view-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .view-btn.active {
+            background: white;
+            color: #2563EB;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        /* Grid View */
+        .spaces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+        
+        .space-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        
+        .space-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .space-image {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            position: relative;
+        }
+        
+        .space-status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-available { background: #D1FAE5; color: #065F46; }
+        .status-maintenance { background: #FEF3C7; color: #92400E; }
+        .status-unavailable { background: #FEE2E2; color: #991B1B; }
+        
+        .space-content {
+            padding: 20px;
+        }
+        
+        .space-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .space-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .space-location {
+            font-size: 14px;
+            color: #6B7280;
+        }
+        
+        .space-menu {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6B7280;
+            padding: 4px;
+        }
+        
+        .space-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #6B7280;
+        }
+        
+        .equipment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        
+        .equipment-tag {
+            background: #F3F4F6;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #6B7280;
+        }
+        
+        .occupancy-bar {
+            margin-bottom: 16px;
+        }
+        
+        .occupancy-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #10B981;
+            transition: width 0.3s ease;
+        }
+        
+        .space-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        /* List View */
+        .spaces-list {
+            display: none;
+        }
+        
+        .spaces-list.active {
+            display: block;
+        }
+        
+        .list-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #F9FAFB;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #6B7280;
+            text-transform: uppercase;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid #F3F4F6;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background: #F9FAFB;
+        }
+        
+        .space-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .space-thumb {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .space-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .space-details p {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -500px;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .side-panel.open {
+            right: 0;
+        }
+        
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .panel-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6B7280;
+        }
+        
+        .panel-content {
+            padding: 24px;
+        }
+        
+        .image-gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .gallery-image {
+            aspect-ratio: 16/10;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .gallery-image:first-child {
+            grid-column: 1 / -1;
+            font-size: 48px;
+        }
+        
+        .detail-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .detail-item {
+            background: #F9FAFB;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .equipment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .equipment-item {
+            background: #EFF6FF;
+            color: #2563EB;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .mini-calendar {
+            background: #F9FAFB;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1>🏢 Gestión de Espacios</h1>
+                <p class="page-subtitle">Administra los espacios disponibles para reserva</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-success">➕ Nuevo Espacio</button>
+            </div>
+        </div>
+
+        <!-- View Controls -->
+        <div class="view-controls">
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="switchView('grid')">🔲 Grid</button>
+                <button class="view-btn" onclick="switchView('list')">📋 Lista</button>
+            </div>
+            
+            <div class="filters">
+                <select class="filter-select">
+                    <option>Todos los edificios</option>
+                    <option>Edificio Principal</option>
+                    <option>Edificio Norte</option>
+                    <option>Edificio Sur</option>
+                </select>
+                
+                <select class="filter-select">
+                    <option>Todos los tipos</option>
+                    <option>Sala de Conferencias</option>
+                    <option>Auditorio</option>
+                    <option>Sala de Juntas</option>
+                    <option>Espacio Colaborativo</option>
+                </select>
+                
+                <select class="filter-select">
+                    <option>Cualquier capacidad</option>
+                    <option>1-10 personas</option>
+                    <option>11-25 personas</option>
+                    <option>26-50 personas</option>
+                    <option>50+ personas</option>
+                </select>
+                
+                <select class="filter-select">
+                    <option>Todos los estados</option>
+                    <option>Disponible</option>
+                    <option>Mantenimiento</option>
+                    <option>Fuera de servicio</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="spaces-grid" id="gridView">
+            <div class="space-card">
+                <div class="space-image">
+                    🏢
+                    <div class="space-status status-available">Disponible</div>
+                </div>
+                <div class="space-content">
+                    <div class="space-header">
+                        <div>
+                            <div class="space-name">Sala de Conferencias A1</div>
+                            <div class="space-location">Edificio Principal, Piso 2</div>
+                        </div>
+                        <button class="space-menu" onclick="openSpacePanel('A1')">⋯</button>
+                    </div>
+                    
+                    <div class="space-info">
+                        <div class="info-item">
+                            <span>👥</span>
+                            <span>20 personas</span>
+                        </div>
+                        <div class="info-item">
+                            <span>📐</span>
+                            <span>45 m²</span>
+                        </div>
+                    </div>
+                    
+                    <div class="equipment-tags">
+                        <span class="equipment-tag">📺 Proyector</span>
+                        <span class="equipment-tag">🎤 Audio</span>
+                        <span class="equipment-tag">📶 WiFi</span>
+                        <span class="equipment-tag">❄️ AC</span>
+                    </div>
+                    
+                    <div class="occupancy-bar">
+                        <div class="occupancy-label">
+                            <span>Ocupación del día</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-actions">
+                        <button class="btn btn-primary btn-small">✏️ Editar</button>
+                        <button class="btn btn-secondary btn-small">📊 Ver Ocupación</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-card">
+                <div class="space-image">
+                    🎭
+                    <div class="space-status status-available">Disponible</div>
+                </div>
+                <div class="space-content">
+                    <div class="space-header">
+                        <div>
+                            <div class="space-name">Auditorio Principal</div>
+                            <div class="space-location">Edificio Principal, Piso 1</div>
+                        </div>
+                        <button class="space-menu" onclick="openSpacePanel('Auditorio')">⋯</button>
+                    </div>
+                    
+                    <div class="space-info">
+                        <div class="info-item">
+                            <span>👥</span>
+                            <span>150 personas</span>
+                        </div>
+                        <div class="info-item">
+                            <span>📐</span>
+                            <span>200 m²</span>
+                        </div>
+                    </div>
+                    
+                    <div class="equipment-tags">
+                        <span class="equipment-tag">📺 Proyector 4K</span>
+                        <span class="equipment-tag">🎤 Sistema Audio</span>
+                        <span class="equipment-tag">🎬 Escenario</span>
+                        <span class="equipment-tag">💡 Iluminación</span>
+                    </div>
+                    
+                    <div class="occupancy-bar">
+                        <div class="occupancy-label">
+                            <span>Ocupación del día</span>
+                            <span>45%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-actions">
+                        <button class="btn btn-primary btn-small">✏️ Editar</button>
+                        <button class="btn btn-secondary btn-small">📊 Ver Ocupación</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-card">
+                <div class="space-image">
+                    💼
+                    <div class="space-status status-maintenance">Mantenimiento</div>
+                </div>
+                <div class="space-content">
+                    <div class="space-header">
+                        <div>
+                            <div class="space-name">Sala de Juntas B2</div>
+                            <div class="space-location">Edificio Norte, Piso 1</div>
+                        </div>
+                        <button class="space-menu" onclick="openSpacePanel('B2')">⋯</button>
+                    </div>
+                    
+                    <div class="space-info">
+                        <div class="info-item">
+                            <span>👥</span>
+                            <span>12 personas</span>
+                        </div>
+                        <div class="info-item">
+                            <span>📐</span>
+                            <span>25 m²</span>
+                        </div>
+                    </div>
+                    
+                    <div class="equipment-tags">
+                        <span class="equipment-tag">📺 TV 55"</span>
+                        <span class="equipment-tag">📶 WiFi</span>
+                        <span class="equipment-tag">☕ Coffee Station</span>
+                    </div>
+                    
+                    <div class="occupancy-bar">
+                        <div class="occupancy-label">
+                            <span>Ocupación del día</span>
+                            <span>0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-actions">
+                        <button class="btn btn-primary btn-small">✏️ Editar</button>
+                        <button class="btn btn-secondary btn-small">🔧 Programar Mantenimiento</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-card">
+                <div class="space-image">
+                    🤝
+                    <div class="space-status status-available">Disponible</div>
+                </div>
+                <div class="space-content">
+                    <div class="space-header">
+                        <div>
+                            <div class="space-name">Espacio Colaborativo C1</div>
+                            <div class="space-location">Edificio Sur, Piso 3</div>
+                        </div>
+                        <button class="space-menu" onclick="openSpacePanel('C1')">⋯</button>
+                    </div>
+                    
+                    <div class="space-info">
+                        <div class="info-item">
+                            <span>👥</span>
+                            <span>8 personas</span>
+                        </div>
+                        <div class="info-item">
+                            <span>📐</span>
+                            <span>30 m²</span>
+                        </div>
+                    </div>
+                    
+                    <div class="equipment-tags">
+                        <span class="equipment-tag">📝 Pizarra</span>
+                        <span class="equipment-tag">📶 WiFi</span>
+                        <span class="equipment-tag">🪑 Mobiliario Flexible</span>
+                    </div>
+                    
+                    <div class="occupancy-bar">
+                        <div class="occupancy-label">
+                            <span>Ocupación del día</span>
+                            <span>60%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-actions">
+                        <button class="btn btn-primary btn-small">✏️ Editar</button>
+                        <button class="btn btn-secondary btn-small">📊 Ver Ocupación</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div class="spaces-list" id="listView">
+            <div class="list-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Espacio</th>
+                            <th>Ubicación</th>
+                            <th>Capacidad</th>
+                            <th>Equipamiento</th>
+                            <th>Estado</th>
+                            <th>Ocupación Mensual</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="space-cell">
+                                    <div class="space-thumb">🏢</div>
+                                    <div class="space-details">
+                                        <h4>Sala de Conferencias A1</h4>
+                                        <p>45 m² • Tipo: Conferencias</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Edificio Principal, Piso 2</td>
+                            <td>20 personas</td>
+                            <td>Proyector, Audio, WiFi, AC</td>
+                            <td><span class="space-status status-available">Disponible</span></td>
+                            <td>
+                                <div class="progress-bar" style="width: 100px;">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                                <small style="color: #6B7280;">85%</small>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn btn-primary btn-small">✏️</button>
+                                    <button class="btn btn-secondary btn-small">👁️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="space-cell">
+                                    <div class="space-thumb">🎭</div>
+                                    <div class="space-details">
+                                        <h4>Auditorio Principal</h4>
+                                        <p>200 m² • Tipo: Auditorio</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Edificio Principal, Piso 1</td>
+                            <td>150 personas</td>
+                            <td>Proyector 4K, Audio, Escenario</td>
+                            <td><span class="space-status status-available">Disponible</span></td>
+                            <td>
+                                <div class="progress-bar" style="width: 100px;">
+                                    <div class="progress-fill" style="width: 65%"></div>
+                                </div>
+                                <small style="color: #6B7280;">65%</small>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn btn-primary btn-small">✏️</button>
+                                    <button class="btn btn-secondary btn-small">👁️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="space-cell">
+                                    <div class="space-thumb">💼</div>
+                                    <div class="space-details">
+                                        <h4>Sala de Juntas B2</h4>
+                                        <p>25 m² • Tipo: Juntas</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Edificio Norte, Piso 1</td>
+                            <td>12 personas</td>
+                            <td>TV 55", WiFi, Coffee Station</td>
+                            <td><span class="space-status status-maintenance">Mantenimiento</span></td>
+                            <td>
+                                <div class="progress-bar" style="width: 100px;">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                                <small style="color: #6B7280;">0%</small>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn btn-primary btn-small">✏️</button>
+                                    <button class="btn btn-secondary btn-small">🔧</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeSpacePanel()"></div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="spacePanel">
+        <div class="panel-header">
+            <h2 class="panel-title">🏢 Detalles del Espacio</h2>
+            <button class="panel-close" onclick="closeSpacePanel()">✖️</button>
+        </div>
+        
+        <div class="panel-content">
+            <!-- Image Gallery -->
+            <div class="image-gallery">
+                <div class="gallery-image">🏢</div>
+                <div class="gallery-image">📸</div>
+                <div class="gallery-image">📸</div>
+            </div>
+            
+            <!-- Basic Information -->
+            <div class="detail-section">
+                <h3 class="section-title">📋 Información Básica</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Nombre</div>
+                        <div class="detail-value">Sala de Conferencias A1</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Tipo</div>
+                        <div class="detail-value">Sala de Conferencias</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Capacidad</div>
+                        <div class="detail-value">20 personas</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Área</div>
+                        <div class="detail-value">45 m²</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div class="detail-label">Descripción</div>
+                    <p style="color: #6B7280; line-height: 1.5;">
+                        Sala equipada con proyector 4K, sistema de audio profesional y capacidad para videoconferencias. Ideal para presentaciones ejecutivas y reuniones importantes.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Equipment -->
+            <div class="detail-section">
+                <h3 class="section-title">⚙️ Equipamiento</h3>
+                <div class="equipment-list">
+                    <div class="equipment-item">📺 Proyector 4K</div>
+                    <div class="equipment-item">🎤 Sistema de Audio</div>
+                    <div class="equipment-item">📶 WiFi de Alta Velocidad</div>
+                    <div class="equipment-item">❄️ Aire Acondicionado</div>
+                    <div class="equipment-item">💡 Iluminación LED</div>
+                    <div class="equipment-item">📹 Cámara para Videoconferencia</div>
+                    <div class="equipment-item">🖥️ Pantalla Táctil</div>
+                    <div class="equipment-item">🔌 Enchufes en Mesa</div>
+                </div>
+            </div>
+            
+            <!-- Schedule -->
+            <div class="detail-section">
+                <h3 class="section-title">🕐 Horarios Disponibles</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Lunes a Viernes</div>
+                        <div class="detail-value">07:00 - 22:00</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Fines de Semana</div>
+                        <div class="detail-value">09:00 - 18:00</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Occupancy Calendar -->
+            <div class="detail-section">
+                <h3 class="section-title">📅 Calendario de Ocupación</h3>
+                <div class="mini-calendar">
+                    <div style="text-align: center; margin-bottom: 12px; font-weight: 600;">
+                        Marzo 2025
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 12px;">
+                        <div style="font-weight: 600; color: #6B7280;">L</div>
+                        <div style="font-weight: 600; color: #6B7280;">M</div>
+                        <div style="font-weight: 600; color: #6B7280;">X</div>
+                        <div style="font-weight: 600; color: #6B7280;">J</div>
+                        <div style="font-weight: 600; color: #6B7280;">V</div>
+                        <div style="font-weight: 600; color: #6B7280;">S</div>
+                        <div style="font-weight: 600; color: #6B7280;">D</div>
+                        <div></div><div></div><div></div><div></div><div></div>
+                        <div style="padding: 4px; background: #D1FAE5; border-radius: 4px;">1</div>
+                        <div style="padding: 4px;">2</div>
+                        <div style="padding: 4px; background: #FEE2E2; border-radius: 4px;">3</div>
+                        <div style="padding: 4px; background: #D1FAE5; border-radius: 4px;">4</div>
+                        <div style="padding: 4px;">5</div>
+                        <div style="padding: 4px; background: #FEF3C7; border-radius: 4px;">6</div>
+                        <div style="padding: 4px;">7</div>
+                        <div style="padding: 4px;">8</div>
+                        <div style="padding: 4px;">9</div>
+                        <div style="padding: 4px; background: #D1FAE5; border-radius: 4px;">10</div>
+                        <div style="padding: 4px; background: #D1FAE5; border-radius: 4px;">11</div>
+                        <div style="padding: 4px; background: #FEE2E2; border-radius: 4px;">12</div>
+                        <div style="padding: 4px;">13</div>
+                        <div style="padding: 4px;">14</div>
+                        <div style="padding: 4px; background: #2563EB; color: white; border-radius: 4px;">15</div>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 11px; color: #6B7280;">
+                        <div>🟢 Disponible • 🟡 Parcial • 🔴 Ocupado • 🔵 Hoy</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Maintenance History -->
+            <div class="detail-section">
+                <h3 class="section-title">🔧 Historial de Mantenimiento</h3>
+                <div style="space-y: 8px;">
+                    <div style="padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="font-weight: 600; font-size: 14px;">Mantenimiento Proyector</div>
+                        <div style="font-size: 12px; color: #6B7280;">05 Mar 2025 - Limpieza y calibración</div>
+                    </div>
+                    <div style="padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="font-weight: 600; font-size: 14px;">Revisión Sistema Audio</div>
+                        <div style="font-size: 12px; color: #6B7280;">28 Feb 2025 - Actualización de software</div>
+                    </div>
+                    <div style="padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px;">
+                        <div style="font-weight: 600; font-size: 14px;">Mantenimiento General</div>
+                        <div style="font-size: 12px; color: #6B7280;">15 Feb 2025 - Limpieza profunda y revisión equipos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div style="margin-top: 32px; display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn btn-primary" style="width: 100%;">✏️ Editar Espacio</button>
+                <button class="btn btn-secondary" style="width: 100%;">📊 Ver Reportes</button>
+                <button class="btn btn-secondary" style="width: 100%;">🔧 Programar Mantenimiento</button>
+                <button class="btn btn-secondary" style="width: 100%;">📅 Ver Calendario Completo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchView(viewType) {
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+            const gridBtn = document.querySelector('.view-btn');
+            const listBtn = document.querySelectorAll('.view-btn')[1];
+            
+            if (viewType === 'grid') {
+                gridView.style.display = 'grid';
+                listView.classList.remove('active');
+                gridBtn.classList.add('active');
+                listBtn.classList.remove('active');
+            } else {
+                gridView.style.display = 'none';
+                listView.classList.add('active');
+                gridBtn.classList.remove('active');
+                listBtn.classList.add('active');
+            }
+        }
+        
+        function openSpacePanel(spaceName) {
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('spacePanel').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSpacePanel() {
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('spacePanel').classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close panel with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSpacePanel();
+            }
+        });
+    </script>
+</body>
+</html>

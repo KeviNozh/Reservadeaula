@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificaciones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    .container {
+      width: 70%;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filters button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #e6e6e6;
+      transition: background 0.3s;
+    }
+
+    .filters button:hover {
+      background: #d4d4d4;
+    }
+
+    .filters button.active {
+      background: #0056d2;
+      color: white;
+    }
+
+    .notification {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 6px solid;
+      display: block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .pendiente { border-color: #ffc107; }
+    .aprobada { border-color: #28a745; }
+    .rechazada { border-color: #dc3545; }
+
+    .notification.unread {
+      background: #f8f9fa;
+      border-left-width: 8px;
+    }
+
+    .notification small {
+      color: gray;
+      display: block;
+      margin-top: 6px;
+    }
+
+    .actions {
+      margin-top: 10px;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+
+    .actions button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary { background: #0056d2; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: black; }
+    .btn-secondary { background: #6c757d; color: white; }
+
+    .sidebar {
+      width: 30%;
+      background: white;
+      padding: 20px;
+      border-left: 1px solid #ddd;
+      min-height: 100vh;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 15px;
+    }
+
+    .preference {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      align-items: center;
+    }
+
+    .toggle {
+      width: 40px;
+      height: 20px;
+      background: #ddd;
+      border-radius: 15px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle::after {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+
+    .toggle.active {
+      background: #28a745;
+    }
+
+    .toggle.active::after {
+      left: 21px;
+    }
+
+    .frecuencia {
+      margin-top: 20px;
+    }
+
+    .frecuencia label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6c757d;
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 20px;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .refresh-btn {
+      background: #0056d2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-approved { background: #d4edda; color: #155724; }
+    .badge-rejected { background: #f8d7da; color: #721c24; }
+
+    .debug-panel {
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔔 Notificaciones (<span id="notification-count">0</span>)</h2>
+
+    <div class="filters">
+      <button class="active" data-filter="all">Todas</button>
+      <button data-filter="pending">Pendientes</button>
+      <button data-filter="approved">Aprobadas</button>
+      <button data-filter="rejected">Rechazadas</button>
+    </div>
+
+    <div class="debug-panel">
+      <strong>Estado del Sistema:</strong>
+      <div id="system-status">Conectando al servidor...</div>
+      <button onclick="probarConexion()" style="margin-top: 10px; padding: 5px 10px; background: #0056d2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+        Probar Conexión API
+      </button>
+    </div>
+
+    <div id="notifications-container">
+      <div class="loading">Cargando notificaciones...</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <h3>⚙️ Preferencias</h3>
+
+    <div class="preference">
+      <span>Notificaciones de reservas</span>
+      <div class="toggle active" data-pref="reservas"></div>
+    </div>
+
+    <div class="preference">
+      <span>Recordatorios</span>
+      <div class="toggle active" data-pref="recordatorios"></div>
+    </div>
+
+    <div class="frecuencia">
+      <h4>📅 Frecuencia</h4>
+      <label><input type="radio" name="frecuencia" value="immediate" checked> Inmediata</label>
+      <label><input type="radio" name="frecuencia" value="daily"> Resumen diario</label>
+      <label><input type="radio" name="frecuencia" value="weekly"> Resumen semanal</label>
+    </div>
+  </div>
+
+  <script>
+    // Configuración
+    const API_BASE_URL = 'http://localhost:8000/api';
+    let allNotifications = [];
+    let currentFilter = 'all';
+
+    // Función para probar conexión
+    async function probarConexion() {
+      const statusElement = document.getElementById('system-status');
+      statusElement.innerHTML = 'Probando conexión...';
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/reservas/`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          statusElement.innerHTML = `✅ Conexión exitosa! Se encontraron ${data.length} reservas`;
+          console.log('Datos de la API:', data);
+        } else {
+          statusElement.innerHTML = `❌ Error ${response.status}: ${response.statusText}`;
+        }
+      } catch (error) {
+        statusElement.innerHTML = `❌ Error de conexión: ${error.message}`;
+      }
+    }
+
+    // Función para cargar datos (con fallback a datos de ejemplo)
+    async function loadData() {
+      const statusElement = document.getElementById('system-status');
+      
+      try {
+        // Intentar conectar a la API real
+        console.log('🔄 Intentando conectar a la API...');
+        const response = await fetch(`${API_BASE_URL}/reservas/`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const reservas = await response.json();
+          statusElement.innerHTML = `✅ Conectado a la BD - ${reservas.length} reservas encontradas`;
+          return reservas;
+        } else {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+      } catch (error) {
+        console.log('❌ No se pudo conectar a la API, usando datos de ejemplo:', error.message);
+        statusElement.innerHTML = `⚠️ Usando datos de ejemplo (API no disponible: ${error.message})`;
+        
+        // Datos de ejemplo basados en tu estructura de BD
+        return [
+          {
+            id: 1,
+            espacio_nombre: "Laboratorio de Computación",
+            fecha_reserva: "2024-10-01",
+            hora_inicio: "12:00:00",
+            hora_fin: "14:00:00",
+            estado: "Pendiente",
+            proposito: "Clase de programación",
+            num_asistentes: 25,
+            fecha_solicitud: new Date().toISOString()
+          },
+          {
+            id: 2,
+            espacio_nombre: "Aula Magna",
+            fecha_reserva: "2024-10-02", 
+            hora_inicio: "09:00:00",
+            hora_fin: "11:00:00",
+            estado: "Pendiente",
+            proposito: "Seminario de investigación",
+            num_asistentes: 50,
+            fecha_solicitud: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+          }
+        ];
+      }
+    }
+
+    // Funciones de formato
+    function formatFecha(fecha) {
+      if (!fecha) return 'Fecha no especificada';
+      const partes = fecha.split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return fecha;
+    }
+
+    function formatHora(hora) {
+      if (!hora) return 'Hora no especificada';
+      return hora.substring(0, 5);
+    }
+
+    function formatRelativeTime(dateString) {
+      try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return `Hace unos segundos`;
+        if (diffMins < 60) return `Hace ${diffMins} minutos`;
+        if (diffHours < 24) return `Hace ${diffHours} horas`;
+        if (diffDays === 1) return `Ayer`;
+        return `Hace ${diffDays} días`;
+      } catch (error) {
+        return 'Fecha no disponible';
+      }
+    }
+
+    // Generar notificaciones
+    function generateNotifications(reservas) {
+      return reservas.map(reserva => {
+        const espacioNombre = reserva.espacio_nombre || 'Espacio no especificado';
+        const fechaFormateada = formatFecha(reserva.fecha_reserva);
+        const horaInicio = formatHora(reserva.hora_inicio);
+        const horaFin = formatHora(reserva.hora_fin);
+        const estado = reserva.estado || 'Pendiente';
+        
+        let mensaje = '';
+        let clase = '';
+        
+        switch(estado) {
+          case 'Pendiente':
+            mensaje = `Tu solicitud para <strong>${espacioNombre}</strong> el <strong>${fechaFormateada}</strong> de <strong>${horaInicio} - ${horaFin}</strong> está en revisión.`;
+            clase = 'pendiente';
+            break;
+          case 'Aprobada':
+            mensaje = `¡Tu reserva para <strong>${espacioNombre}</strong> el <strong>${fechaFormateada}</strong> de <strong>${horaInicio} - ${horaFin}</strong> ha sido aprobada!`;
+            clase = 'aprobada';
+            break;
+          case 'Rechazada':
+            mensaje = `Tu reserva para <strong>${espacioNombre}</strong> el <strong>${fechaFormateada}</strong> ha sido rechazada.`;
+            clase = 'rechazada';
+            break;
+        }
+        
+        return {
+          id: reserva.id,
+          type: estado.toLowerCase(),
+          class: clase,
+          title: `📋 ${estado === 'Pendiente' ? 'Solicitud de Reserva' : 'Reserva'} <span class="badge badge-${estado.toLowerCase()}">${estado}</span>`,
+          message: mensaje,
+          timestamp: reserva.fecha_solicitud,
+          read: false,
+          actions: [
+            { text: 'Ver detalles', class: 'btn-primary', action: 'view' },
+            ...(estado === 'Pendiente' ? [{ text: 'Cancelar reserva', class: 'btn-danger', action: 'cancel' }] : [])
+          ],
+          reservaData: reserva
+        };
+      });
+    }
+
+    // Renderizar notificaciones
+    function renderNotifications(notifications, filter = 'all') {
+      const container = document.getElementById('notifications-container');
+      const countElement = document.getElementById('notification-count');
+      
+      let filteredNotifications = notifications;
+      
+      switch(filter) {
+        case 'pending':
+          filteredNotifications = notifications.filter(n => n.type === 'pendiente');
+          break;
+        case 'approved':
+          filteredNotifications = notifications.filter(n => n.type === 'aprobada');
+          break;
+        case 'rejected':
+          filteredNotifications = notifications.filter(n => n.type === 'rechazada');
+          break;
+      }
+      
+      countElement.textContent = filteredNotifications.length;
+      
+      if (filteredNotifications.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>No hay notificaciones ${filter !== 'all' ? filter : ''}</p>
+            <p><small>${filter === 'all' ? 'Cuando crees reservas, aparecerán aquí' : ''}</small></p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filteredNotifications.map(notif => `
+        <div class="notification ${notif.class} ${!notif.read ? 'unread' : ''}">
+          <b>${notif.title}</b>
+          <p>${notif.message}</p>
+          <small>${formatRelativeTime(notif.timestamp)}</small>
+          <div class="actions">
+            ${notif.actions.map(action => 
+              `<button class="${action.class}" data-action="${action.action}" data-reserva-id="${notif.id}">
+                ${action.text}
+              </button>`
+            ).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', async function() {
+      const reservas = await loadData();
+      allNotifications = generateNotifications(reservas);
+      renderNotifications(allNotifications);
+      
+      // Filtros
+      document.querySelectorAll('.filters button').forEach(button => {
+        button.addEventListener('click', function() {
+          document.querySelectorAll('.filters button').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          this.classList.add('active');
+          currentFilter = this.getAttribute('data-filter');
+          renderNotifications(allNotifications, currentFilter);
+        });
+      });
+
+      // Acciones
+      document.addEventListener('click', function(e) {
+        const button = e.target.closest('.actions button');
+        if (button) {
+          const action = button.getAttribute('data-action');
+          const reservaId = button.getAttribute('data-reserva-id');
+          const notificacion = allNotifications.find(n => n.id == reservaId);
+          
+          if (notificacion) {
+            const reserva = notificacion.reservaData;
+            const fechaFormateada = formatFecha(reserva.fecha_reserva);
+            const horaInicio = formatHora(reserva.hora_inicio);
+            const horaFin = formatHora(reserva.hora_fin);
+            
+            switch(action) {
+              case 'view':
+                alert(`📋 Detalles de la reserva:\n\nID: ${reserva.id}\nEspacio: ${reserva.espacio_nombre}\nFecha: ${fechaFormateada}\nHorario: ${horaInicio} - ${horaFin}\nEstado: ${reserva.estado}\nPropósito: ${reserva.proposito}\nAsistentes: ${reserva.num_asistentes}`);
+                break;
+              case 'cancel':
+                if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
+                  alert('Función de cancelación (se conectaría a la API cuando esté disponible)');
+                }
+                break;
+            }
+          }
+        }
+      });
+    });
+
+    // Toggles
+    document.querySelectorAll('.toggle').forEach(toggle => {
+      toggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+    });
+  </script>
+</body>
+</html>

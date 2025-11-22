@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Sistema de Reservas</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    <style>
+        /* Tus estilos CSS se mantienen igual */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* ... (todos tus estilos CSS existentes se mantienen igual) ... */
+
+        /* Agregar estos estilos adicionales */
+        .event-tooltip {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 300px;
+            z-index: 1000;
+        }
+
+        .event-tooltip h4 {
+            margin: 0 0 8px 0;
+            color: #111827;
+            font-size: 14px;
+        }
+
+        .event-tooltip p {
+            margin: 4px 0;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header (se mantiene igual) -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
+            <a href="{% url 'reservas' %}" class="nav-item">Historial</a>
+            <a href="{% url 'calendario' %}" class="nav-item active">Calendario</a>
+            <a href="{% url 'espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">Notificaciones</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Calendario de Disponibilidad</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">Calendario de Disponibilidad</h1>
+                <div class="header-actions">
+                    <a href="{% url 'crear_reserva' %}" class="new-reservation-btn">
+                        <span>➕</span>
+                        Nueva Reserva
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">🏢 Seleccionar Espacio</label>
+                    <select class="filter-select" id="spaceFilter">
+                        <option value="">Todos los espacios</option>
+                        {% for espacio in espacios %}
+                            <option value="{{ espacio.id }}">{{ espacio.nombre }}</option>
+                        {% empty %}
+                            <option value="">No hay espacios disponibles</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 Mes/Año</label>
+                    <input type="month" class="filter-input" id="monthFilter" value="{{ current_month }}">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Vista</label>
+                    <div class="view-toggles">
+                        <button class="view-toggle active" data-view="dayGridMonth">Mes</button>
+                        <button class="view-toggle" data-view="timeGridWeek">Semana</button>
+                        <button class="view-toggle" data-view="timeGridDay">Día</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content with Sidebar -->
+        <div class="content-with-sidebar">
+            <!-- Calendar Section -->
+            <div class="calendar-section">
+                <div id="calendar"></div>
+
+                <!-- Legend Actualizada -->
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981; border: 2px solid #10b981;"></div>
+                        <span>Reserva Aprobada</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b; border: 2px solid #f59e0b;"></div>
+                        <span>Reserva Pendiente</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #dc2626; border: 2px solid #dc2626;"></div>
+                        <span>Reserva Rechazada</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color today"></div>
+                        <span>Día actual</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h3 class="sidebar-title">Día Seleccionado</h3>
+                <div class="selected-date">
+                    <div class="selected-date-text" id="selectedDate">Hoy</div>
+                </div>
+
+                <h4 class="sidebar-title">Reservas del Día</h4>
+                <div class="reservation-list" id="dayReservations">
+                    <div class="empty-state">
+                        <p>Selecciona un día para ver las reservas</p>
+                    </div>
+                </div>
+
+                <!-- Información del Sistema -->
+                <div class="keyboard-help">
+                    <div class="keyboard-help-title">
+                        <span>ℹ️</span>
+                        Información del Sistema
+                    </div>
+                    <div class="keyboard-shortcuts">
+                        Este calendario muestra <strong>todas las reservas aprobadas</strong> del sistema.<br>
+                        Los espacios en verde están <strong>reservados y confirmados</strong>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/es.global.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        
+        // Obtener eventos desde el contexto de Django
+        var eventos = {{ eventos|safe }};
+        console.log('Eventos cargados:', eventos);
+        
+        // Configurar calendario
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día'
+            },
+            events: eventos,
+            eventClick: function(info) {
+                const evento = info.event;
+                const extendedProps = evento.extendedProps;
+                
+                // Mostrar información detallada de la reserva
+                const mensaje = `
+🏢 Espacio: ${extendedProps.espacio_nombre}
+⏰ Horario: ${extendedProps.hora_inicio} - ${extendedProps.hora_fin}
+👤 Solicitante: ${extendedProps.solicitante}
+📝 Propósito: ${extendedProps.proposito}
+✅ Estado: ${extendedProps.estado}
+                `.trim();
+                
+                alert(mensaje);
+            },
+            eventMouseEnter: function(info) {
+                // Tooltip al pasar el mouse
+                const evento = info.event;
+                const extendedProps = evento.extendedProps;
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'event-tooltip';
+                tooltip.innerHTML = `
+                    <h4>${extendedProps.espacio_nombre}</h4>
+                    <p><strong>Horario:</strong> ${extendedProps.hora_inicio} - ${extendedProps.hora_fin}</p>
+                    <p><strong>Solicitante:</strong> ${extendedProps.solicitante}</p>
+                    <p><strong>Propósito:</strong> ${extendedProps.proposito}</p>
+                    <p><strong>Estado:</strong> <span class="status-badge status-approved">${extendedProps.estado}</span></p>
+                `;
+                
+                tooltip.style.position = 'absolute';
+                tooltip.style.left = (info.jsEvent.pageX + 10) + 'px';
+                tooltip.style.top = (info.jsEvent.pageY + 10) + 'px';
+                
+                document.body.appendChild(tooltip);
+                
+                // Guardar referencia para remover luego
+                info.el._tooltip = tooltip;
+            },
+            eventMouseLeave: function(info) {
+                // Remover tooltip
+                if (info.el._tooltip) {
+                    document.body.removeChild(info.el._tooltip);
+                    info.el._tooltip = null;
+                }
+            },
+            dateClick: function(info) {
+                updateSelectedDate(info.dateStr);
+                updateDayReservations(info.dateStr);
+            },
+            eventDisplay: 'block'
+        });
+        
+        calendar.render();
+        
+        // === FUNCIONES ACTUALIZADAS ===
+        
+        // Actualizar fecha seleccionada
+        function updateSelectedDate(dateStr) {
+            const date = new Date(dateStr);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = date.toLocaleDateString('es-ES', options);
+            document.getElementById('selectedDate').textContent = formattedDate;
+        }
+        
+        // Actualizar reservas del día
+        function updateDayReservations(dateStr) {
+            const dayReservationsEl = document.getElementById('dayReservations');
+            const events = calendar.getEvents();
+            const dayEvents = events.filter(event => {
+                const eventDate = event.start.toISOString().split('T')[0];
+                return eventDate === dateStr;
+            });
+            
+            if (dayEvents.length === 0) {
+                dayReservationsEl.innerHTML = `
+                    <div class="empty-state">
+                        <p>✅ No hay reservas aprobadas para este día</p>
+                        <p style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+                            Todos los espacios están disponibles
+                        </p>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                dayEvents.forEach(event => {
+                    const extendedProps = event.extendedProps;
+                    const startTime = event.start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    const endTime = event.end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    const status = extendedProps.estado || 'Pendiente';
+                    const statusClass = status.toLowerCase().replace(' ', '-');
+                    
+                    html += `
+                        <div class="reservation-item ${statusClass}">
+                            <div class="reservation-time">${startTime} - ${endTime}</div>
+                            <div class="reservation-space">${extendedProps.espacio_nombre}</div>
+                            <div class="reservation-details">
+                                <small><strong>Solicitante:</strong> ${extendedProps.solicitante}</small>
+                                <small><strong>Propósito:</strong> ${extendedProps.proposito}</small>
+                            </div>
+                            <div class="reservation-status">${status}</div>
+                        </div>
+                    `;
+                });
+                dayReservationsEl.innerHTML = html;
+            }
+        }
+        
+        // === FILTROS Y NAVEGACIÓN (se mantienen igual) ===
+        
+        // Botones de vista
+        const viewToggles = document.querySelectorAll('.view-toggle');
+        viewToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const view = this.dataset.view;
+                
+                viewToggles.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                calendar.changeView(view);
+            });
+        });
+        
+        // Filtro de espacio
+        const spaceFilter = document.getElementById('spaceFilter');
+        spaceFilter.addEventListener('change', function() {
+            const selectedSpace = this.value;
+            
+            const allEvents = {{ eventos|safe }};
+            
+            if (!selectedSpace) {
+                calendar.removeAllEvents();
+                calendar.addEventSource(allEvents);
+            } else {
+                const filteredEvents = allEvents.filter(event => {
+                    const espacioId = event.extendedProps?.espacio_id;
+                    return espacioId == selectedSpace;
+                });
+                
+                calendar.removeAllEvents();
+                if (filteredEvents.length > 0) {
+                    calendar.addEventSource(filteredEvents);
+                }
+            }
+            
+            calendar.render();
+        });
+        
+        // Filtro de mes
+        const monthFilter = document.getElementById('monthFilter');
+        monthFilter.addEventListener('change', function() {
+            const selectedDate = new Date(this.value + '-01');
+            calendar.gotoDate(selectedDate);
+        });
+        
+        // Sincronizar el filtro de mes con la vista actual del calendario
+        calendar.on('datesSet', function(info) {
+            const currentDate = info.view.currentStart;
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const monthYear = `${year}-${month}`;
+            
+            monthFilter.value = monthYear;
+        });
+            
+        // Inicializar con la fecha de hoy
+        updateSelectedDate(new Date().toISOString().split('T')[0]);
+        updateDayReservations(new Date().toISOString().split('T')[0]);
+    });
+    </script>
+</body>
+</html>

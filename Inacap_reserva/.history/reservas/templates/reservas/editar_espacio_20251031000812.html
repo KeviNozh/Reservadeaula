@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Espacio - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2563eb;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'gestion_espacios' %}" class="back-link">
+        ← Volver a Gestión de Espacios
+    </a>
+
+    <div class="container">
+        <h1>✏️ Editar Espacio</h1>
+
+        <div id="alertMessage" class="alert"></div>
+
+        <form id="editSpaceForm">
+            <input type="hidden" id="espacio_id" value="{{ espacio_id }}">
+            
+            <div class="form-group">
+                <label class="form-label">Nombre del Espacio *</label>
+                <input type="text" class="form-input" id="nombre" name="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo de Espacio *</label>
+                <select class="form-select" id="tipo" name="tipo" required>
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="Sala de Reuniones">Sala de Reuniones</option>
+                    <option value="Auditorio">Auditorio</option>
+                    <option value="Laboratorio">Laboratorio</option>
+                    <option value="Oficina">Oficina</option>
+                    <option value="Aula">Aula</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Capacidad *</label>
+                <input type="number" class="form-input" id="capacidad" name="capacidad" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Edificio</label>
+                <input type="text" class="form-input" id="edificio" name="edificio">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Piso</label>
+                <input type="number" class="form-input" id="piso" name="piso" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea class="form-textarea" id="descripcion" name="descripcion"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="Disponible">Disponible</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Fuera de Servicio">Fuera de Servicio</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'gestion_espacios' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Cargar datos del espacio al iniciar
+        async function loadSpaceData() {
+            const espacioId = document.getElementById('espacio_id').value;
+            console.log('🔄 Cargando espacio ID:', espacioId);
+
+            try {
+                const response = await fetch(`/api/espacios/${espacioId}/`);
+                const data = await response.json();
+                console.log('📥 Respuesta del servidor:', data);
+
+                if (data.success) {
+                    const espacio = data.espacio;
+                    document.getElementById('nombre').value = espacio.nombre || '';
+                    document.getElementById('tipo').value = espacio.tipo || '';
+                    document.getElementById('capacidad').value = espacio.capacidad || '';
+                    document.getElementById('edificio').value = espacio.edificio || '';
+                    document.getElementById('piso').value = espacio.piso || '';
+                    document.getElementById('descripcion').value = espacio.descripcion || '';
+                    document.getElementById('estado').value = espacio.estado || 'Disponible';
+                } else {
+                    showAlert('❌ ' + (data.error || 'Error al cargar espacio'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión al cargar espacio', 'error');
+            }
+        }
+
+        // Form submission
+        document.getElementById('editSpaceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '⏳ Guardando...';
+            submitBtn.disabled = true;
+            
+            const espacioId = document.getElementById('espacio_id').value;
+            const formData = {
+                nombre: document.getElementById('nombre').value.trim(),
+                tipo: document.getElementById('tipo').value,
+                capacidad: document.getElementById('capacidad').value,
+                edificio: document.getElementById('edificio').value.trim(),
+                piso: document.getElementById('piso').value,
+                descripcion: document.getElementById('descripcion').value.trim(),
+                estado: document.getElementById('estado').value
+            };
+
+            console.log('📤 Enviando datos para editar espacio ID:', espacioId, 'Datos:', formData);
+
+            try {
+                const response = await fetch(`/api/espacios/${espacioId}/actualizar/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                console.log('📥 Respuesta del servidor:', data);
+
+                if (data.success) {
+                    showAlert('✅ ' + data.message, 'success');
+                    setTimeout(() => {
+                        window.location.href = "{% url 'gestion_espacios' %}";
+                    }, 1500);
+                } else {
+                    showAlert('❌ ' + (data.error || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión con el servidor', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Cargar datos cuando la página se carga
+        document.addEventListener('DOMContentLoaded', loadSpaceData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .new-reservation-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .new-reservation-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .view-toggles {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .view-toggle {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-toggle.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Calendar */
+        .calendar-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            background: #f3f4f6;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .current-month {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: #374151;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 100px;
+            padding: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover {
+            background: #f9fafb;
+        }
+
+        .calendar-day.today {
+            border-color: #2563eb;
+        }
+
+        .calendar-day.other-month {
+            background: #f9fafb;
+            color: #9ca3af;
+        }
+
+        .calendar-day.past {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.occupied {
+            background: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        .calendar-day.partially-occupied {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .day-number {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .day-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 16px;
+        }
+
+        .day-reservations {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .reservation-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 1px;
+        }
+
+        .reservation-dot.approved {
+            background: #10b981;
+        }
+
+        .reservation-dot.pending {
+            background: #f59e0b;
+        }
+
+        .reservation-dot.rejected {
+            background: #dc2626;
+        }
+
+        /* Legend */
+        .calendar-legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legend-color.available {
+            background: white;
+            border: 2px solid #e5e7eb;
+        }
+
+        .legend-color.occupied {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+        }
+
+        .legend-color.partial {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+
+        .legend-color.today {
+            background: white;
+            border: 2px solid #2563eb;
+        }
+
+        /* Sidebar */
+        .content-with-sidebar {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .selected-date {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .selected-date-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .reservation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .reservation-item {
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .reservation-item.approved {
+            border-left-color: #10b981;
+        }
+
+        .reservation-item.pending {
+            border-left-color: #f59e0b;
+        }
+
+        .reservation-time {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .reservation-space {
+            font-size: 14px;
+            font-weight: 500;
+            color: #111827;
+            margin-top: 2px;
+        }
+
+        #calendar {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        height: 600px;
+        }
+
+        .fc {
+            height: 100%;
+        }
+
+        .fc-header-toolbar {
+            margin-bottom: 1em;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .fc-event {
+            cursor: pointer;
+            border: none;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .fc-day-today {
+            background-color: #eff6ff !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-with-sidebar {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                font-size: 12px;
+            }
+
+            .calendar-legend {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Dashboard</a>
+            <a href="#" class="nav-item active">Reservar</a>
+            <a href="#" class="nav-item">Historial</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">JD</div>
+            <span>Juan Domínguez</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="#">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="#">Reservar</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Calendario</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">Calendario de Disponibilidad</h1>
+                <div class="header-actions">
+                    <button class="new-reservation-btn">
+                        <span>➕</span>
+                        Nueva Reserva
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">🏢 Seleccionar Espacio</label>
+                    <select class="filter-select" id="spaceFilter">
+                        <option value="">Todos los espacios</option>
+                        <option value="sala-a">Sala de Conferencias A</option>
+                        <option value="auditorio">Auditorio Principal</option>
+                        <option value="lab-3">Laboratorio 3</option>
+                        <option value="sala-b">Sala de Juntas B</option>
+                        <option value="aula-magna">Aula Magna</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 Mes/Año</label>
+                    <input type="month" class="filter-input" value="2024-03" id="monthFilter">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Vista</label>
+                    <div class="view-toggles">
+                        <button class="view-toggle active">Mes</button>
+                        <button class="view-toggle">Semana</button>
+                        <button class="view-toggle">Día</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content with Sidebar -->
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button class="nav-btn" id="prevMonth">←</button>
+                    <h2 class="current-month" id="currentMonth"></h2>
+                    <button class="nav-btn" id="nextMonth">→</button>
+                </div>
+            </div>
+
+            <div id="calendar"></div>
+        </div>
+
+                <div class="calendar-grid">
+                    <!-- Day Headers -->
+                    <div class="calendar-day-header">Dom</div>
+                    <div class="calendar-day-header">Lun</div>
+                    <div class="calendar-day-header">Mar</div>
+                    <div class="calendar-day-header">Mié</div>
+                    <div class="calendar-day-header">Jue</div>
+                    <div class="calendar-day-header">Vie</div>
+                    <div class="calendar-day-header">Sáb</div>
+
+                    <!-- Calendar Days -->
+                    <div class="calendar-day other-month">
+                        <div class="day-number">25</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">26</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">27</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">28</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">29</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">1</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot approved"></span>
+                            <span class="reservation-dot approved"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">2</div>
+                    </div>
+
+                    <div class="calendar-day">
+                        <div class="day-number">3</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot pending"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">4</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">5</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">6</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">7</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">8</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">9</div>
+                    </div>
+
+                    <div class="calendar-day past">
+                        <div class="day-number">10</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">11</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">12</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">13</div>
+                    </div>
+                    <div class="calendar-day past">
+                        <div class="day-number">14</div>
+                    </div>
+                    <div class="calendar-day today">
+                        <div class="day-number">15</div>
+                        <div class="day-indicator">📍</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot approved"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">16</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot pending"></span>
+                            <span class="reservation-dot approved"></span>
+                        </div>
+                    </div>
+
+                    <div class="calendar-day">
+                        <div class="day-number">17</div>
+                    </div>
+                    <div class="calendar-day partially-occupied">
+                        <div class="day-number">18</div>
+                        <div class="day-indicator">⚠️</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot approved"></span>
+                            <span class="reservation-dot approved"></span>
+                            <span class="reservation-dot pending"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">19</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">20</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot approved"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">21</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">22</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot pending"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">23</div>
+                    </div>
+
+                    <div class="calendar-day">
+                        <div class="day-number">24</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">25</div>
+                        <div class="day-reservations">
+                            <span class="reservation-dot approved"></span>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">26</div>
+                    </div>
+                    <div class="calendar-day occupied">
+                        <div class="day-number">27</div>
+                        <div class="day-indicator">❌</div>
+                        <div class="day-reservations">Completo</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">28</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">29</div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">30</div>
+                    </div>
+
+                    <div class="calendar-day other-month">
+                        <div class="day-number">31</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">1</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">2</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">3</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">4</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">5</div>
+                    </div>
+                    <div class="calendar-day other-month">
+                        <div class="day-number">6</div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color available"></div>
+                        <span>Disponible</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color partial"></div>
+                        <span>Parcialmente ocupado</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color occupied"></div>
+                        <span>Ocupado</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color today"></div>
+                        <span>Día actual</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h3 class="sidebar-title">Día Seleccionado</h3>
+                <div class="selected-date">
+                    <div class="selected-date-text" id="selectedDate">15 de Marzo</div>
+                </div>
+
+                <h4 class="sidebar-title">Reservas del Día</h4>
+                <div class="reservation-list" id="dayReservations">
+                    <div class="reservation-item approved">
+                        <div class="reservation-time">14:00 - 16:00</div>
+                        <div class="reservation-space">Sala de Conferencias A</div>
+                    </div>
+                    <div class="reservation-item pending">
+                        <div class="reservation-time">16:30 - 18:00</div>
+                        <div class="reservation-space">Laboratorio 3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Calendar functionality
+        const calendarDays = document.querySelectorAll('.calendar-day:not(.past):not(.other-month)');
+        const selectedDateEl = document.getElementById('selectedDate');
+        const dayReservationsEl = document.getElementById('dayReservations');
+
+        // Sample reservation data
+        const reservationData = {
+            15: [
+                { time: '14:00 - 16:00', space: 'Sala de Conferencias A', status: 'approved' }
+            ],
+            16: [
+                { time: '09:00 - 12:00', space: 'Auditorio Principal', status: 'pending' },
+                { time: '14:00 - 16:00', space: 'Laboratorio 3', status: 'approved' }
+            ],
+            18: [
+                { time: '09:00 - 11:00', space: 'Sala de Juntas B', status: 'approved' },
+                { time: '13:00 - 15:00', space: 'Aula Magna', status: 'approved' },
+                { time: '16:00 - 18:00', space: 'Sala de Conferencias A', status: 'pending' }
+            ]
+        };
+
+        calendarDays.forEach(day => {
+            day.addEventListener('click', function() {
+                // Remove active class from all days
+                calendarDays.forEach(d => d.classList.remove('selected'));
+                
+                // Add active class to clicked day
+                this.classList.add('selected');
+                
+                // Update selected date display
+                const dayNum = parseInt(this.querySelector('.day-number').textContent);
+                selectedDateEl.textContent = `${dayNum} de Marzo`;
+                
+                // Update reservations list
+                updateDayReservations(dayNum);
+            });
+        });
+
+        function updateDayReservations(day) {
+            const reservations = reservationData[day] || [];
+            
+            if (reservations.length === 0) {
+                dayReservationsEl.innerHTML = '<div style="color: #6b7280; font-style: italic; padding: 20px; text-align: center;">No hay reservas para este día</div>';
+            } else {
+                dayReservationsEl.innerHTML = reservations.map(res => `
+                    <div class="reservation-item ${res.status}">
+                        <div class="reservation-time">${res.time}</div>
+                        <div class="reservation-space">${res.space}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // View toggles
+        const viewToggles = document.querySelectorAll('.view-toggle');
+        viewToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                viewToggles.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Filter change handlers
+        const spaceFilter = document.getElementById('spaceFilter');
+        const monthFilter = document.getElementById('monthFilter');
+
+        spaceFilter.addEventListener('change', function() {
+            console.log('Filter by space:', this.value);
+            // Implement space filtering logic
+        });
+
+        monthFilter.addEventListener('change', function() {
+            console.log('Filter by month:', this.value);
+            // Implement month navigation logic
+        });
+
+        // Navigation buttons
+        const navBtns = document.querySelectorAll('.nav-btn');
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                console.log('Navigate month');
+                // Implement month navigation
+            });
+        });
+
+        // New reservation button
+        const newReservationBtn = document.querySelector('.new-reservation-btn');
+        newReservationBtn.addEventListener('click', function() {
+            alert('Abrir formulario de nueva reserva');
+        });
+    </script>
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var eventos = {{ eventos|safe }};
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: eventos,
+            eventClick: function(info) {
+                alert('Reserva: ' + info.event.title + '\nEstado: ' + info.event.extendedProps.estado);
+            }
+        });
+        
+        calendar.render();
+    });
+</script>

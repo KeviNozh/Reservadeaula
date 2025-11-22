@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INACAP - Iniciar Sesión</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .user-type-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .user-type-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-type-btn.active {
+            background: #1e5bb8;
+            color: white;
+        }
+
+        .user-type-btn:hover:not(.active) {
+            background: #f8f9fa;
+            color: #1e5bb8;
+        }
+
+        .login-container {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #dc2626 0%, #1e5bb8 100%);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-square {
+            width: 40px;
+            height: 40px;
+            background: #dc2626;
+            border-radius: 4px;
+            margin-right: 8px;
+            position: relative;
+        }
+
+        .logo-square::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: -1px;
+        }
+
+        .welcome-text {
+            font-size: 28px;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:focus-within {
+            transform: translateY(-2px);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1e5bb8;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 91, 184, 0.1);
+        }
+
+        .password-input {
+            color: #333;
+            padding-right: 50px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .toggle-password:hover {
+            color: #1e5bb8;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .remember-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            appearance: none;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .remember-checkbox:checked {
+            background: #1e5bb8;
+            border-color: #1e5bb8;
+        }
+
+        .remember-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .forgot-password {
+            color: #1e5bb8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #0d47a1;
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 16px;
+            background: #1e5bb8;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-button:hover {
+            background: #0d47a1;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(30, 91, 184, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button.loading {
+            pointer-events: none;
+        }
+
+        .login-button.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.4s ease;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc2626;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+        }
+
+        .notification.success .notification-icon {
+            color: #10b981;
+        }
+
+        .notification.error .notification-icon {
+            color: #dc2626;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 0;
+                padding: 40px 30px;
+            }
+            
+            .user-type-selector {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .welcome-text {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="user-type-selector">
+        <button class="user-type-btn active" onclick="selectUserType('usuario')">Usuario</button>
+        <button class="user-type-btn" onclick="selectUserType('administrador')">Administrador</button>
+    </div>
+
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-square"></div>
+            <div class="logo-text">inacap</div>
+        </div>
+        
+        <h1 class="welcome-text">Bienvenido</h1>
+        
+        <form onsubmit="handleLogin(event)">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email" class="form-label">CORREO ELECTRÓNICO/RUT</label>
+                <div class="input-container">
+                    <input 
+                        id="email"
+                        type="text" 
+                        class="form-input" 
+                        placeholder="usuario@inacap.cl"
+                        required
+                    >
+                </div>
+                <div class="error-message" id="emailError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">CONTRASEÑA</label>
+                <div class="input-container">
+                    <input 
+                        id="password"
+                        type="password" 
+                        class="form-input password-input" 
+                        placeholder="******"
+                        required
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword()">Mostrar</button>
+                </div>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" class="remember-checkbox" id="rememberMe">
+                    RECORDARME
+                </label>
+                <a href="#" class="forgot-password">¿OLVIDASTE TU CONTRASEÑA?</a>
+            </div>
+            
+            <button type="submit" class="login-button" id="loginBtn">
+                Iniciar Sesión
+            </button>
+        </form>
+    </div>
+
+    <script>
+        let currentUserType = 'usuario';
+        let passwordVisible = false;
+
+        // Función para obtener el token CSRF de Django
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Cargar credenciales guardadas si existen
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedEmail = localStorage.getItem('savedEmail');
+            const savedPassword = localStorage.getItem('savedPassword');
+            const rememberMe = localStorage.getItem('rememberMe') === 'true';
+            
+            if (rememberMe && savedEmail) {
+                document.getElementById('email').value = savedEmail;
+                document.getElementById('password').value = savedPassword || '';
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        function selectUserType(type) {
+            currentUserType = type;
+            
+            // Update button styles
+            document.querySelectorAll('.user-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update login button text
+            const loginBtn = document.getElementById('loginBtn');
+            if (type === 'administrador') {
+                loginBtn.textContent = 'Iniciar Sesión como Admin';
+                loginBtn.style.background = '#dc2626';
+            } else {
+                loginBtn.textContent = 'Iniciar Sesión';
+                loginBtn.style.background = '#1e5bb8';
+            }
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.querySelector('.toggle-password');
+            
+            if (passwordVisible) {
+                passwordInput.type = 'password';
+                toggleButton.textContent = 'Mostrar';
+                passwordVisible = false;
+            } else {
+                passwordInput.type = 'text';
+                toggleButton.textContent = 'Ocultar';
+                passwordVisible = true;
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-icon">${type === 'success' ? '✓' : '✗'}</div>
+                <div class="notification-content">
+                    <div class="notification-title">${type === 'success' ? 'Éxito' : 'Error'}</div>
+                    <div>${message}</div>
+                </div>
+                <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.parentElement.removeChild(notification);
+                    }
+                }, 400);
+            }, 4000);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            // Reset errores
+            document.getElementById('emailError').style.display = 'none';
+            document.getElementById('passwordError').style.display = 'none';
+            
+            // Get form data
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            // Validations
+            let isValid = true;
+            
+            if (!email) {
+                document.getElementById('emailError').textContent = 'Este campo es obligatorio';
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'Este campo es obligatorio';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                showNotification('Por favor, corrige los errores en el formulario', 'error');
+                return;
+            }
+            
+            // Save credentials if "Remember me" is checked
+            if (rememberMe) {
+                localStorage.setItem('savedEmail', email);
+                localStorage.setItem('savedPassword', password);
+                localStorage.setItem('rememberMe', 'true');
+            } else {
+                localStorage.removeItem('savedEmail');
+                localStorage.removeItem('savedPassword');
+                localStorage.removeItem('rememberMe');
+            }
+            
+            // Show loading state
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            // Enviar datos al servidor Django - MEJORADO
+            fetch('/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    user_type: currentUserType
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error del servidor: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification(`Bienvenido ${data.user.nombre_completo}`, 'success');
+                    // Guardar datos de usuario en sessionStorage
+                    sessionStorage.setItem('currentUser', JSON.stringify(data.user));
+                    
+                    // Redirigir al dashboard después de 1 segundo
+                    setTimeout(() => {
+                        window.location.href = '/dashboard/';
+                    }, 1000);
+                } else {
+                    showNotification(data.message, 'error');
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error de conexión con el servidor. Verifica que el servidor esté funcionando.', 'error');
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            });
+        }
+
+        // Add some interactive effects
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>

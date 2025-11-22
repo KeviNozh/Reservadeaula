@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .nav-item {
+            color: #6B7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: #2563EB;
+            background: #EFF6FF;
+        }
+        
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+        
+        .users-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            padding: 16px 24px;
+            background: #F9FAFB;
+            border-bottom: 1px solid #E5E7EB;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .user-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            padding: 16px 24px;
+            border-bottom: 1px solid #F3F4F6;
+            align-items: center;
+        }
+        
+        .user-row:hover {
+            background: #F9FAFB;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #3B82F6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .user-email {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .status-inactive {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        
+        .btn-edit:hover {
+            background: #BFDBFE;
+        }
+        
+        .btn-deactivate {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .btn-deactivate:hover {
+            background: #FECACA;
+        }
+        
+        .btn-activate {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .btn-activate:hover {
+            background: #A7F3D0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6B7280;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏢 Panel Administrativo</div>
+            <nav class="nav-menu">
+                <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+                <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
+                <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+                <a href="{% url 'gestion_usuarios' %}" class="nav-item active">Usuarios</a>
+                <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="page-title">👥 Gestión de Usuarios</div>
+        <div class="page-subtitle">Administra los usuarios del sistema de reservas</div>
+
+        <div class="users-table">
+            <div class="table-header">
+                <div>Usuario</div>
+                <div>Email</div>
+                <div>Rol</div>
+                <div>Estado</div>
+                <div>Acciones</div>
+            </div>
+            
+            {% for usuario in usuarios %}
+            <div class="user-row">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ usuario.first_name|first|upper }}{{ usuario.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <div class="user-name">{{ usuario.first_name }} {{ usuario.last_name }}</div>
+                        <div class="user-username">@{{ usuario.username }}</div>
+                    </div>
+                </div>
+                <div class="user-email">{{ usuario.email }}</div>
+                <div>
+                    <span class="role-badge">
+                        {% if usuario.perfilusuario.rol %}
+                            {{ usuario.perfilusuario.rol }}
+                        {% else %}
+                            Usuario
+                        {% endif %}
+                    </span>
+                </div>
+                <div>
+                    <span class="status-badge {% if usuario.is_active %}status-active{% else %}status-inactive{% endif %}">
+                        {% if usuario.is_active %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+                <div>
+                    <button class="action-btn btn-edit" onclick="editarUsuario({{ usuario.id }})">Editar</button>
+                    {% if usuario.is_active %}
+                    <button class="action-btn btn-deactivate" onclick="cambiarEstadoUsuario({{ usuario.id }}, false)">
+                        Desactivar
+                    </button>
+                    {% else %}
+                    <button class="action-btn btn-activate" onclick="cambiarEstadoUsuario({{ usuario.id }}, true)">
+                        Activar
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>No hay usuarios registrados</h3>
+                <p>No se encontraron usuarios en el sistema</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Modal para editar usuario -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Editar Usuario</h3>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                
+                <div class="form-group">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" id="editFirstName" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" id="editLastName" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="editEmail" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Rol</label>
+                    <select id="editRol" class="form-select">
+                        <option value="Usuario">Usuario</option>
+                        <option value="Docente">Docente</option>
+                        <option value="Investigacion">Investigación</option>
+                        <option value="Administrativo">Administrativo</option>
+                        <option value="Aprobador">Aprobador</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function getCSRFToken() {
+    const name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'info') {
+    // Puedes implementar un sistema de notificaciones más elegante aquí
+    console.log(`${type.toUpperCase()}: ${message}`);
+    
+    // Notificación temporal simple
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = '#10B981';
+    } else if (type === 'error') {
+        notification.style.background = '#EF4444';
+    } else {
+        notification.style.background = '#3B82F6';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// Función para manejar errores de respuesta
+async function handleResponse(response) {
+    const contentType = response.headers.get('content-type');
+    
+    if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('❌ El servidor devolvió HTML en lugar de JSON:', text.substring(0, 500));
+        throw new Error(`Error del servidor (${response.status}): Respuesta no es JSON`);
+    }
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+        console.error('❌ Error HTTP:', response.status, data);
+        throw new Error(data.error || `Error HTTP ${response.status}`);
+    }
+    
+    return data;
+}
+
+// Función para abrir modal de edición
+async function editarUsuario(userId) {
+    try {
+        console.log(`📝 Editando usuario ID: ${userId}`);
+        
+        // Obtener datos del usuario
+        const response = await fetch(`/api/usuarios/${userId}/`);
+        const userData = await handleResponse(response);
+        
+        if (!userData.success) {
+            throw new Error(userData.error || 'Error al cargar usuario');
+        }
+        
+        // Llenar el formulario
+        document.getElementById('editUserId').value = userData.usuario.id;
+        document.getElementById('editFirstName').value = userData.usuario.first_name || '';
+        document.getElementById('editLastName').value = userData.usuario.last_name || '';
+        document.getElementById('editEmail').value = userData.usuario.email || '';
+        document.getElementById('editRol').value = userData.usuario.rol || 'Usuario';
+        
+        // Mostrar modal
+        document.getElementById('editUserModal').style.display = 'flex';
+        
+        showNotification('Datos del usuario cargados correctamente', 'success');
+        
+    } catch (error) {
+        console.error('❌ Error al cargar datos del usuario:', error);
+        showNotification(`Error al cargar datos: ${error.message}`, 'error');
+    }
+}
+
+// Función para cambiar estado del usuario
+async function cambiarEstadoUsuario(userId, activar) {
+    const accion = activar ? 'activar' : 'desactivar';
+    const confirmacion = confirm(`¿Estás seguro de que deseas ${accion} este usuario?`);
+    
+    if (!confirmacion) return;
+    
+    try {
+        console.log(`🔄 Cambiando estado del usuario ${userId} a: ${activar ? 'activo' : 'inactivo'}`);
+        
+        const response = await fetch(`/api/usuarios/${userId}/cambiar-estado/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                activo: activar
+            })
+        });
+        
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            showNotification(`Usuario ${activar ? 'activado' : 'desactivado'} exitosamente`, 'success');
+            // Recargar después de un breve delay
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.error || 'Error desconocido');
+        }
+    } catch (error) {
+        console.error('❌ Error cambiando estado:', error);
+        showNotification(`Error al cambiar estado: ${error.message}`, 'error');
+    }
+}
+
+// Función para cerrar modal
+function cerrarModal() {
+    document.getElementById('editUserModal').style.display = 'none';
+}
+
+// Manejar envío del formulario de edición
+document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('editUserId').value;
+    const formData = {
+        first_name: document.getElementById('editFirstName').value.trim(),
+        last_name: document.getElementById('editLastName').value.trim(),
+        email: document.getElementById('editEmail').value.trim(),
+        rol: document.getElementById('editRol').value
+    };
+    
+    // Validaciones básicas
+    if (!formData.first_name || !formData.last_name || !formData.email) {
+        showNotification('Por favor complete todos los campos requeridos', 'error');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    
+    try {
+        submitBtn.textContent = '⏳ Guardando...';
+        submitBtn.disabled = true;
+        
+        console.log(`💾 Guardando cambios para usuario ${userId}:`, formData);
+        
+        const response = await fetch(`/api/usuarios/${userId}/actualizar/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            showNotification('Usuario actualizado exitosamente', 'success');
+            cerrarModal();
+            // Recargar después de un breve delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.error || 'Error desconocido');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error actualizando usuario:', error);
+        showNotification(`Error al actualizar: ${error.message}`, 'error');
+        
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+});
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('editUserModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModal();
+    }
+});
+
+// Cerrar modal con tecla Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModal();
+    }
+});
+    </script>
+</body>
+</html>

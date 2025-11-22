@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+            margin-bottom: 24px;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .toolbar-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .search-input {
+            flex: 1;
+            max-width: 400px;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn-primary { background: #2563EB; color: white; }
+        .btn-success { background: #10B981; color: white; }
+        .btn-secondary { background: #6B7280; color: white; }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Filters */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            font-size: 12px;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #F9FAFB;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid #F3F4F6;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background: #F9FAFB;
+        }
+        
+        /* User Cell */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        
+        .user-info p {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-admin { background: #FEE2E2; color: #991B1B; }
+        .badge-user { background: #DBEAFE; color: #1E40AF; }
+        .badge-super { background: #EDE9FE; color: #6B21A8; }
+        
+        /* Status Toggle */
+        .status-toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #E5E7EB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .status-toggle.active {
+            background: #10B981;
+        }
+        
+        .status-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .status-toggle.active::after {
+            transform: translateX(20px);
+        }
+        
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 8px;
+            border: none;
+            background: #F3F4F6;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #E5E7EB;
+        }
+        
+        .action-btn.edit:hover { background: #DBEAFE; color: #2563EB; }
+        .action-btn.view:hover { background: #D1FAE5; color: #10B981; }
+        .action-btn.suspend:hover { background: #FEF3C7; color: #F59E0B; }
+        .action-btn.delete:hover { background: #FEE2E2; color: #DC2626; }
+        
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .side-panel.open {
+            right: 0;
+        }
+        
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .panel-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6B7280;
+        }
+        
+        .panel-content {
+            padding: 24px;
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+        
+        .recent-reservations {
+            margin-top: 24px;
+        }
+        
+        .reservation-item {
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .reservation-date {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        .reservation-space {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1 class="page-title">👥 Gestión de Usuarios</h1>
+            <p class="page-subtitle">Administra usuarios, roles y permisos del sistema</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-top">
+                <div class="search-section">
+                    <input type="text" class="search-input" placeholder="🔍 Buscar usuarios por nombre, email o departamento...">
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success">➕ Nuevo Usuario</button>
+                    <button class="btn btn-primary">📤 Importar Usuarios</button>
+                    <button class="btn btn-secondary">📥 Exportar Lista</button>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label">Estado</label>
+                    <select class="filter-select">
+                        <option>Todos los estados</option>
+                        <option>Activo</option>
+                        <option>Inactivo</option>
+                        <option>Suspendido</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Rol</label>
+                    <select class="filter-select">
+                        <option>Todos los roles</option>
+                        <option>Usuario</option>
+                        <option>Administrador</option>
+                        <option>Super Admin</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Departamento</label>
+                    <select class="filter-select">
+                        <option>Todos los departamentos</option>
+                        <option>Tecnología</option>
+                        <option>Marketing</option>
+                        <option>Recursos Humanos</option>
+                        <option>Finanzas</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Fecha Registro</label>
+                    <select class="filter-select">
+                        <option>Cualquier fecha</option>
+                        <option>Último mes</option>
+                        <option>Últimos 3 meses</option>
+                        <option>Este año</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">👥 Lista de Usuarios (342)</div>
+                <div class="table-actions">
+                    <button class="btn btn-secondary btn-small">📋 Acciones masivas</button>
+                    <button class="btn btn-primary btn-small">⚙️ Configurar columnas</button>
+                </div>
+            </div>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox"></th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Departamento</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Última Conexión</th>
+                        <th>Total Reservas</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">AG</div>
+                                <div class="user-info">
+                                    <h4>Ana García</h4>
+                                    <p>ID: USR-001</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>ana.garcia@empresa.com</td>
+                        <td>Tecnología</td>
+                        <td><span class="badge badge-admin">Administrador</span></td>
+                        <td>
+                            <div class="status-toggle active" onclick="toggleStatus(this)"></div>
+                        </td>
+                        <td>Hace 2 horas</td>
+                        <td>45</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn edit" onclick="openUserPanel('Ana García')" title="Editar">✏️</button>
+                                <button class="action-btn view" title="Ver historial">📋</button>
+                                <button class="action-btn suspend" title="Suspender">🔒</button>
+                                <button class="action-btn delete" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">LM</div>
+                                <div class="user-info">
+                                    <h4>Luis Martínez</h4>
+                                    <p>ID: USR-002</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>luis.martinez@empresa.com</td>
+                        <td>Marketing</td>
+                        <td><span class="badge badge-user">Usuario</span></td>
+                        <td>
+                            <div class="status-toggle active" onclick="toggleStatus(this)"></div>
+                        </td>
+                        <td>Hace 1 día</td>
+                        <td>23</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn edit" onclick="openUserPanel('Luis Martínez')" title="Editar">✏️</button>
+                                <button class="action-btn view" title="Ver historial">📋</button>
+                                <button class="action-btn suspend" title="Suspender">🔒</button>
+                                <button class="action-btn delete" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">MR</div>
+                                <div class="user-info">
+                                    <h4>María Rodríguez</h4>
+                                    <p>ID: USR-003</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>maria.rodriguez@empresa.com</td>
+                        <td>Recursos Humanos</td>
+                        <td><span class="badge badge-super">Super Admin</span></td>
+                        <td>
+                            <div class="status-toggle active" onclick="toggleStatus(this)"></div>
+                        </td>
+                        <td>Online ahora</td>
+                        <td>67</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn edit" onclick="openUserPanel('María Rodríguez')" title="Editar">✏️</button>
+                                <button class="action-btn view" title="Ver historial">📋</button>
+                                <button class="action-btn suspend" title="Suspender">🔒</button>
+                                <button class="action-btn delete" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">CL</div>
+                                <div class="user-info">
+                                    <h4>Carlos López</h4>
+                                    <p>ID: USR-004</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>carlos.lopez@empresa.com</td>
+                        <td>Finanzas</td>
+                        <td><span class="badge badge-user">Usuario</span></td>
+                        <td>
+                            <div class="status-toggle" onclick="toggleStatus(this)"></div>
+                        </td>
+                        <td>Hace 1 semana</td>
+                        <td>12</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn edit" onclick="openUserPanel('Carlos López')" title="Editar">✏️</button>
+                                <button class="action-btn view" title="Ver historial">📋</button>
+                                <button class="action-btn suspend" title="Suspender">🔒</button>
+                                <button class="action-btn delete" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">SP</div>
+                                <div class="user-info">
+                                    <h4>Sofia Pérez</h4>
+                                    <p>ID: USR-005</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>sofia.perez@empresa.com</td>
+                        <td>Tecnología</td>
+                        <td><span class="badge badge-user">Usuario</span></td>
+                        <td>
+                            <div class="status-toggle active" onclick="toggleStatus(this)"></div>
+                        </td>
+                        <td>Hace 3 horas</td>
+                        <td>31</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn edit" onclick="openUserPanel('Sofia Pérez')" title="Editar">✏️</button>
+                                <button class="action-btn view" title="Ver historial">📋</button>
+                                <button class="action-btn suspend" title="Suspender">🔒</button>
+                                <button class="action-btn delete" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeUserPanel()"></div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="userPanel">
+        <div class="panel-header">
+            <h2 class="panel-title">👤 Detalles del Usuario</h2>
+            <button class="panel-close" onclick="closeUserPanel()">✖️</button>
+        </div>
+        
+        <div class="panel-content">
+            <div class="user-cell" style="margin-bottom: 24px;">
+                <div class="user-avatar" style="width: 60px; height: 60px; font-size: 24px;">AG</div>
+                <div class="user-info">
+                    <h4 style="font-size: 18px; margin-bottom: 4px;">Ana García</h4>
+                    <p style="color: #10B981; font-weight: 600;">● Activo</p>
+                    <p>ana.garcia@empresa.com</p>
+                    <p>+56 9 1234 5678</p>
+                </div>
+            </div>
+            
+            <div class="user-stats">
+                <div class="stat-card">
+                    <div class="stat-value">45</div>
+                    <div class="stat-label">Total Reservas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Este Mes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2.3</div>
+                    <div class="stat-label">Promedio/Semana</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">95%</div>
+                    <div class="stat-label">Tasa Aprobación</div>
+                </div>
+            </div>
+            
+            <div class="recent-reservations">
+                <h4 style="margin-bottom: 16px; color: #374151;">📋 Reservas Recientes</h4>
+                
+                <div class="reservation-item">
+                    <div class="reservation-date">15 Mar, 2025 - 09:00</div>
+                    <div class="reservation-space">Sala de Conferencias A1</div>
+                </div>
+                
+                <div class="reservation-item">
+                    <div class="reservation-date">12 Mar, 2025 - 14:30</div>
+                    <div class="reservation-space">Auditorio Principal</div>
+                </div>
+                
+                <div class="reservation-item">
+                    <div class="reservation-date">08 Mar, 2025 - 11:00</div>
+                    <div class="reservation-space">Sala de Juntas B2</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 32px; display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn btn-primary" style="width: 100%;">✏️ Editar Usuario</button>
+                <button class="btn btn-secondary" style="width: 100%;">📧 Enviar Mensaje</button>
+                <button class="btn btn-secondary" style="width: 100%;">🔒 Suspender Usuario</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleStatus(toggle) {
+            toggle.classList.toggle('active');
+        }
+        
+        function openUserPanel(userName) {
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('userPanel').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeUserPanel() {
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('userPanel').classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close panel with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeUserPanel();
+            }
+        });
+    </script>
+</body>
+</html>

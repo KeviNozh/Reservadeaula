@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificaciones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    .container {
+      width: 70%;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filters button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #e6e6e6;
+      transition: background 0.3s;
+    }
+
+    .filters button:hover {
+      background: #d4d4d4;
+    }
+
+    .filters button.active {
+      background: #0056d2;
+      color: white;
+    }
+
+    .notification {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 6px solid;
+      display: block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .notification.hidden {
+      display: none;
+    }
+
+    .aprobada { border-color: #28a745; }
+    .nueva { border-color: #007bff; }
+    .recordatorio { border-color: #ffc107; }
+    .rechazada { border-color: #dc3545; }
+    .pendiente { border-color: #6c757d; }
+
+    .notification.unread {
+      background: #f8f9fa;
+      border-left-width: 8px;
+    }
+
+    .notification small {
+      color: gray;
+      display: block;
+      margin-top: 6px;
+    }
+
+    .actions {
+      margin-top: 10px;
+    }
+
+    .actions button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+
+    .actions button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary { background: #0056d2; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: black; }
+    .btn-secondary { background: #6c757d; color: white; }
+
+    /* Panel lateral */
+    .sidebar {
+      width: 30%;
+      background: white;
+      padding: 20px;
+      border-left: 1px solid #ddd;
+      min-height: 100vh;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 15px;
+    }
+
+    .preference {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      align-items: center;
+    }
+
+    .toggle {
+      width: 40px;
+      height: 20px;
+      background: #ddd;
+      border-radius: 15px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle::after {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+
+    .toggle.active {
+      background: #28a745;
+    }
+
+    .toggle.active::after {
+      left: 21px;
+    }
+
+    .frecuencia {
+      margin-top: 20px;
+    }
+
+    .frecuencia label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6c757d;
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 20px;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .refresh-btn {
+      background: #0056d2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔔 Notificaciones (<span id="notification-count">0</span>)</h2>
+
+    <!-- Filtros -->
+    <div class="filters">
+      <button class="active" data-filter="all">Todas</button>
+      <button data-filter="unread">Sin leer</button>
+      <button data-filter="pending">Pendientes</button>
+      <button data-filter="approved">Aprobadas</button>
+      <button data-filter="rejected">Rechazadas</button>
+    </div>
+
+    <!-- Contenedor de notificaciones dinámicas -->
+    <div id="notifications-container">
+      <div class="loading">Cargando notificaciones...</div>
+    </div>
+  </div>
+
+  <!-- Panel lateral -->
+  <div class="sidebar">
+    <h3>⚙️ Preferencias</h3>
+
+    <div class="preference">
+      <span>Reservas aprobadas</span>
+      <div class="toggle active" data-pref="approved"></div>
+    </div>
+
+    <div class="preference">
+      <span>Reservas rechazadas</span>
+      <div class="toggle" data-pref="rejected"></div>
+    </div>
+
+    <div class="preference">
+      <span>Recordatorios</span>
+      <div class="toggle active" data-pref="reminders"></div>
+    </div>
+
+    <!-- Frecuencia -->
+    <div class="frecuencia">
+      <h4>📅 Frecuencia</h4>
+      <label><input type="radio" name="frecuencia" value="immediate" checked> Inmediata</label>
+      <label><input type="radio" name="frecuencia" value="daily"> Resumen diario</label>
+      <label><input type="radio" name="frecuencia" value="weekly"> Resumen semanal</label>
+    </div>
+  </div>
+
+  <script>
+    // Datos de ejemplo que vendrían de tu base de datos
+    // En producción, esto se obtendría mediante una llamada API
+    const reservasFromDB = [
+      {
+        id: 1,
+        espacio: "Sala de Conferencias A",
+        fecha: "2024-03-22",
+        hora: "10:00 - 12:00",
+        estado: "pending",
+        motivo_rechazo: null,
+        fecha_creacion: "2024-03-20T14:30:00",
+        leido: false
+      },
+      {
+        id: 2,
+        espacio: "Laboratorio 3",
+        fecha: "2024-03-23",
+        hora: "14:00 - 16:00",
+        estado: "approved",
+        motivo_rechazo: null,
+        fecha_creacion: "2024-03-19T09:15:00",
+        leido: true
+      },
+      {
+        id: 3,
+        espacio: "Sala de Juntas B",
+        fecha: "2024-03-24",
+        hora: "11:00 - 13:00",
+        estado: "rejected",
+        motivo_rechazo: "Conflicto de horarios con evento institucional",
+        fecha_creacion: "2024-03-18T16:45:00",
+        leido: true
+      },
+      {
+        id: 4,
+        espacio: "Auditorio Principal",
+        fecha: "2024-03-25",
+        hora: "15:00 - 17:00",
+        estado: "pending",
+        motivo_rechazo: null,
+        fecha_creacion: "2024-03-21T11:20:00",
+        leido: false
+      },
+      {
+        id: 5,
+        espacio: "Sala de Computación 2",
+        fecha: "2024-03-26",
+        hora: "09:00 - 11:00",
+        estado: "approved",
+        motivo_rechazo: null,
+        fecha_creacion: "2024-03-17T13:10:00",
+        leido: false
+      }
+    ];
+
+    // Función para formatear fecha y hora
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      // Formato completo de fecha y hora
+      const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      
+      const fullDate = date.toLocaleDateString('es-ES', options);
+
+      if (diffMins < 1) return `Hace unos segundos (${fullDate})`;
+      if (diffMins < 60) return `Hace ${diffMins} min (${fullDate})`;
+      if (diffHours < 24) return `Hace ${diffHours} h (${fullDate})`;
+      if (diffDays === 1) return `Ayer (${fullDate})`;
+      return `Hace ${diffDays} días (${fullDate})`;
+    }
+
+    // Función para generar notificaciones desde las reservas
+    function generateNotificationsFromReservas(reservas) {
+      const notifications = [];
+      
+      reservas.forEach(reserva => {
+        let notification = null;
+        
+        switch(reserva.estado) {
+          case 'pending':
+            notification = {
+              id: reserva.id,
+              type: 'pending',
+              class: 'pendiente',
+              title: 'Solicitud de Reserva Pendiente',
+              message: `Tu solicitud para <strong>${reserva.espacio}</strong> el <strong>${reserva.fecha}</strong> de <strong>${reserva.hora}</strong> está en revisión por el administrador.`,
+              timestamp: reserva.fecha_creacion,
+              read: reserva.leido,
+              actions: [
+                { text: 'Ver detalles', class: 'btn-primary', action: 'view' },
+                { text: 'Cancelar solicitud', class: 'btn-secondary', action: 'cancel' }
+              ]
+            };
+            break;
+            
+          case 'approved':
+            notification = {
+              id: reserva.id,
+              type: 'approved',
+              class: 'aprobada',
+              title: '✅ Reserva Aprobada',
+              message: `Tu solicitud para <strong>${reserva.espacio}</strong> el <strong>${reserva.fecha}</strong> de <strong>${reserva.hora}</strong> ha sido <strong>aprobada</strong>.`,
+              timestamp: reserva.fecha_creacion,
+              read: reserva.leido,
+              actions: [
+                { text: 'Ver detalles', class: 'btn-primary', action: 'view' },
+                { text: 'Agregar al calendario', class: 'btn-success', action: 'calendar' }
+              ]
+            };
+            break;
+            
+          case 'rejected':
+            notification = {
+              id: reserva.id,
+              type: 'rejected',
+              class: 'rechazada',
+              title: '❌ Reserva Rechazada',
+              message: `Tu solicitud para <strong>${reserva.espacio}</strong> ha sido <strong>rechazada</strong>. Motivo: ${reserva.motivo_rechazo}`,
+              timestamp: reserva.fecha_creacion,
+              read: reserva.leido,
+              actions: [
+                { text: 'Ver detalles', class: 'btn-primary', action: 'view' },
+                { text: 'Solicitar otro horario', class: 'btn-warning', action: 'reschedule' }
+              ]
+            };
+            break;
+        }
+        
+        if (notification) {
+          notifications.push(notification);
+        }
+      });
+      
+      // Ordenar por fecha (más recientes primero)
+      return notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+
+    // Función para renderizar notificaciones
+    function renderNotifications(notifications, filter = 'all') {
+      const container = document.getElementById('notifications-container');
+      const countElement = document.getElementById('notification-count');
+      
+      // Filtrar notificaciones según el filtro activo
+      let filteredNotifications = notifications;
+      
+      switch(filter) {
+        case 'unread':
+          filteredNotifications = notifications.filter(n => !n.read);
+          break;
+        case 'pending':
+          filteredNotifications = notifications.filter(n => n.type === 'pending');
+          break;
+        case 'approved':
+          filteredNotifications = notifications.filter(n => n.type === 'approved');
+          break;
+        case 'rejected':
+          filteredNotifications = notifications.filter(n => n.type === 'rejected');
+          break;
+      }
+      
+      countElement.textContent = filteredNotifications.length;
+      
+      if (filteredNotifications.length === 0) {
+        let message = '';
+        switch(filter) {
+          case 'unread':
+            message = 'No tienes notificaciones sin leer';
+            break;
+          case 'pending':
+            message = 'No tienes reservas pendientes';
+            break;
+          case 'approved':
+            message = 'No tienes reservas aprobadas';
+            break;
+          case 'rejected':
+            message = 'No tienes reservas rechazadas';
+            break;
+          default:
+            message = 'No hay notificaciones para mostrar';
+        }
+        container.innerHTML = `<div class="empty-state">${message}</div>`;
+        return;
+      }
+      
+      container.innerHTML = filteredNotifications.map(notif => `
+        <div class="notification ${notif.class} ${!notif.read ? 'unread' : ''}" 
+             data-type="${notif.type}" 
+             data-read="${notif.read}">
+          <b>${notif.title}</b>
+          <p>${notif.message}</p>
+          <small>${formatDateTime(notif.timestamp)}</small>
+          <div class="actions">
+            ${notif.actions.map(action => 
+              `<button class="${action.class}" 
+                      data-action="${action.action}" 
+                      data-reserva-id="${notif.id}">
+                ${action.text}
+              </button>`
+            ).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Función para cargar datos desde la API (simulada)
+    function loadReservasFromAPI() {
+      return new Promise((resolve) => {
+        // Simular delay de red
+        setTimeout(() => {
+          resolve(reservasFromDB);
+        }, 1000);
+      });
+    }
+
+    // Inicializar la aplicación
+    document.addEventListener('DOMContentLoaded', async function() {
+      let allNotifications = [];
+      let currentFilter = 'all';
+      
+      try {
+        // Cargar datos de la API
+        const reservas = await loadReservasFromAPI();
+        allNotifications = generateNotificationsFromReservas(reservas);
+        renderNotifications(allNotifications, currentFilter);
+      } catch (error) {
+        document.getElementById('notifications-container').innerHTML = `
+          <div class="error-state">
+            Error al cargar las notificaciones
+            <button class="refresh-btn" onclick="location.reload()">Reintentar</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Funcionalidad para los filtros
+      document.querySelectorAll('.filters button').forEach(button => {
+        button.addEventListener('click', function() {
+          // Remover clase active de todos los botones
+          document.querySelectorAll('.filters button').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          
+          // Agregar clase active al botón clickeado
+          this.classList.add('active');
+          
+          // Actualizar filtro actual y renderizar
+          currentFilter = this.getAttribute('data-filter');
+          renderNotifications(allNotifications, currentFilter);
+        });
+      });
+
+      // Funcionalidad para los toggles de preferencias
+      document.querySelectorAll('.toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          this.classList.toggle('active');
+          // Aquí podrías guardar la preferencia en el servidor
+        });
+      });
+
+      // Funcionalidad para los botones de acción
+      document.addEventListener('click', function(e) {
+        const button = e.target.closest('.actions button');
+        if (button) {
+          const action = button.getAttribute('data-action');
+          const reservaId = button.getAttribute('data-reserva-id');
+          const reserva = reservasFromDB.find(r => r.id == reservaId);
+          
+          if (reserva) {
+            switch(action) {
+              case 'view':
+                alert(`Detalles de la reserva:\n\nID: ${reserva.id}\nEspacio: ${reserva.espacio}\nFecha: ${reserva.fecha}\nHora: ${reserva.hora}\nEstado: ${reserva.estado}\nCreado: ${new Date(reserva.fecha_creacion).toLocaleString()}`);
+                break;
+              case 'calendar':
+                alert(`Agregando al calendario:\n${reserva.espacio} - ${reserva.fecha} ${reserva.hora}`);
+                break;
+              case 'reschedule':
+                alert(`Solicitando nuevo horario para: ${reserva.espacio}`);
+                break;
+              case 'cancel':
+                if (confirm('¿Estás seguro de que quieres cancelar esta solicitud de reserva?')) {
+                  alert(`Solicitud de reserva #${reservaId} cancelada`);
+                  // Aquí iría la llamada a la API para cancelar
+                }
+                break;
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

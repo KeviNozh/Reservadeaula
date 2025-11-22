@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #f9fafb 100%);
+            color: #111827;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+
+        .confirmation-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 48px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confirmation-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        /* Success Animation */
+        .success-animation {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 32px;
+            position: relative;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .success-rings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+        }
+
+        .success-ring {
+            position: absolute;
+            border: 2px solid #10b981;
+            border-radius: 50%;
+            opacity: 0;
+            animation: ringExpand 2s ease-out infinite;
+        }
+
+        .success-ring:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .success-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .success-ring:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes ringExpand {
+            0% {
+                width: 120px;
+                height: 120px;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        /* Content */
+        .success-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .success-message {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        /* Reservation Details Card */
+        .reservation-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .reservation-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .reservation-number {
+            background: #2563eb;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .reservation-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+.reservation-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-icon {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border: 1px solid #e5e7eb;
+}
+
+.detail-content {
+    flex: 1;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    font-size: 16px;
+    color: #111827;
+    font-weight: 500;
+}
+
+        /* Information Section */
+        .info-section {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .info-content {
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .info-list {
+            margin: 12px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .info-list li {
+            margin-bottom: 6px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .action-btn.secondary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .action-btn.link {
+            background: none;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+
+        .action-btn.link:hover {
+            background: #f9fafb;
+            color: #374151;
+        }
+
+        /* Additional Info */
+        .additional-info {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 16px 20px;
+            margin-top: 24px;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+        }
+
+        .additional-info-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 8px;
+        }
+
+        .additional-info-text {
+            font-size: 14px;
+            color: #0c4a6e;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 16px;
+            }
+
+            .confirmation-container {
+                padding: 32px 24px;
+            }
+
+            .success-title {
+                font-size: 28px;
+            }
+
+            .success-message {
+                font-size: 16px;
+            }
+
+            .reservation-details {
+                grid-template-columns: 1fr;
+            }
+
+            .reservation-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .action-buttons {
+                margin-top: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .success-animation {
+                width: 100px;
+                height: 100px;
+            }
+
+            .success-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+
+            .success-rings {
+                width: 100px;
+                height: 100px;
+            }
+
+            .success-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+        </div>
+        
+        <div class="user-menu">
+            <div class="user-avatar">JD</div>
+            <span>Juan Domínguez</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="confirmation-container">
+            <!-- Success Animation -->
+            <div class="success-animation">
+                <div class="success-icon">✓</div>
+                <div class="success-rings">
+                    <div class="success-ring"></div>
+                    <div class="success-ring"></div>
+                    <div class="success-ring"></div>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <h1 class="success-title">¡Reserva Enviada con Éxito!</h1>
+            <p class="success-message">
+                Tu solicitud de reserva ha sido enviada correctamente y está pendiente de aprobación.
+                Te notificaremos por correo electrónico cuando sea procesada.
+            </p>
+
+            <!-- Reservation Details Card -->
+           <!-- Reservation Details Card -->
+            <!-- Reservation Details Card -->
+            <div class="reservation-card">
+                <div class="reservation-header">
+                    <div class="reservation-number">
+                        {% if reserva %}
+                            #SR-{{ reserva.id }}
+                        {% else %}
+                            #SR-NUEVA
+                        {% endif %}
+                        </div>
+                        <div class="reservation-status">
+                        ⏳ Pendiente de Aprobación
+                    </div>
+                </div>
+
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <div class="detail-icon">🏛️</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Espacio</div>
+                            <div class="detail-value">
+                                {% if reserva and reserva.espacio %}
+                                    {{ reserva.espacio.nombre }}
+                                {% else %}
+                                    Espacio no especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">📅</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Fecha</div>
+                            <div class="detail-value">
+                                {% if reserva and reserva.fecha_reserva %}
+                                    {{ reserva.fecha_reserva|date:"l, d M Y" }}
+                                {% else %}
+                                    Fecha no especificada
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">⏰</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Horario</div>
+                            <div class="detail-value">
+                                {% if reserva and reserva.hora_inicio and reserva.hora_fin %}
+                                    {{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fin|time:"H:i" }}
+                                {% else %}
+                                    Horario no especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">⏱️</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Duración</div>
+                            <div class="detail-value">
+                                {% if reserva and reserva.hora_inicio and reserva.hora_fin %}
+                                    {% with inicio=reserva.hora_inicio fin=reserva.hora_fin %}
+                                        {{ fin.hour|add:fin.minute|divisibleby:60 }} horas
+                                    {% endwith %}
+                                {% else %}
+                                    Duración no especificada
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">👥</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Asistentes</div>
+                            <div class="detail-value">
+                                {% if reserva and reserva.num_asistentes %}
+                                    {{ reserva.num_asistentes }} personas
+                                {% else %}
+                                    Número no especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">📝</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Propósito</div>
+                            <div class="detail-value">
+                                {% if reserva and reserva.proposito %}
+                                    {{ reserva.proposito }}
+                                {% else %}
+                                    Propósito no especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information Section -->
+            <div class="info-section">
+                <div class="info-header">
+                    <span>ℹ️</span>
+                    <h3 class="info-title">Información Importante</h3>
+                </div>
+                <div class="info-content">
+                    <strong>Tiempo estimado de respuesta:</strong> 24-48 horas laborables
+                    <ul class="info-list">
+                        <li>Recibirás una notificación por correo electrónico cuando tu solicitud sea revisada</li>
+                        <li>Puedes consultar el estado de tu reserva en cualquier momento desde tu historial</li>
+                        <li>Si tu solicitud es rechazada, recibirás información sobre motivos y alternativas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="#" class="action-btn primary">
+                    <span>📋</span>
+                    Ver en Historial
+                </a>
+                <a href="#" class="action-btn secondary">
+                    <span>➕</span>
+                    Nueva Reserva
+                </a>
+                <a href="#" class="action-btn link">
+                    <span>🏠</span>
+                    Volver al Dashboard
+                </a>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="additional-info">
+                <h4 class="additional-info-title">📧 Confirmación por Email</h4>
+                <p class="additional-info-text">
+                    Se ha enviado una copia de esta solicitud a tu correo electrónico institucional 
+                    <strong>juan.dominguez@institucion.edu</strong> para tus registros.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate the success icon after page load
+            setTimeout(() => {
+                const successIcon = document.querySelector('.success-icon');
+                successIcon.style.animation = 'successPulse 2s ease-in-out infinite';
+            }, 500);
+
+            // Add click handlers for buttons
+            const buttons = document.querySelectorAll('.action-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Add click animation
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+
+                    // Handle different button actions
+                    const buttonText = this.textContent.trim();
+                    if (buttonText.includes('Historial')) {
+                        alert('Redirigiendo al historial de reservas...');
+                    } else if (buttonText.includes('Nueva Reserva')) {
+                        alert('Abriendo formulario de nueva reserva...');
+                    } else if (buttonText.includes('Dashboard')) {
+                        alert('Volviendo al dashboard principal...');
+                    }
+                });
+            });
+
+            // Copy reservation number functionality
+            const reservationNumber = document.querySelector('.reservation-number');
+            reservationNumber.addEventListener('click', function() {
+                const text = this.textContent.trim();
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = this.textContent;
+                    this.textContent = '✓ Copiado!';
+                    this.style.background = '#10b981';
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.background = '#2563eb';
+                    }, 2000);
+                }).catch(() => {
+                    console.log('No se pudo copiar al portapapeles');
+                });
+            });
+
+            // Add hover effect to reservation card
+            const reservationCard = document.querySelector('.reservation-card');
+            reservationCard.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            });
+
+            reservationCard.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '';
+            });
+        });
+
+        // Auto-redirect functionality (commented out for demo)
+        // setTimeout(() => {
+        //     window.location.href = '/dashboard';
+        // }, 10000); // Redirect after 10 seconds
+    </script>
+</body>
+</html>

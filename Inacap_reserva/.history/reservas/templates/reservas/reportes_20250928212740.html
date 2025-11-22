@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Sistema de Reservas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* Report Types Section */
+        .report-types {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-tabs {
+            display: flex;
+            gap: 2px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .report-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .report-tab.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .template-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .template-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .template-card.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .template-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .template-icon {
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .template-card.selected .template-icon {
+            background: #2563eb;
+            color: white;
+        }
+
+        .template-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .template-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        /* Report Configuration */
+        .report-config {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .config-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .config-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .config-select, .config-input {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .config-select:focus, .config-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .metrics-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+
+        .metrics-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .metric-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .metric-checkbox:hover {
+            background: #f9fafb;
+        }
+
+        .metric-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Preview Section */
+        .report-preview {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .preview-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .preview-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .preview-btn.active {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: white;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .kpi-change.positive {
+            color: #10b981;
+        }
+
+        .kpi-change.negative {
+            color: #dc2626;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            height: 400px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        /* Data Table */
+        .data-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: #f9fafb;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            text-align: left;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        /* Export Options */
+        .export-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .export-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-option:hover {
+            border-color: #2563eb;
+        }
+
+        .export-option.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .export-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .export-name {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .export-description {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .pdf-options {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            display: none;
+        }
+
+        .pdf-options.visible {
+            display: block;
+        }
+
+        .pdf-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .pdf-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn.primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .export-btn.primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .export-btn.secondary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .export-btn.secondary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .export-btn.outline {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+
+        .export-btn.outline:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .export-actions {
+                flex-direction: column;
+            }
+
+            .report-tabs {
+                flex-wrap: wrap;
+            }
+
+            .report-tab {
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Dashboard</a>
+            <a href="#" class="nav-item">Solicitudes</a>
+            <a href="#" class="nav-item">Espacios</a>
+            <a href="#" class="nav-item">Usuarios</a>
+            <a href="#" class="nav-item active">Reportes</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">AD</div>
+            <span>Admin</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Reportes y Analytics</h1>
+            <p class="page-subtitle">Genera reportes detallados sobre el uso de espacios y gestión de reservas</p>
+        </div>
+
+        <!-- Report Types -->
+        <div class="report-types">
+            <h2 class="section-title">
+                <span>📊</span>
+                Tipo de Reporte
+            </h2>
+            
+            <div class="report-tabs">
+                <button class="report-tab active" data-type="ocupacion">Ocupación</button>
+                <button class="report-tab" data-type="usuarios">Usuarios</button>
+                <button class="report-tab" data-type="espacios">Espacios</button>
+                <button class="report-tab" data-type="solicitudes">Solicitudes</button>
+            </div>
+
+            <div class="templates-grid">
+                <div class="template-card selected" data-template="monthly">
+                    <div class="template-header">
+                        <div class="template-icon">📅</div>
+                        <div class="template-name">Reporte Mensual</div>
+                    </div>
+                    <p class="template-description">
+                        Resumen completo de actividad mensual con métricas de ocupación, usuarios activos y tendencias.
+                    </p>
+                </div>
+
+                <div class="template-card" data-template="space-usage">
+                    <div class="template-header">
+                        <div class="template-icon">🏢</div>
+                        <div class="template-name">Ocupación por Espacio</div>
+                    </div>
+                    <p class="template-description">
+                        Análisis detallado del uso de cada espacio con porcentajes de ocupación y patrones de uso.
+                    </p>
+                </div>
+
+                <div class="template-card" data-template="active-users">
+                    <div class="template-header">
+                        <div class="template-icon">👥</div>
+                        <div class="template-name">Usuarios Más Activos</div>
+                    </div>
+                    <p class="template-description">
+                        Ranking de usuarios por número de reservas y frecuencia de uso del sistema.
+                    </p>
+                </div>
+
+                <div class="template-card" data-template="underutilized">
+                    <div class="template-header">
+                        <div class="template-icon">📉</div>
+                        <div class="template-name">Espacios Subutilizados</div>
+                    </div>
+                    <p class="template-description">
+                        Identificación de espacios con baja ocupación y oportunidades de optimización.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Configuration -->
+        <div class="report-config">
+            <h2 class="section-title">
+                <span>⚙️</span>
+                Configuración del Reporte
+            </h2>
+            
+            <div class="config-grid">
+                <div class="config-group">
+                    <label class="config-label">📅 Período</label>
+                    <select class="config-select" id="periodSelect">
+                        <option value="last-week">Última semana</option>
+                        <option value="last-month" selected>Último mes</option>
+                        <option value="last-quarter">Último trimestre</option>
+                        <option value="last-year">Último año</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label class="config-label">📍 Espacios</label>
+                    <select class="config-select" id="spaceSelect">
+                        <option value="all" selected>Todos los espacios</option>
+                        <option value="building-a">Edificio A</option>
+                        <option value="building-b">Edificio B</option>
+                        <option value="building-c">Edificio C</option>
+                        <option value="specific">Espacios específicos</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label class="config-label">👤 Usuarios</label>
+                    <select class="config-select" id="userSelect">
+                        <option value="all" selected>Todos los usuarios</option>
+                        <option value="department">Por departamento</option>
+                        <option value="role">Por rol</option>
+                        <option value="active">Solo activos</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label class="config-label">📊 Formato de datos</label>
+                    <select class="config-select" id="formatSelect">
+                        <option value="summary" selected>Resumen ejecutivo</option>
+                        <option value="detailed">Detallado</option>
+                        <option value="raw">Datos en bruto</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="metrics-section">
+                <h3 class="metrics-title">Métricas a Incluir</h3>
+                <div class="metrics-grid">
+                    <label class="metric-checkbox">
+                        <input type="checkbox" checked>
+                        <span>Número de reservas</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox" checked>
+                        <span>Horas de ocupación</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox" checked>
+                        <span>Porcentaje de utilización</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox">
+                        <span>Cancelaciones</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox">
+                        <span>Solicitudes rechazadas</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox">
+                        <span>Tiempo promedio de uso</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox">
+                        <span>Usuarios únicos</span>
+                    </label>
+                    <label class="metric-checkbox">
+                        <input type="checkbox">
+                        <span>Tendencias temporales</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="report-preview">
+            <div class="preview-header">
+                <h2 class="section-title">
+                    <span>👁️</span>
+                    Vista Previa del Reporte
+                </h2>
+                <div class="preview-actions">
+                    <button class="preview-btn active">📊 Gráficos</button>
+                    <button class="preview-btn">📋 Tabla</button>
+                    <button class="preview-btn">📈 Tendencias</button>
+                </div>
+            </div>
+
+            <!-- KPI Summary -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">1,247</div>
+                    <div class="kpi-label">Total Reservas</div>
+                    <div class="kpi-change positive">↗ +12% vs mes anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">78%</div>
+                    <div class="kpi-label">Ocupación Promedio</div>
+                    <div class="kpi-change positive">↗ +5% vs mes anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">2,890</div>
+                    <div class="kpi-label">Horas Utilizadas</div>
+                    <div class="kpi-change positive">↗ +8% vs mes anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">342</div>
+                    <div class="kpi-label">Usuarios Activos</div>
+                    <div class="kpi-change negative">↘ -3% vs mes anterior</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Ocupación por Días de la Semana</div>
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Top 5 Espacios Más Utilizados</div>
+                    <canvas id="spacesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">Resumen por Espacio</h3>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Espacio</th>
+                            <th>Reservas</th>
+                            <th>Horas</th>
+                            <th>Ocupación</th>
+                            <th>Usuarios</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sala de Conferencias A</td>
+                            <td>156</td>
+                            <td>312h</td>
+                            <td>87%</td>
+                            <td>45</td>
+                        </tr>
+                        <tr>
+                            <td>Auditorio Principal</td>
+                            <td>89</td>
+                            <td>445h</td>
+                            <td>92%</td>
+                            <td>78</td>
+                        </tr>
+                        <tr>
+                            <td>Laboratorio 3</td>
+                            <td>134</td>
+                            <td>268h</td>
+                            <td>75%</td>
+                            <td>56</td>
+                        </tr>
+                        <tr>
+                            <td>Sala de Juntas B</td>
+                            <td>98</td>
+                            <td>147h</td>
+                            <td>65%</td>
+                            <td>32</td>
+                        </tr>
+                        <tr>
+                            <td>Aula Magna</td>
+                            <td>67</td>
+                            <td>201h</td>
+                            <td>58%</td>
+                            <td>41</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-section">
+            <h2 class="section-title">
+                <span>📤</span>
+                Opciones de Exportación
+            </h2>
+
+            <div class="export-options">
+                <div class="export-option selected" data-format="pdf">
+                    <span class="export-icon">📄</span>
+                    <div class="export-name">PDF</div>
+                    <div class="export-description">Reporte completo con gráficos</div>
+                </div>
+                <div class="export-option" data-format="excel">
+                    <span class="export-icon">📊</span>
+                    <div class="export-name">Excel</div>
+                    <div class="export-description">Datos con tablas dinámicas</div>
+                </div>
+                <div class="export-option" data-format="csv">
+                    <span class="export-icon">📋</span>
+                    <div class="export-name">CSV</div>
+                    <div class="export-description">Datos en bruto para análisis</div>
+                </div>
+            </div>
+
+            <div class="pdf-options visible" id="pdfOptions">
+                <div class="pdf-option">
+                    <input type="checkbox" checked id="includeCharts">
+                    <label for="includeCharts">Incluir gráficos interactivos</label>
+                </div>
+                <div class="pdf-option">
+                    <input type="checkbox" id="landscape">
+                    <label for="landscape">Orientación horizontal</label>
+                </div>
+                <div class="pdf-option">
+                    <input type="checkbox" checked id="includeLogo">
+                    <label for="includeLogo">Incluir logo institucional</label>
+                </div>
+                <div class="pdf-option">
+                    <input type="checkbox" id="watermark">
+                    <label for="watermark">Marca de agua</label>
+                </div>
+            </div>
+
+            <div class="export-actions">
+                <button class="export-btn outline" id="saveConfig">
+                    💾 Guardar Configuración
+                </button>
+                <button class="export-btn secondary" id="scheduleReport">
+                    📅 Programar Envío
+                </button>
+                <button class="export-btn primary" id="generateReport">
+                    🚀 Generar Reporte
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Chart.js configurations
+        const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+        const spacesCtx = document.getElementById('spacesChart').getContext('2d');
+
+        // Weekly occupancy chart
+        new Chart(weeklyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+                datasets: [{
+                    label: 'Ocupación (%)',
+                    data: [85, 92, 78, 88, 95, 45, 12],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Spaces usage chart
+        new Chart(spacesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sala Conf. A', 'Auditorio', 'Lab 3', 'Sala Juntas B', 'Otros'],
+                datasets: [{
+                    data: [25, 20, 18, 15, 22],
+                    backgroundColor: [
+                        '#2563eb',
+                        '#10b981',
+                        '#f59e0b',
+                        '#ef4444',
+                        '#8b5cf6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Template selection
+        const templateCards = document.querySelectorAll('.template-card');
+        templateCards.forEach(card => {
+            card.addEventListener('click', function() {
+                templateCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Report tabs
+        const reportTabs = document.querySelectorAll('.report-tab');
+        reportTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                reportTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Export format selection
+        const exportOptions = document.querySelectorAll('.export-option');
+        const pdfOptions = document.getElementById('pdfOptions');
+
+        exportOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                exportOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                const format = this.dataset.format;
+                if (format === 'pdf') {
+                    pdfOptions.classList.add('visible');
+                } else {
+                    pdfOptions.classList.remove('visible');
+                }
+            });
+        });
+
+        // Preview actions
+        const previewBtns = document.querySelectorAll('.preview-btn');
+        previewBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                previewBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Export actions
+        document.getElementById('generateReport').addEventListener('click', function() {
+            this.textContent = '⏳ Generando...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                alert('¡Reporte generado exitosamente! Se ha iniciado la descarga.');
+                this.textContent = '🚀 Generar Reporte';
+                this.disabled = false;
+            }, 3000);
+        });
+
+        document.getElementById('scheduleReport').addEventListener('click', function() {
+            alert('Abriendo configuración de programación de reportes...');
+        });
+
+        document.getElementById('saveConfig').addEventListener('click', function() {
+            alert('Configuración guardada como plantilla personalizada');
+        });
+
+        // Period selection handler
+        document.getElementById('periodSelect').addEventListener('change', function() {
+            if (this.value === 'custom') {
+                // Show custom date inputs (would be implemented in real app)
+                console.log('Show custom date range picker');
+            }
+        });
+    </script>
+</body>
+</html>
