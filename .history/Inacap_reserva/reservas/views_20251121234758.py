@@ -73,22 +73,10 @@ def crear_notificacion_tiempo_real(request):
 
 def notificar_accion_admin(tipo, titulo, mensaje, usuario_admin=None, usuario_relacionado=None, reserva=None, espacio=None, request=None):
     """
-    Función MEJORADA para notificaciones administrativas - EVITA DUPLICADOS
+    Función CORREGIDA para notificaciones administrativas
     """
     try:
         print(f"🚀 CREANDO NOTIFICACIÓN ADMIN: {titulo}")
-        
-        # Verificar si ya existe una notificación similar reciente (evitar duplicados)
-        if reserva and tipo in ['reserva_aprobada', 'reserva_rechazada']:
-            notificacion_existente = NotificacionAdmin.objects.filter(
-                tipo=tipo,
-                reserva=reserva,
-                fecha_creacion__gte=timezone.now() - timezone.timedelta(minutes=5)
-            ).exists()
-            
-            if notificacion_existente:
-                print(f"⚠️ Notificación duplicada detectada y evitada: {titulo}")
-                return None
         
         # Determinar prioridad según el tipo de notificación
         prioridad_map = {

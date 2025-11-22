@@ -346,7 +346,7 @@
   <!-- Sistema de Alertas en Tiempo Real -->
   <div id="alertContainer" class="alert-container"></div>
 
-    <script>
+  <script>
     // Configuración
     const API_BASE_URL = 'http://127.0.0.1:8000/api';
     let allNotifications = [];
@@ -354,147 +354,157 @@
     let lastUpdateTime = null;
     let autoRefreshInterval = null;
 
-    // ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA CORREGIDO =====
-    function startAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-        }
-        
-        // Actualizar inmediatamente al iniciar
-        setTimeout(() => checkForNewNotifications(), 1000);
-        
-        // Luego cada 15 segundos
-        autoRefreshInterval = setInterval(() => {
-            checkForNewNotifications();
-        }, 15000); // 15 segundos
-        
-        console.log('🔄 Sistema de actualización automática iniciado (15s)');
-    }
-
-    function stopAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-            autoRefreshInterval = null;
-            console.log('⏹️ Sistema de actualización automática detenido');
-        }
-    }
-
-    async function checkForNewNotifications() {
-        try {
-            console.log('🔍 Verificando nuevas notificaciones...');
+     const hasNewNotifications = checkForNewNotificationsSinceLastUpdate(newNotifications);
             
-            const response = await fetch(`${API_BASE_URL}/notificaciones/?no_leidas=true&limite=100&_t=${Date.now()}`, {
-                credentials: 'include',
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
+            if (hasNewNotifications) {
+              showAutoRefreshIndicator();
+              updateNewNotificationsBadge();
+              
+              // Recargar datos completos
+              setTimeout(() => {
+                loadAllData().then(() => {
+                  hideAutoRefreshIndicator();
+                // ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA CORREGIDO =====
+                function startAutoRefresh() {
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                    }
+                    
+                    // Actualizar inmediatamente al iniciar
+                    setTimeout(() => checkForNewNotifications(), 1000);
+                    
+                    // Luego cada 15 segundos
+                    autoRefreshInterval = setInterval(() => {
+                        checkForNewNotifications();
+                    }, 15000); // 15 segundos
+                    
+                    console.log('🔄 Sistema de actualización automática iniciado (15s)');
                 }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    const newNotifications = data.notificaciones;
-                    console.log(`📊 Notificaciones actuales: ${newNotifications.length}`);
-                    
-                    const hasNewNotifications = checkForNewNotificationsSinceLastUpdate(newNotifications);
-                    
-                    if (hasNewNotifications) {
-                        console.log('🎯 ¡Nuevas notificaciones encontradas!');
-                        showAutoRefreshIndicator();
-                        updateNewNotificationsBadge();
-                        
-                        // Recargar datos completos después de un breve delay
-                        setTimeout(() => {
-                            loadAllData().then(() => {
-                                console.log('✅ Datos actualizados después de nuevas notificaciones');
-                                hideAutoRefreshIndicator();
-                            });
-                        }, 500);
-                    } else {
-                        console.log('ℹ️ No hay notificaciones nuevas');
+
+                function stopAutoRefresh() {
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                        autoRefreshInterval = null;
+                        console.log('⏹️ Sistema de actualización automática detenido');
                     }
                 }
-            }
-        } catch (error) {
-            console.log('❌ Error verificando nuevas notificaciones:', error);
-        }
-    }
 
-    function checkForNewNotificationsSinceLastUpdate(newNotifications) {
-        if (!lastUpdateTime) {
-            console.log('⏰ Primera verificación, estableciendo tiempo inicial');
-            lastUpdateTime = new Date();
-            return false;
-        }
-        
-        console.log(`⏰ Última actualización: ${lastUpdateTime}`);
-        
-        let hasNew = false;
-        
-        newNotifications.forEach(notif => {
-            try {
-                // Parsear la fecha correctamente
-                let notifTime;
-                if (notif.fecha_creacion_formateada) {
-                    // Formato: "dd/mm/yyyy HH:MM"
-                    const [datePart, timePart] = notif.fecha_creacion_formateada.split(' ');
-                    const [day, month, year] = datePart.split('/');
-                    const [hours, minutes] = timePart.split(':');
-                    notifTime = new Date(year, month - 1, day, hours, minutes);
-                } else if (notif.fecha_creacion) {
-                    // Formato ISO
-                    notifTime = new Date(notif.fecha_creacion);
-                } else {
-                    notifTime = new Date();
+                async function checkForNewNotifications() {
+                    try {
+                        console.log('🔍 Verificando nuevas notificaciones...');
+                        
+                        const response = await fetch(`${API_BASE_URL}/notificaciones/?no_leidas=true&limite=100&_t=${Date.now()}`, {
+                            credentials: 'include',
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                const newNotifications = data.notificaciones;
+                                console.log(`📊 Notificaciones actuales: ${newNotifications.length}`);
+                                
+                                const hasNewNotifications = checkForNewNotificationsSinceLastUpdate(newNotifications);
+                                
+                                if (hasNewNotifications) {
+                                    console.log('🎯 ¡Nuevas notificaciones encontradas!');
+                                    showAutoRefreshIndicator();
+                                    updateNewNotificationsBadge();
+                                    
+                                    // Recargar datos completos después de un breve delay
+                                    setTimeout(() => {
+                                        loadAllData().then(() => {
+                                            console.log('✅ Datos actualizados después de nuevas notificaciones');
+                                            hideAutoRefreshIndicator();
+                                        });
+                                    }, 500);
+                                } else {
+                                    console.log('ℹ️ No hay notificaciones nuevas');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.log('❌ Error verificando nuevas notificaciones:', error);
+                    }
                 }
-                
-                console.log(`📅 Notificación: ${notifTime} vs ${lastUpdateTime} - ${notifTime > lastUpdateTime ? 'NUEVA' : 'vieja'}`);
-                
-                if (notifTime > lastUpdateTime) {
-                    hasNew = true;
+
+                function checkForNewNotificationsSinceLastUpdate(newNotifications) {
+                    if (!lastUpdateTime) {
+                        console.log('⏰ Primera verificación, estableciendo tiempo inicial');
+                        lastUpdateTime = new Date();
+                        return false;
+                    }
+                    
+                    console.log(`⏰ Última actualización: ${lastUpdateTime}`);
+                    
+                    let hasNew = false;
+                    
+                    newNotifications.forEach(notif => {
+                        try {
+                            // Parsear la fecha correctamente
+                            let notifTime;
+                            if (notif.fecha_creacion_formateada) {
+                                // Formato: "dd/mm/yyyy HH:MM"
+                                const [datePart, timePart] = notif.fecha_creacion_formateada.split(' ');
+                                const [day, month, year] = datePart.split('/');
+                                const [hours, minutes] = timePart.split(':');
+                                notifTime = new Date(year, month - 1, day, hours, minutes);
+                            } else if (notif.fecha_creacion) {
+                                // Formato ISO
+                                notifTime = new Date(notif.fecha_creacion);
+                            } else {
+                                notifTime = new Date();
+                            }
+                            
+                            console.log(`📅 Notificación: ${notifTime} vs ${lastUpdateTime} - ${notifTime > lastUpdateTime ? 'NUEVA' : 'vieja'}`);
+                            
+                            if (notifTime > lastUpdateTime) {
+                                hasNew = true;
+                            }
+                        } catch (error) {
+                            console.error('Error procesando fecha:', error);
+                        }
+                    });
+                    
+                    return hasNew;
                 }
-            } catch (error) {
-                console.error('Error procesando fecha:', error);
-            }
-        });
-        
-        return hasNew;
-    }
 
-    function showAutoRefreshIndicator() {
-        const indicator = document.getElementById('autoRefreshIndicator');
-        if (indicator) {
-            indicator.innerHTML = '🔄 Actualizando notificaciones...';
-            indicator.style.display = 'block';
-        }
-    }
+                function showAutoRefreshIndicator() {
+                    const indicator = document.getElementById('autoRefreshIndicator');
+                    if (indicator) {
+                        indicator.innerHTML = '🔄 Actualizando notificaciones...';
+                        indicator.style.display = 'block';
+                    }
+                }
 
-    function hideAutoRefreshIndicator() {
-        const indicator = document.getElementById('autoRefreshIndicator');
-        if (indicator) {
-            indicator.style.display = 'none';
-        }
-    }
+                function hideAutoRefreshIndicator() {
+                    const indicator = document.getElementById('autoRefreshIndicator');
+                    if (indicator) {
+                        indicator.style.display = 'none';
+                    }
+                }
 
-    function updateNewNotificationsBadge() {
-        const badge = document.getElementById('new-notification-badge');
-        if (badge) {
-            badge.style.display = 'inline-flex';
-            badge.textContent = '!';
-            badge.style.animation = 'pulse 1s infinite';
-        }
-    }
+                function updateNewNotificationsBadge() {
+                    const badge = document.getElementById('new-notification-badge');
+                    if (badge) {
+                        badge.style.display = 'inline-flex';
+                        badge.textContent = '!';
+                        badge.style.animation = 'pulse 1s infinite';
+                    }
+                }
 
-    function resetNewNotificationsBadge() {
-        const badge = document.getElementById('new-notification-badge');
-        if (badge) {
-            badge.style.display = 'none';
-            badge.style.animation = 'none';
-        }
-        lastUpdateTime = new Date();
-        console.log('🔄 Badge reiniciado, nuevo lastUpdateTime:', lastUpdateTime);
-    }
+                function resetNewNotificationsBadge() {
+                    const badge = document.getElementById('new-notification-badge');
+                    if (badge) {
+                        badge.style.display = 'none';
+                        badge.style.animation = 'none';
+                    }
+                    lastUpdateTime = new Date();
+                    console.log('🔄 Badge reiniciado, nuevo lastUpdateTime:', lastUpdateTime);
+                }
 
     // ===== SISTEMA MEJORADO DE ALERTAS EN TIEMPO REAL =====
     class RealTimeAlertSystem {
@@ -505,8 +515,8 @@
         }
 
         setupRealTimeSystem() {
-            // Verificar alertas cada 10 segundos
-            setInterval(() => this.checkForAlerts(), 1000);
+            // Verificar alertas cada 20 segundos
+            setInterval(() => this.checkForAlerts(), 20000);
             
             // Verificar cuando la página se activa
             document.addEventListener('visibilitychange', () => {
@@ -696,7 +706,7 @@
         }
     }
 
-    // ===== FUNCIONES PRINCIPALES =====
+    // ===== FUNCIONES PRINCIPALES - MANTENIENDO TU FORMATO ORIGINAL =====
 
     async function probarConexion() {
       const statusElement = document.getElementById('system-status');
@@ -728,57 +738,55 @@
     }
 
     async function loadAllData() {
-        try {
-            console.log('🔄 Cargando todos los datos...');
-            
-            // Cargar notificaciones del sistema PRIMERO
-            const notificacionesSistema = await loadUserNotifications();
-            
-            // Generar notificaciones desde reservas
-            const reservasReales = await loadUserReservas();
-            const notificationsFromReservas = generateNotificationsFromRealData(reservasReales);
-            
-            // Combinar notificaciones
-            allNotifications = [
-                ...notificationsFromReservas,
-                ...notificacionesSistema.map(notif => ({
-                    id: `sys-${notif.id}`,
-                    type: notif.tipo,
-                    class: getNotificationClass(notif.tipo),
-                    title: `🔔 ${getNotificationTitle(notif.tipo)}`,
-                    message: notif.mensaje,
-                    timestamp: notif.fecha_creacion,
-                    read: notif.leida,
-                    actions: [
-                        { text: 'Marcar como leída', class: 'btn-secondary', action: 'mark-read' }
-                    ],
-                    notificationData: notif
-                }))
-            ];
-            
-            // Actualizar lastUpdateTime después de cargar
-            lastUpdateTime = new Date();
-            console.log('⏰ lastUpdateTime actualizado:', lastUpdateTime);
-            
-            // Renderizar con el filtro actual
-            renderNotifications(allNotifications, currentFilter);
-            
-            console.log(`✅ Datos cargados: ${reservasReales.length} reservas, ${notificacionesSistema.length} notificaciones sistema`);
-            
-        } catch (error) {
-            console.error('❌ Error cargando datos:', error);
-            document.getElementById('notifications-container').innerHTML = `
-                <div class="error-state">
-                    <strong>No se pudieron cargar los datos reales</strong><br>
-                    ${error.message}<br>
-                    <small>Verifica que el servidor Django esté corriendo en http://127.0.0.1:8000</small>
-                    <button class="refresh-btn" onclick="location.reload()">Reintentar</button>
-                </div>
-            `;
-        }
+      try {
+        console.log('🔄 Cargando todos los datos...');
+        
+        // Cargar reservas REALES del usuario (como lo tenías originalmente)
+        const reservasReales = await loadUserReservas();
+        
+        // Cargar notificaciones del sistema
+        const notificacionesSistema = await loadUserNotifications();
+
+        // Generar notificaciones desde reservas (formato original)
+        const notificationsFromReservas = generateNotificationsFromRealData(reservasReales);
+        
+        // Combinar notificaciones de reservas y del sistema
+        allNotifications = [
+          ...notificationsFromReservas,
+          ...notificacionesSistema.map(notif => ({
+            id: `notif-${notif.id}`,
+            type: notif.tipo,
+            class: getNotificationClass(notif.tipo),
+            title: `🔔 ${getNotificationTitle(notif.tipo)}`,
+            message: notif.mensaje,
+            timestamp: notif.fecha_creacion,
+            read: notif.leida,
+            actions: [
+              { text: 'Marcar como leída', class: 'btn-secondary', action: 'mark-read' }
+            ],
+            notificationData: notif
+          }))
+        ];
+        
+        // Renderizar con el filtro actual
+        renderNotifications(allNotifications, currentFilter);
+        
+        console.log(`✅ Datos cargados: ${reservasReales.length} reservas, ${notificacionesSistema.length} notificaciones sistema`);
+        
+      } catch (error) {
+        console.error('❌ Error cargando datos:', error);
+        document.getElementById('notifications-container').innerHTML = `
+          <div class="error-state">
+            <strong>No se pudieron cargar los datos reales</strong><br>
+            ${error.message}<br>
+            <small>Verifica que el servidor Django esté corriendo</small>
+            <button class="refresh-btn" onclick="location.reload()">Reintentar</button>
+          </div>
+        `;
+      }
     }
 
-    // Función para cargar reservas del usuario
+    // Función para cargar reservas del usuario (como lo tenías)
     async function loadUserReservas() {
       try {
         const response = await fetch(`${API_BASE_URL}/reservas/`, {
@@ -816,7 +824,7 @@
       }
     }
 
-    // ===== FUNCIONES DE RENDERIZADO =====
+    // ===== FUNCIONES DE TU CÓDIGO ORIGINAL =====
 
     function formatFecha(fecha) {
       if (!fecha) return 'Fecha no especificada';
@@ -851,7 +859,7 @@
       }
     }
 
-    // Generar notificaciones desde datos REALES
+    // Generar notificaciones desde datos REALES - VERSIÓN ORIGINAL
     function generateNotificationsFromRealData(reservas) {
       console.log('🔄 Generando notificaciones desde datos REALES:', reservas);
       

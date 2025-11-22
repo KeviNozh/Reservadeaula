@@ -35,60 +35,14 @@ def is_admin_user(user):
     except PerfilUsuario.DoesNotExist:
         return False
 
-@csrf_exempt
-def crear_notificacion_tiempo_real(request):
-    """
-    API para crear notificaciones que se muestran inmediatamente
-    """
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            
-            # Crear notificación en la base de datos
-            notificacion = Notificacion.objects.create(
-                destinatario=request.user,
-                tipo=data['tipo'],
-                titulo=data['titulo'],
-                mensaje=data['mensaje'],
-                leida=False
-            )
-            
-            # En una aplicación real, aquí enviarías por WebSocket
-            # Por ahora retornamos los datos para que el frontend muestre la alerta
-            return JsonResponse({
-                'success': True,
-                'notificacion': {
-                    'id': notificacion.id,
-                    'tipo': notificacion.tipo,
-                    'titulo': notificacion.titulo,
-                    'mensaje': notificacion.mensaje,
-                    'fecha_creacion_formateada': notificacion.get_fecha_creacion_formateada()
-                }
-            })
-            
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-
 # === FUNCIONES PARA NOTIFICACIONES DE ADMINISTRADOR ===
 
 def notificar_accion_admin(tipo, titulo, mensaje, usuario_admin=None, usuario_relacionado=None, reserva=None, espacio=None, request=None):
     """
-    Función MEJORADA para notificaciones administrativas - EVITA DUPLICADOS
+    Función CORREGIDA para notificaciones administrativas
     """
     try:
         print(f"🚀 CREANDO NOTIFICACIÓN ADMIN: {titulo}")
-        
-        # Verificar si ya existe una notificación similar reciente (evitar duplicados)
-        if reserva and tipo in ['reserva_aprobada', 'reserva_rechazada']:
-            notificacion_existente = NotificacionAdmin.objects.filter(
-                tipo=tipo,
-                reserva=reserva,
-                fecha_creacion__gte=timezone.now() - timezone.timedelta(minutes=5)
-            ).exists()
-            
-            if notificacion_existente:
-                print(f"⚠️ Notificación duplicada detectada y evitada: {titulo}")
-                return None
         
         # Determinar prioridad según el tipo de notificación
         prioridad_map = {

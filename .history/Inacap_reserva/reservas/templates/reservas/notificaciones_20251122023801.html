@@ -505,8 +505,8 @@
         }
 
         setupRealTimeSystem() {
-            // Verificar alertas cada 10 segundos
-            setInterval(() => this.checkForAlerts(), 1000);
+            // Verificar alertas cada 20 segundos
+            setInterval(() => this.checkForAlerts(), 20000);
             
             // Verificar cuando la página se activa
             document.addEventListener('visibilitychange', () => {
@@ -1049,6 +1049,7 @@
         this.classList.toggle('active');
       });
     });
+  </script>
   </script>
 </body>
 </html>

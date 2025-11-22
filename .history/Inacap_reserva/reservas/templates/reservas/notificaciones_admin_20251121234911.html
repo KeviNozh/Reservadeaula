@@ -762,164 +762,59 @@
             lastUpdate.textContent = now.toLocaleTimeString('es-ES');
         }, 1000);
     </script>
-<!-- Sistema de Alertas en Tiempo Real Mejorado para Admin -->
+<!-- Sistema de Alertas en Tiempo Real para Admin -->
 <div id="notificationAlerts" style="position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px;"></div>
 
 <script>
-// Sistema Mejorado de Alertas para Administradores
-class RealTimeAdminAlertSystem {
+// Sistema de Alertas para Administradores
+class AdminNotificationAlertSystem {
     constructor() {
         this.alertContainer = document.getElementById('notificationAlerts');
-        this.visibleAlerts = new Map(); // Usamos Map para mejor control
-        this.displayedNotificationIds = new Set(); // IDs ya mostrados
-        this.setupRealTimeSystem();
-        this.setupGlobalEventListeners();
+        this.visibleAlerts = new Set();
+        this.lastNotificationId = null;
+        this.setupRealTimeAlerts();
     }
 
-    // Sistema de tiempo real mejorado
-    setupRealTimeSystem() {
-        // 1. Polling inteligente (solo cuando la página está activa)
-        this.startSmartPolling();
-        
-        // 2. Eventos de visibilidad de página
-        this.setupPageVisibility();
-        
-        // 3. Eventos personalizados para notificaciones inmediatas
-        this.setupCustomEvents();
-        
-        // 4. Verificación inicial
-        setTimeout(() => this.checkNewAdminNotifications(), 1000);
-    }
-
-    // Polling inteligente - solo cuando la página está visible
-    startSmartPolling() {
-        let pollingInterval;
-        
-        const startPolling = () => {
-            pollingInterval = setInterval(() => {
-                this.checkNewAdminNotifications();
-            }, 10000); // Cada 10 segundos
-        };
-        
-        const stopPolling = () => {
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
-        };
-        
-        // Controlar polling basado en visibilidad
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopPolling();
-            } else {
-                startPolling();
-                this.checkNewAdminNotifications(); // Verificar inmediatamente al volver
-            }
-        });
-        
-        // Iniciar polling
-        startPolling();
-    }
-
-    // Configurar eventos de visibilidad
-    setupPageVisibility() {
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.checkNewAdminNotifications();
-            }
-        });
-    }
-
-    // Eventos personalizados para notificaciones inmediatas
-    setupCustomEvents() {
-        // Escuchar eventos personalizados (para integración con otras partes del sistema)
-        document.addEventListener('newAdminNotification', (event) => {
-            if (event.detail && event.detail.notification) {
-                this.showAlert(event.detail.notification);
-            }
-        });
-        
-        // También puedes disparar este evento desde otras partes de tu código:
-        // const event = new CustomEvent('newAdminNotification', { 
-        //     detail: { notification: newNotification } 
-        // });
-        // document.dispatchEvent(event);
-    }
-
-    // Verificar nuevas notificaciones (mejorado)
-    async function checkNewAdminNotifications() {
-        try {
-            console.log('🔄 Verificando notificaciones admin...');
-            const response = await fetch('/api/notificaciones-admin/?limite=10&no_leidas=true');
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.notificaciones.length > 0) {
-                    // Filtrar solo las no mostradas aún y evitar duplicados recientes
-                    const newNotifications = data.notificaciones.filter(notification => {
-                        const isNew = !this.displayedNotificationIds.has(notification.id);
-                        const isRecent = new Date(notification.fecha_creacion) > new Date(Date.now() - 5 * 60 * 1000); // Últimos 5 minutos
-                        return isNew && isRecent;
-                    });
-                    
-                    console.log(`📨 Nuevas notificaciones encontradas: ${newNotifications.length}`);
-                    
-                    // Mostrar nuevas notificaciones
-                    newNotifications.forEach(notification => {
-                        this.displayedNotificationIds.add(notification.id);
-                        setTimeout(() => {
-                            this.showAlert(notification);
-                        }, 100);
-                    });
-                }
-            }
-        } catch (error) {
-            console.log('❌ Error verificando notificaciones admin:', error);
-        }
-    }
-
-    // Mostrar alerta (mejorado)
+    // Mostrar alerta emergente para admin
     showAlert(notification) {
-        // Verificar si ya está mostrándose esta notificación
-        if (this.visibleAlerts.has(notification.id)) {
+        // Evitar duplicados
+        if (this.visibleAlerts.has(notification.id) || notification.id === this.lastNotificationId) {
             return;
         }
 
-        const alertId = `admin-alert-${notification.id}`;
+        const alertId = 'admin-alert-' + notification.id;
         
         const alertHTML = `
             <div id="${alertId}" class="admin-notification-alert ${this.getPriorityClass(notification.prioridad)}" 
-                 onclick="realTimeAdminAlerts.handleAlertClick('${alertId}', ${notification.id})"
-                 style="background: white; border-left: 4px solid ${this.getPriorityColor(notification.prioridad)}; 
+                 onclick="adminAlerts.handleAlertClick('${alertId}', ${notification.id})"
+                 style="background: white; border-left: 4px solid; 
                         padding: 16px; margin-bottom: 10px; border-radius: 8px; 
                         box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-                        animation: slideInRight 0.3s ease-out; cursor: pointer;
-                        position: relative; overflow: hidden;">
+                        animation: slideInRight 0.3s ease-out; cursor: pointer;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
-                    <div style="font-size: 18px; flex-shrink: 0; margin-top: 2px;">
+                    <div style="font-size: 18px; flex-shrink: 0;">
                         ${this.getIcon(notification.tipo)}
                     </div>
                     <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #111827; margin-bottom: 4px; font-size: 14px; line-height: 1.3;">
+                        <div style="font-weight: 600; color: #111827; margin-bottom: 4px; font-size: 14px;">
                             ${notification.titulo}
                         </div>
                         <div style="color: #6b7280; font-size: 13px; line-height: 1.4; margin-bottom: 6px;">
                             ${notification.mensaje}
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 11px; color: #9ca3af;">
                                 ${this.formatTime(notification.fecha_creacion)}
                             </span>
-                            <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; 
-                                         background: ${this.getPriorityColor(notification.prioridad)}; color: white; font-weight: 500;">
+                            <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; 
+                                         background: ${this.getPriorityColor(notification.prioridad)}; color: white;">
                                 ${notification.prioridad.toUpperCase()}
                             </span>
                         </div>
                     </div>
-                    <button onclick="event.stopPropagation(); realTimeAdminAlerts.closeAlert('${alertId}', ${notification.id})" 
+                    <button onclick="event.stopPropagation(); adminAlerts.closeAlert('${alertId}')" 
                             style="background: none; border: none; font-size: 16px; 
-                                   cursor: pointer; color: #9ca3af; margin-left: 5px; padding: 0;
-                                   width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                                   cursor: pointer; color: #9ca3af; margin-left: 5px; padding: 0;">
                         ×
                     </button>
                 </div>
@@ -930,7 +825,8 @@ class RealTimeAdminAlertSystem {
         `;
 
         this.alertContainer.insertAdjacentHTML('afterbegin', alertHTML);
-        this.visibleAlerts.set(notification.id, alertId);
+        this.visibleAlerts.add(alertId);
+        this.lastNotificationId = notification.id;
 
         // Reproducir sonido para notificaciones importantes
         if (notification.prioridad === 'urgente' || notification.prioridad === 'alta') {
@@ -939,45 +835,39 @@ class RealTimeAdminAlertSystem {
 
         // Auto-cerrar después de 8 segundos
         setTimeout(() => {
-            this.closeAlert(alertId, notification.id);
+            this.closeAlert(alertId);
         }, 8000);
     }
 
-    // Manejar clic en la alerta (mejorado)
+    // Manejar clic en la alerta
     handleAlertClick(alertId, notificationId) {
-        // Marcar como leída en el servidor
+        // Marcar como leída y cerrar
         this.markAsRead(notificationId);
+        this.closeAlert(alertId);
         
-        // Cerrar la alerta
-        this.closeAlert(alertId, notificationId);
-        
-        // Si estamos en la página de notificaciones, recargar la lista
-        if (window.location.pathname.includes('notificaciones-admin') && typeof loadNotifications === 'function') {
-            setTimeout(() => loadNotifications(), 500);
+        // Recargar la lista de notificaciones
+        if (typeof loadNotifications === 'function') {
+            loadNotifications();
         }
     }
 
-    // Marcar como leída (mejorado)
+    // Marcar notificación como leída
     async markAsRead(notificationId) {
         try {
-            const response = await fetch(`/api/notificaciones-admin/${notificationId}/marcar-leida/`, {
+            await fetch(`/api/notificaciones-admin/${notificationId}/marcar-leida/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': this.getCSRFToken(),
+                    'X-CSRFToken': getCSRFToken(),
                     'Content-Type': 'application/json'
                 }
             });
-            
-            if (response.ok) {
-                console.log(`✅ Notificación ${notificationId} marcada como leída`);
-            }
         } catch (error) {
             console.error('Error marcando notificación como leída:', error);
         }
     }
 
-    // Cerrar alerta (mejorado)
-    closeAlert(alertId, notificationId = null) {
+    // Cerrar alerta
+    closeAlert(alertId) {
         const alert = document.getElementById(alertId);
         if (alert) {
             alert.style.animation = 'slideOutRight 0.3s ease-in forwards';
@@ -985,35 +875,9 @@ class RealTimeAdminAlertSystem {
                 if (alert.parentNode) {
                     alert.parentNode.removeChild(alert);
                 }
-                if (notificationId) {
-                    this.visibleAlerts.delete(notificationId);
-                }
+                this.visibleAlerts.delete(alertId);
             }, 300);
         }
-    }
-
-    // Cerrar todas las alertas
-    closeAllAlerts() {
-        this.visibleAlerts.forEach((alertId, notificationId) => {
-            this.closeAlert(alertId, notificationId);
-        });
-    }
-
-    // Obtener token CSRF
-    getCSRFToken() {
-        const name = 'csrftoken';
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
 
     // Obtener clase de prioridad
@@ -1044,15 +908,11 @@ class RealTimeAdminAlertSystem {
             'reserva_creada': '📋',
             'reserva_aprobada': '✅',
             'reserva_rechazada': '❌',
-            'reserva_cancelada': '📝',
             'usuario_registrado': '👤',
             'espacio_creado': '🏢',
-            'espacio_editado': '✏️',
-            'espacio_eliminado': '🗑️',
             'sesion_iniciada': '🔐',
             'sesion_cerrada': '🚪',
             'incidencia_reportada': '🚨',
-            'reporte_generado': '📊',
             'sistema': '⚙️'
         };
         return icons[tipo] || '🔔';
@@ -1060,446 +920,85 @@ class RealTimeAdminAlertSystem {
 
     // Formatear tiempo
     formatTime(timestamp) {
-        try {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        } catch (error) {
-            return 'Ahora';
-        }
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
     }
 
     // Reproducir sonido
     playNotificationSound() {
-        try {
-            // Sonido de notificación simple
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch (error) {
-            console.log('No se pudo reproducir sonido:', error);
-        }
+        // Crear audio element dinámicamente
+        const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+        audio.volume = 0.3;
+        audio.play().catch(e => console.log('No se pudo reproducir sonido'));
     }
 
-    // Método para forzar una verificación manual
-    forceCheck() {
-        this.checkNewAdminNotifications();
-    }
+    // Configurar alertas en tiempo real
+    setupRealTimeAlerts() {
+        // Verificar nuevas notificaciones cada 15 segundos
+        setInterval(() => {
+            this.checkNewAdminNotifications();
+        }, 15000);
 
-    // Método para simular una nueva notificación (para testing)
-    simulateNotification(type = 'reserva_creada', priority = 'media') {
-        const testNotification = {
-            id: Date.now(),
-            tipo: type,
-            titulo: '🧪 Notificación de Prueba',
-            mensaje: 'Esta es una notificación de prueba del sistema mejorado',
-            prioridad: priority,
-            fecha_creacion: new Date().toISOString(),
-            leida: false
-        };
-        
-        this.showAlert(testNotification);
-    }
-}
-
-// Inicializar sistema mejorado
-let realTimeAdminAlerts;
-
-// Estilos CSS mejorados
-const improvedAdminAlertStyles = `
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%) scale(0.9);
-    }
-}
-
-@keyframes progressBar {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
-}
-
-.admin-notification-alert {
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-}
-
-.admin-notification-alert:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-
-/* Efecto de aparición escalonada */
-.admin-notification-alert:nth-child(1) { animation-delay: 0s; }
-.admin-notification-alert:nth-child(2) { animation-delay: 0.1s; }
-.admin-notification-alert:nth-child(3) { animation-delay: 0.2s; }
-`;
-
-// Inicialización mejorada
-document.addEventListener('DOMContentLoaded', function() {
-    // Injectar estilos
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = improvedAdminAlertStyles;
-    document.head.appendChild(styleSheet);
-
-    // Inicializar sistema de alertas
-    realTimeAdminAlerts = new RealTimeAdminAlertSystem();
-    
-    console.log('🚀 Sistema de alertas admin inicializado');
-});
-
-// Hacer disponible globalmente para debugging
-window.adminAlerts = realTimeAdminAlerts;
-</script>
-
-<!-- Panel de control para testing (quitar en producción) -->
-<div style="position: fixed; bottom: 20px; left: 20px; z-index: 10000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e5e7eb;">
-    <div style="font-weight: 600; margin-bottom: 10px; font-size: 14px;">🧪 Control de Alertas Admin</div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button onclick="realTimeAdminAlerts.simulateNotification('reserva_creada', 'media')" 
-                style="padding: 6px 10px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            📋 Nueva Reserva
-        </button>
-        <button onclick="realTimeAdminAlerts.simulateNotification('usuario_registrado', 'baja')" 
-                style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            👤 Usuario Nuevo
-        </button>
-        <button onclick="realTimeAdminAlerts.simulateNotification('incidencia_reportada', 'urgente')" 
-                style="padding: 6px 10px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            🚨 Incidencia
-        </button>
-        <button onclick="realTimeAdminAlerts.forceCheck()" 
-                style="padding: 6px 10px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            🔄 Forzar Check
-        </button>
-        <button onclick="realTimeAdminAlerts.closeAllAlerts()" 
-                style="padding: 6px 10px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            ❌ Cerrar Todas
-        </button>
-    </div>
-</div>
-<!-- Sistema de Alertas en Tiempo Real Mejorado para Admin -->
-<div id="notificationAlerts" style="position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px;"></div>
-
-<script>
-// Sistema Mejorado de Alertas para Administradores
-class RealTimeAdminAlertSystem {
-    constructor() {
-        this.alertContainer = document.getElementById('notificationAlerts');
-        this.visibleAlerts = new Map();
-        this.displayedNotificationIds = new Set();
-        this.setupRealTimeSystem();
-        console.log('🚀 Sistema de alertas admin inicializado');
-    }
-
-    setupRealTimeSystem() {
-        // Polling cada 15 segundos
-        this.pollingInterval = setInterval(() => this.checkNewAdminNotifications(), 15000);
-        
-        // Verificar cuando la página se activa
+        // También verificar cuando la página se vuelve visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                console.log('🔄 Página admin activa - verificando notificaciones...');
                 this.checkNewAdminNotifications();
             }
         });
-        
-        // Verificación inicial
-        setTimeout(() => this.checkNewAdminNotifications(), 2000);
+
+        // Verificar inmediatamente
+        setTimeout(() => {
+            this.checkNewAdminNotifications();
+        }, 2000);
     }
 
+    // Verificar nuevas notificaciones de admin
     async checkNewAdminNotifications() {
         try {
-            console.log('🔍 Verificando notificaciones admin...');
-            const response = await fetch('/api/notificaciones-admin/?limite=10&no_leidas=true');
-            
+            const response = await fetch('/api/notificaciones-admin/?limite=5');
             if (response.ok) {
                 const data = await response.json();
-                console.log('📨 Respuesta API admin:', data);
-                
                 if (data.success && data.notificaciones.length > 0) {
-                    console.log(`📬 ${data.notificaciones.length} notificaciones admin encontradas`);
-                    
-                    // Filtrar solo las no mostradas
-                    const newNotifications = data.notificaciones.filter(notification => 
-                        !this.displayedNotificationIds.has(notification.id)
-                    );
-                    
-                    console.log(`🆕 ${newNotifications.length} notificaciones admin nuevas`);
-                    
-                    // Mostrar nuevas notificaciones
-                    newNotifications.forEach(notification => {
-                        this.displayedNotificationIds.add(notification.id);
-                        setTimeout(() => {
-                            this.showAlert(notification);
-                        }, 300);
+                    // Mostrar solo notificaciones no leídas
+                    const unreadNotifications = data.notificaciones.filter(n => !n.leida);
+                    unreadNotifications.forEach(notification => {
+                        this.showAlert(notification);
                     });
                 }
             }
         } catch (error) {
-            console.error('💥 Error verificando notificaciones admin:', error);
+            console.log('Error verificando notificaciones admin:', error);
         }
-    }
-
-    showAlert(notification) {
-        if (this.visibleAlerts.has(notification.id)) {
-            return;
-        }
-
-        const alertId = `admin-alert-${notification.id}`;
-        
-        const alertHTML = `
-            <div id="${alertId}" class="admin-notification-alert" 
-                 onclick="window.adminAlertSystem.handleAlertClick('${alertId}', ${notification.id})"
-                 style="background: white; border-left: 4px solid ${this.getPriorityColor(notification.prioridad)}; 
-                        padding: 16px; margin-bottom: 10px; border-radius: 8px; 
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-                        animation: slideInRight 0.3s ease-out; cursor: pointer;
-                        position: relative; overflow: hidden;">
-                <div style="display: flex; align-items: flex-start; gap: 10px;">
-                    <div style="font-size: 18px; flex-shrink: 0; margin-top: 2px;">
-                        ${this.getIcon(notification.tipo)}
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #111827; margin-bottom: 4px; font-size: 14px; line-height: 1.3;">
-                            ${notification.titulo}
-                        </div>
-                        <div style="color: #6b7280; font-size: 13px; line-height: 1.4; margin-bottom: 6px;">
-                            ${notification.mensaje}
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-                            <span style="font-size: 11px; color: #9ca3af;">
-                                ${this.formatTime(notification.fecha_creacion)}
-                            </span>
-                            <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; 
-                                         background: ${this.getPriorityColor(notification.prioridad)}; color: white; font-weight: 500;">
-                                ${notification.prioridad.toUpperCase()}
-                            </span>
-                        </div>
-                    </div>
-                    <button onclick="event.stopPropagation(); window.adminAlertSystem.closeAlert('${alertId}', ${notification.id})" 
-                            style="background: none; border: none; font-size: 16px; 
-                                   cursor: pointer; color: #9ca3af; margin-left: 5px; padding: 0;
-                                   width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
-                        ×
-                    </button>
-                </div>
-                <div class="alert-progress" style="position: absolute; bottom: 0; left: 0; height: 3px; 
-                         background: ${this.getPriorityColor(notification.prioridad)}; width: 100%; 
-                         transform: scaleX(1); transform-origin: left; animation: progressBar 8s linear forwards;"></div>
-            </div>
-        `;
-
-        this.alertContainer.insertAdjacentHTML('afterbegin', alertHTML);
-        this.visibleAlerts.set(notification.id, alertId);
-
-        // Reproducir sonido para notificaciones importantes
-        if (notification.prioridad === 'urgente' || notification.prioridad === 'alta') {
-            this.playNotificationSound();
-        }
-
-        // Auto-cerrar después de 8 segundos
-        setTimeout(() => {
-            this.closeAlert(alertId, notification.id);
-        }, 8000);
-        
-        console.log('✅ Alerta admin mostrada:', notification.titulo);
-    }
-
-    handleAlertClick(alertId, notificationId) {
-        console.log('👆 Alerta admin clickeada:', notificationId);
-        
-        // Marcar como leída
-        this.markAsRead(notificationId);
-        
-        // Cerrar la alerta
-        this.closeAlert(alertId, notificationId);
-        
-        // Recargar notificaciones si estamos en la página de notificaciones admin
-        if (window.location.pathname.includes('notificaciones-admin') && typeof loadNotifications === 'function') {
-            setTimeout(() => loadNotifications(), 500);
-        }
-    }
-
-    async markAsRead(notificationId) {
-        try {
-            const response = await fetch(`/api/notificaciones-admin/${notificationId}/marcar-leida/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': this.getCSRFToken(),
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                console.log(`✅ Notificación admin ${notificationId} marcada como leída`);
-            }
-        } catch (error) {
-            console.error('Error marcando notificación admin como leída:', error);
-        }
-    }
-
-    closeAlert(alertId, notificationId = null) {
-        const alert = document.getElementById(alertId);
-        if (alert) {
-            alert.style.animation = 'slideOutRight 0.3s ease-in forwards';
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.parentNode.removeChild(alert);
-                }
-                if (notificationId) {
-                    this.visibleAlerts.delete(notificationId);
-                }
-            }, 300);
-        }
-    }
-
-    getCSRFToken() {
-        const name = 'csrftoken';
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    getPriorityColor(priority) {
-        const colors = {
-            'urgente': '#dc2626',
-            'alta': '#f59e0b',
-            'media': '#2563eb',
-            'baja': '#10b981'
-        };
-        return colors[priority] || '#6b7280';
-    }
-
-    getIcon(tipo) {
-        const icons = {
-            'reserva_creada': '📋',
-            'reserva_aprobada': '✅',
-            'reserva_rechazada': '❌',
-            'reserva_cancelada': '📝',
-            'usuario_registrado': '👤',
-            'espacio_creado': '🏢',
-            'espacio_editado': '✏️',
-            'espacio_eliminado': '🗑️',
-            'sesion_iniciada': '🔐',
-            'sesion_cerrada': '🚪',
-            'incidencia_reportada': '🚨',
-            'reporte_generado': '📊',
-            'sistema': '⚙️'
-        };
-        return icons[tipo] || '🔔';
-    }
-
-    formatTime(timestamp) {
-        try {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        } catch (error) {
-            return 'Ahora';
-        }
-    }
-
-    playNotificationSound() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch (error) {
-            console.log('No se pudo reproducir sonido:', error);
-        }
-    }
-
-    simulateNotification(type = 'reserva_creada', priority = 'media') {
-        const testNotification = {
-            id: Date.now(),
-            tipo: type,
-            titulo: '🧪 Notificación de Prueba Admin',
-            mensaje: 'Esta es una notificación de prueba del sistema mejorado para administradores',
-            prioridad: priority,
-            fecha_creacion: new Date().toISOString(),
-            leida: false
-        };
-        
-        this.showAlert(testNotification);
     }
 }
 
-// Estilos CSS mejorados
-const improvedAdminAlertStyles = `
+// Inicializar sistema de alertas para admin
+let adminAlerts;
+
+// Agregar estilos CSS para las animaciones
+const adminAlertStyles = `
 @keyframes slideInRight {
     from {
         opacity: 0;
-        transform: translateX(100%) scale(0.9);
+        transform: translateX(100%);
     }
     to {
         opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateX(0);
     }
 }
 
 @keyframes slideOutRight {
     from {
         opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: translateX(0);
     }
     to {
         opacity: 0;
-        transform: translateX(100%) scale(0.9);
+        transform: translateX(100%);
     }
 }
 
@@ -1510,55 +1009,51 @@ const improvedAdminAlertStyles = `
 
 .admin-notification-alert {
     transition: all 0.3s ease;
-    border: 1px solid #e5e7eb !important;
     position: relative;
     overflow: hidden;
 }
 
 .admin-notification-alert:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
 `;
 
-// Inicialización
+// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     // Injectar estilos
     const styleSheet = document.createElement('style');
-    styleSheet.textContent = improvedAdminAlertStyles;
+    styleSheet.textContent = adminAlertStyles;
     document.head.appendChild(styleSheet);
 
     // Inicializar sistema de alertas
-    window.adminAlertSystem = new RealTimeAdminAlertSystem();
-    console.log('✅ Sistema de alertas admin listo');
+    adminAlerts = new AdminNotificationAlertSystem();
 });
 
-// Panel de control para testing
-const testPanel = document.createElement('div');
-testPanel.innerHTML = `
-    <div style="position: fixed; bottom: 20px; left: 20px; z-index: 10000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e5e7eb;">
-        <div style="font-weight: 600; margin-bottom: 10px; font-size: 14px;">🧪 Control de Alertas Admin</div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button onclick="window.adminAlertSystem.simulateNotification('reserva_creada', 'media')" 
-                    style="padding: 6px 10px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                📋 Nueva Reserva
-            </button>
-            <button onclick="window.adminAlertSystem.simulateNotification('usuario_registrado', 'baja')" 
-                    style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                👤 Usuario Nuevo
-            </button>
-            <button onclick="window.adminAlertSystem.simulateNotification('incidencia_reportada', 'urgente')" 
-                    style="padding: 6px 10px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                🚨 Incidencia
-            </button>
-            <button onclick="window.adminAlertSystem.checkNewAdminNotifications()" 
-                    style="padding: 6px 10px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                🔄 Forzar Check
-            </button>
-        </div>
-    </div>
-`;
-document.body.appendChild(testPanel);
+// Función para probar el sistema de alertas (puedes quitarla después)
+function testAdminAlert() {
+    const testNotification = {
+        id: Date.now(),
+        tipo: 'reserva_creada',
+        titulo: '📋 Nueva Reserva Creada',
+        mensaje: 'El usuario juan.perez ha creado una nueva reserva para Sala de Conferencias A1',
+        prioridad: 'alta',
+        fecha_creacion: new Date().toISOString(),
+        leida: false
+    };
+    
+    if (typeof adminAlerts !== 'undefined') {
+        adminAlerts.showAlert(testNotification);
+    }
+}
 </script>
+
+<!-- Botón de prueba (opcional - quitar en producción) -->
+<button onclick="testAdminAlert()" 
+        style="position: fixed; bottom: 20px; left: 20px; z-index: 10000;
+               background: #dc2626; color: white; border: none; padding: 10px 15px;
+               border-radius: 8px; cursor: pointer; font-size: 12px;">
+    🔔 Probar Alerta Admin
+</button>
 </body>
 </html>

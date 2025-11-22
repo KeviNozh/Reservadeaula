@@ -67,44 +67,44 @@ class NotificacionService:
             return None
     
     @staticmethod
-    def notificar_aprobacion_reserva(reserva, comentario_admin=None):
-        """
-        Notifica al usuario que su reserva fue aprobada - VERSIÓN CORREGIDA
-        """
-        try:
-            mensaje = f"✅ Tu reserva para {reserva.espacio.nombre} el {reserva.fecha_reserva.strftime('%d/%m/%Y')} ha sido APROBADA."
-            if comentario_admin:
-                mensaje += f"\n\nComentario del administrador: {comentario_admin}"
-            
-            # Verificar si ya existe una notificación similar
-            notificacion_existente = Notificacion.objects.filter(
-                destinatario=reserva.solicitante,
-                tipo='reserva_aprobada',
-                reserva=reserva,
-                fecha_creacion__gte=timezone.now() - timezone.timedelta(minutes=5)
-            ).exists()
-            
-            if notificacion_existente:
-                print(f"⚠️ Notificación de aprobación duplicada evitada para reserva {reserva.id}")
-                return None
-            
-            notificacion = NotificacionService.crear_notificacion_reserva(
-                reserva=reserva,
-                tipo='reserva_aprobada',
-                titulo='✅ Reserva Aprobada',
-                mensaje=mensaje
-            )
-            
-            if notificacion:
-                print(f"✅ Notificación de aprobación enviada para reserva {reserva.id}")
-            else:
-                print(f"❌ Falló notificación de aprobación para reserva {reserva.id}")
-                
-            return notificacion
-        except Exception as e:
-            print(f"❌ Error en notificar_aprobacion_reserva: {e}")
+def notificar_aprobacion_reserva(reserva, comentario_admin=None):
+    """
+    Notifica al usuario que su reserva fue aprobada - VERSIÓN CORREGIDA
+    """
+    try:
+        mensaje = f"✅ Tu reserva para {reserva.espacio.nombre} el {reserva.fecha_reserva.strftime('%d/%m/%Y')} ha sido APROBADA."
+        if comentario_admin:
+            mensaje += f"\n\nComentario del administrador: {comentario_admin}"
+        
+        # Verificar si ya existe una notificación similar
+        notificacion_existente = Notificacion.objects.filter(
+            destinatario=reserva.solicitante,
+            tipo='reserva_aprobada',
+            reserva=reserva,
+            fecha_creacion__gte=timezone.now() - timezone.timedelta(minutes=5)
+        ).exists()
+        
+        if notificacion_existente:
+            print(f"⚠️ Notificación de aprobación duplicada evitada para reserva {reserva.id}")
             return None
         
+        notificacion = NotificacionService.crear_notificacion_reserva(
+            reserva=reserva,
+            tipo='reserva_aprobada',
+            titulo='✅ Reserva Aprobada',
+            mensaje=mensaje
+        )
+        
+        if notificacion:
+            print(f"✅ Notificación de aprobación enviada para reserva {reserva.id}")
+        else:
+            print(f"❌ Falló notificación de aprobación para reserva {reserva.id}")
+            
+        return notificacion
+    except Exception as e:
+        print(f"❌ Error en notificar_aprobacion_reserva: {e}")
+        return None
+    
     @staticmethod
     def notificar_rechazo_reserva(reserva, motivo):
         """

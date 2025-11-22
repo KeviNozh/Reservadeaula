@@ -346,7 +346,7 @@
   <!-- Sistema de Alertas en Tiempo Real -->
   <div id="alertContainer" class="alert-container"></div>
 
-    <script>
+  <script>
     // Configuración
     const API_BASE_URL = 'http://127.0.0.1:8000/api';
     let allNotifications = [];
@@ -354,349 +354,307 @@
     let lastUpdateTime = null;
     let autoRefreshInterval = null;
 
-    // ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA CORREGIDO =====
-    function startAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-        }
-        
-        // Actualizar inmediatamente al iniciar
-        setTimeout(() => checkForNewNotifications(), 1000);
-        
-        // Luego cada 15 segundos
-        autoRefreshInterval = setInterval(() => {
-            checkForNewNotifications();
-        }, 15000); // 15 segundos
-        
-        console.log('🔄 Sistema de actualización automática iniciado (15s)');
-    }
-
-    function stopAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-            autoRefreshInterval = null;
-            console.log('⏹️ Sistema de actualización automática detenido');
-        }
-    }
-
-    async function checkForNewNotifications() {
-        try {
-            console.log('🔍 Verificando nuevas notificaciones...');
+     const hasNewNotifications = checkForNewNotificationsSinceLastUpdate(newNotifications);
             
-            const response = await fetch(`${API_BASE_URL}/notificaciones/?no_leidas=true&limite=100&_t=${Date.now()}`, {
-                credentials: 'include',
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
+            if (hasNewNotifications) {
+              showAutoRefreshIndicator();
+              updateNewNotificationsBadge();
+              
+              // Recargar datos completos
+              setTimeout(() => {
+                loadAllData().then(() => {
+                  hideAutoRefreshIndicator();
+                // ===== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA CORREGIDO =====
+                function startAutoRefresh() {
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                    }
+                    
+                    // Actualizar inmediatamente al iniciar
+                    setTimeout(() => checkForNewNotifications(), 1000);
+                    
+                    // Luego cada 15 segundos
+                    autoRefreshInterval = setInterval(() => {
+                        checkForNewNotifications();
+                    }, 15000); // 15 segundos
+                    
+                    console.log('🔄 Sistema de actualización automática iniciado (15s)');
                 }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    const newNotifications = data.notificaciones;
-                    console.log(`📊 Notificaciones actuales: ${newNotifications.length}`);
-                    
-                    const hasNewNotifications = checkForNewNotificationsSinceLastUpdate(newNotifications);
-                    
-                    if (hasNewNotifications) {
-                        console.log('🎯 ¡Nuevas notificaciones encontradas!');
-                        showAutoRefreshIndicator();
-                        updateNewNotificationsBadge();
-                        
-                        // Recargar datos completos después de un breve delay
-                        setTimeout(() => {
-                            loadAllData().then(() => {
-                                console.log('✅ Datos actualizados después de nuevas notificaciones');
-                                hideAutoRefreshIndicator();
-                            });
-                        }, 500);
-                    } else {
-                        console.log('ℹ️ No hay notificaciones nuevas');
+
+                function stopAutoRefresh() {
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                        autoRefreshInterval = null;
+                        console.log('⏹️ Sistema de actualización automática detenido');
                     }
                 }
-            }
-        } catch (error) {
-            console.log('❌ Error verificando nuevas notificaciones:', error);
-        }
-    }
 
-    function checkForNewNotificationsSinceLastUpdate(newNotifications) {
-        if (!lastUpdateTime) {
-            console.log('⏰ Primera verificación, estableciendo tiempo inicial');
-            lastUpdateTime = new Date();
-            return false;
-        }
-        
-        console.log(`⏰ Última actualización: ${lastUpdateTime}`);
-        
-        let hasNew = false;
-        
-        newNotifications.forEach(notif => {
-            try {
-                // Parsear la fecha correctamente
-                let notifTime;
-                if (notif.fecha_creacion_formateada) {
-                    // Formato: "dd/mm/yyyy HH:MM"
-                    const [datePart, timePart] = notif.fecha_creacion_formateada.split(' ');
-                    const [day, month, year] = datePart.split('/');
-                    const [hours, minutes] = timePart.split(':');
-                    notifTime = new Date(year, month - 1, day, hours, minutes);
-                } else if (notif.fecha_creacion) {
-                    // Formato ISO
-                    notifTime = new Date(notif.fecha_creacion);
-                } else {
-                    notifTime = new Date();
+                async function checkForNewNotifications() {
+                    try {
+                        console.log('🔍 Verificando nuevas notificaciones...');
+                        
+                        const response = await fetch(`${API_BASE_URL}/notificaciones/?no_leidas=true&limite=100&_t=${Date.now()}`, {
+                            credentials: 'include',
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                const newNotifications = data.notificaciones;
+                                console.log(`📊 Notificaciones actuales: ${newNotifications.length}`);
+                                
+                                const hasNewNotifications = checkForNewNotificationsSinceLastUpdate(newNotifications);
+                                
+                                if (hasNewNotifications) {
+                                    console.log('🎯 ¡Nuevas notificaciones encontradas!');
+                                    showAutoRefreshIndicator();
+                                    updateNewNotificationsBadge();
+                                    
+                                    // Recargar datos completos después de un breve delay
+                                    setTimeout(() => {
+                                        loadAllData().then(() => {
+                                            console.log('✅ Datos actualizados después de nuevas notificaciones');
+                                            hideAutoRefreshIndicator();
+                                        });
+                                    }, 500);
+                                } else {
+                                    console.log('ℹ️ No hay notificaciones nuevas');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.log('❌ Error verificando nuevas notificaciones:', error);
+                    }
                 }
-                
-                console.log(`📅 Notificación: ${notifTime} vs ${lastUpdateTime} - ${notifTime > lastUpdateTime ? 'NUEVA' : 'vieja'}`);
-                
-                if (notifTime > lastUpdateTime) {
-                    hasNew = true;
+
+                function checkForNewNotificationsSinceLastUpdate(newNotifications) {
+                    if (!lastUpdateTime) {
+                        console.log('⏰ Primera verificación, estableciendo tiempo inicial');
+                        lastUpdateTime = new Date();
+                        return false;
+                    }
+                    
+                    console.log(`⏰ Última actualización: ${lastUpdateTime}`);
+                    
+                    let hasNew = false;
+                    
+                    newNotifications.forEach(notif => {
+                        try {
+                            // Parsear la fecha correctamente
+                            let notifTime;
+                            if (notif.fecha_creacion_formateada) {
+                                // Formato: "dd/mm/yyyy HH:MM"
+                                const [datePart, timePart] = notif.fecha_creacion_formateada.split(' ');
+                                const [day, month, year] = datePart.split('/');
+                                const [hours, minutes] = timePart.split(':');
+                                notifTime = new Date(year, month - 1, day, hours, minutes);
+                            } else if (notif.fecha_creacion) {
+                                // Formato ISO
+                                notifTime = new Date(notif.fecha_creacion);
+                            } else {
+                                notifTime = new Date();
+                            }
+                            
+                            console.log(`📅 Notificación: ${notifTime} vs ${lastUpdateTime} - ${notifTime > lastUpdateTime ? 'NUEVA' : 'vieja'}`);
+                            
+                            if (notifTime > lastUpdateTime) {
+                                hasNew = true;
+                            }
+                        } catch (error) {
+                            console.error('Error procesando fecha:', error);
+                        }
+                    });
+                    
+                    return hasNew;
                 }
-            } catch (error) {
-                console.error('Error procesando fecha:', error);
-            }
+
+                function showAutoRefreshIndicator() {
+                    const indicator = document.getElementById('autoRefreshIndicator');
+                    if (indicator) {
+                        indicator.innerHTML = '🔄 Actualizando notificaciones...';
+                        indicator.style.display = 'block';
+                    }
+                }
+
+                function hideAutoRefreshIndicator() {
+                    const indicator = document.getElementById('autoRefreshIndicator');
+                    if (indicator) {
+                        indicator.style.display = 'none';
+                    }
+                }
+
+                function updateNewNotificationsBadge() {
+                    const badge = document.getElementById('new-notification-badge');
+                    if (badge) {
+                        badge.style.display = 'inline-flex';
+                        badge.textContent = '!';
+                        badge.style.animation = 'pulse 1s infinite';
+                    }
+                }
+
+                function resetNewNotificationsBadge() {
+                    const badge = document.getElementById('new-notification-badge');
+                    if (badge) {
+                        badge.style.display = 'none';
+                        badge.style.animation = 'none';
+                    }
+                    lastUpdateTime = new Date();
+                    console.log('🔄 Badge reiniciado, nuevo lastUpdateTime:', lastUpdateTime);
+                }
+
+    // ===== SISTEMA DE ALERTAS EN TIEMPO REAL =====
+    class RealTimeAlertSystem {
+      constructor() {
+        this.alertContainer = document.getElementById('alertContainer');
+        this.displayedIds = new Set();
+        this.setupRealTimeSystem();
+      }
+
+      setupRealTimeSystem() {
+        // Verificar alertas cada 15 segundos
+        setInterval(() => this.checkForAlerts(), 15000);
+        
+        // Verificar cuando la página se activa
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) this.checkForAlerts();
         });
         
-        return hasNew;
-    }
+        // Verificación inicial
+        setTimeout(() => this.checkForAlerts(), 2000);
+      }
 
-    function showAutoRefreshIndicator() {
-        const indicator = document.getElementById('autoRefreshIndicator');
-        if (indicator) {
-            indicator.innerHTML = '🔄 Actualizando notificaciones...';
-            indicator.style.display = 'block';
-        }
-    }
-
-    function hideAutoRefreshIndicator() {
-        const indicator = document.getElementById('autoRefreshIndicator');
-        if (indicator) {
-            indicator.style.display = 'none';
-        }
-    }
-
-    function updateNewNotificationsBadge() {
-        const badge = document.getElementById('new-notification-badge');
-        if (badge) {
-            badge.style.display = 'inline-flex';
-            badge.textContent = '!';
-            badge.style.animation = 'pulse 1s infinite';
-        }
-    }
-
-    function resetNewNotificationsBadge() {
-        const badge = document.getElementById('new-notification-badge');
-        if (badge) {
-            badge.style.display = 'none';
-            badge.style.animation = 'none';
-        }
-        lastUpdateTime = new Date();
-        console.log('🔄 Badge reiniciado, nuevo lastUpdateTime:', lastUpdateTime);
-    }
-
-    // ===== SISTEMA MEJORADO DE ALERTAS EN TIEMPO REAL =====
-    class RealTimeAlertSystem {
-        constructor() {
-            this.alertContainer = document.getElementById('alertContainer');
-            this.displayedIds = new Set();
-            this.setupRealTimeSystem();
-        }
-
-        setupRealTimeSystem() {
-            // Verificar alertas cada 10 segundos
-            setInterval(() => this.checkForAlerts(), 1000);
+      async checkForAlerts() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/notificaciones/?no_leidas=true&limite=10`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
             
-            // Verificar cuando la página se activa
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    console.log('📱 Página visible, verificando alertas...');
-                    this.checkForAlerts();
-                }
-            });
-            
-            // Verificación inicial después de 3 segundos
-            setTimeout(() => this.checkForAlerts(), 3000);
-        }
-
-        async checkForAlerts() {
-            try {
-                console.log('🔔 Verificando alertas en tiempo real...');
-                
-                const response = await fetch(`${API_BASE_URL}/notificaciones/?no_leidas=true&limite=10&_t=${Date.now()}`, {
-                    credentials: 'include',
-                    headers: {
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.success && data.notificaciones && data.notificaciones.length > 0) {
-                        console.log(`📨 ${data.notificaciones.length} notificaciones encontradas`);
-                        
-                        // Filtrar solo las no mostradas
-                        const newNotifications = data.notificaciones.filter(notification => 
-                            !this.displayedIds.has(notification.id)
-                        );
-                        
-                        console.log(`🎯 ${newNotifications.length} nuevas alertas para mostrar`);
-                        
-                        // Mostrar nuevas alertas
-                        newNotifications.forEach(notification => {
-                            this.displayedIds.add(notification.id);
-                            this.showAlert(notification);
-                        });
-                    } else {
-                        console.log('📭 No hay notificaciones nuevas');
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Error verificando alertas:', error);
+            if (data.success && data.notificaciones && data.notificaciones.length > 0) {
+              // Filtrar solo las no mostradas
+              const newNotifications = data.notificaciones.filter(notification => 
+                !this.displayedIds.has(notification.id)
+              );
+              
+              // Mostrar nuevas alertas
+              newNotifications.forEach(notification => {
+                this.displayedIds.add(notification.id);
+                this.showAlert(notification);
+              });
             }
+          }
+        } catch (error) {
+          console.error('Error verificando alertas:', error);
         }
+      }
 
-        showAlert(notification) {
-            const alertId = `alert-${notification.id}`;
-            
-            const alertHTML = `
-                <div id="${alertId}" class="alert-notification" 
-                     onclick="realTimeAlertSystem.handleAlertClick('${alertId}', ${notification.id})"
-                     style="border-left-color: ${this.getPriorityColor(notification.tipo)};">
-                    <div style="display: flex; align-items: start; gap: 8px;">
-                        <div style="font-size: 16px; flex-shrink: 0; margin-top: 2px;">
-                            ${this.getIcon(notification.tipo)}
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #111827; line-height: 1.3;">
-                                ${notification.titulo}
-                            </div>
-                            <div style="font-size: 12px; color: #666; line-height: 1.3;">
-                                ${notification.mensaje}
-                            </div>
-                            <div style="font-size: 11px; color: #999; margin-top: 4px;">
-                                ${notification.fecha_creacion_formateada || 'Ahora'}
-                            </div>
-                        </div>
-                        <button onclick="event.stopPropagation(); realTimeAlertSystem.closeAlert('${alertId}')" 
-                                style="background: none; border: none; font-size: 14px; cursor: pointer; color: #999; padding: 4px;">
-                            ×
-                        </button>
-                    </div>
+      showAlert(notification) {
+        const alertId = `alert-${notification.id}`;
+        
+        const alertHTML = `
+          <div id="${alertId}" class="alert-notification" 
+               onclick="realTimeAlertSystem.handleAlertClick('${alertId}', ${notification.id})"
+               style="border-left-color: ${this.getPriorityColor(notification.tipo)};">
+            <div style="display: flex; align-items: start; gap: 8px;">
+              <div style="font-size: 16px; flex-shrink: 0; margin-top: 2px;">
+                ${this.getIcon(notification.tipo)}
+              </div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #111827; line-height: 1.3;">
+                  ${notification.titulo}
                 </div>
-            `;
+                <div style="font-size: 12px; color: #666; line-height: 1.3;">
+                  ${notification.mensaje}
+                </div>
+              </div>
+              <button onclick="event.stopPropagation(); realTimeAlertSystem.closeAlert('${alertId}')" 
+                      style="background: none; border: none; font-size: 14px; cursor: pointer; color: #999;">
+                ×
+              </button>
+            </div>
+          </div>
+        `;
 
-            this.alertContainer.insertAdjacentHTML('afterbegin', alertHTML);
-            
-            // Reproducir sonido
-            this.playNotificationSound();
-            
-            // Vibrar si está disponible
-            this.vibrateIfAvailable();
-            
-            // Auto-cerrar después de 8 segundos
-            setTimeout(() => this.closeAlert(alertId), 8000);
-            
-            // Actualizar el badge de nuevas notificaciones
-            updateNewNotificationsBadge();
-        }
+        this.alertContainer.insertAdjacentHTML('afterbegin', alertHTML);
+        
+        // Reproducir sonido
+        this.playNotificationSound();
+        
+        // Auto-cerrar después de 6 segundos
+        setTimeout(() => this.closeAlert(alertId), 6000);
+      }
 
-        handleAlertClick(alertId, notificationId) {
-            console.log('👆 Alerta clickeada:', alertId);
-            this.closeAlert(alertId);
-            
-            // Marcar como leída en el servidor
-            this.markNotificationAsRead(notificationId);
-            
-            // Recargar notificaciones para actualizar estado
-            setTimeout(() => {
-                loadAllData();
-                resetNewNotificationsBadge(); // Resetear badge cuando el usuario interactúa
-            }, 500);
-        }
+      handleAlertClick(alertId, notificationId) {
+        this.closeAlert(alertId);
+        // Recargar notificaciones para actualizar estado
+        setTimeout(() => loadAllData(), 500);
+      }
 
-        async markNotificationAsRead(notificationId) {
-            try {
-                await fetch(`${API_BASE_URL}/notificaciones/${notificationId}/marcar-leida/`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                console.log('✅ Notificación marcada como leída:', notificationId);
-            } catch (error) {
-                console.error('❌ Error marcando notificación como leída:', error);
+      closeAlert(alertId) {
+        const alert = document.getElementById(alertId);
+        if (alert) {
+          alert.style.animation = 'slideOutRight 0.3s ease-in forwards';
+          setTimeout(() => {
+            if (alert.parentNode) {
+              alert.parentNode.removeChild(alert);
             }
+          }, 300);
         }
+      }
 
-        closeAlert(alertId) {
-            const alert = document.getElementById(alertId);
-            if (alert) {
-                alert.style.animation = 'slideOutRight 0.3s ease-in forwards';
-                setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.parentNode.removeChild(alert);
-                    }
-                }, 300);
-            }
-        }
+      getIcon(tipo) {
+        const icons = {
+          'reserva_aprobada': '✅',
+          'reserva_rechazada': '❌',
+          'reserva_creada': '📋',
+          'reserva_cancelada': '📝',
+          'reserva_pendiente': '⏳'
+        };
+        return icons[tipo] || '🔔';
+      }
 
-        vibrateIfAvailable() {
-            if (navigator.vibrate) {
-                navigator.vibrate([200, 100, 200]);
-            }
-        }
+      getPriorityColor(tipo) {
+        const colors = {
+          'reserva_aprobada': '#28a745',
+          'reserva_rechazada': '#dc3545',
+          'reserva_creada': '#0056d2',
+          'reserva_cancelada': '#6c757d',
+          'reserva_pendiente': '#ffc107'
+        };
+        return colors[tipo] || '#6c757d';
+      }
 
-        getIcon(tipo) {
-            const icons = {
-                'reserva_aprobada': '✅',
-                'reserva_rechazada': '❌',
-                'reserva_creada': '📋',
-                'reserva_cancelada': '📝',
-                'reserva_pendiente': '⏳'
-            };
-            return icons[tipo] || '🔔';
+      playNotificationSound() {
+        try {
+          // Sonido de notificación simple
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.value = 800;
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (error) {
+          console.log('No se pudo reproducir sonido:', error);
         }
-
-        getPriorityColor(tipo) {
-            const colors = {
-                'reserva_aprobada': '#28a745',
-                'reserva_rechazada': '#dc3545',
-                'reserva_creada': '#0056d2',
-                'reserva_cancelada': '#6c757d',
-                'reserva_pendiente': '#ffc107'
-            };
-            return colors[tipo] || '#6c757d';
-        }
-
-        playNotificationSound() {
-            try {
-                // Sonido de notificación simple
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            } catch (error) {
-                console.log('No se pudo reproducir sonido:', error);
-            }
-        }
+      }
     }
 
-    // ===== FUNCIONES PRINCIPALES =====
+    // ===== FUNCIONES PRINCIPALES - MANTENIENDO TU FORMATO ORIGINAL =====
 
     async function probarConexion() {
       const statusElement = document.getElementById('system-status');
@@ -728,57 +686,55 @@
     }
 
     async function loadAllData() {
-        try {
-            console.log('🔄 Cargando todos los datos...');
-            
-            // Cargar notificaciones del sistema PRIMERO
-            const notificacionesSistema = await loadUserNotifications();
-            
-            // Generar notificaciones desde reservas
-            const reservasReales = await loadUserReservas();
-            const notificationsFromReservas = generateNotificationsFromRealData(reservasReales);
-            
-            // Combinar notificaciones
-            allNotifications = [
-                ...notificationsFromReservas,
-                ...notificacionesSistema.map(notif => ({
-                    id: `sys-${notif.id}`,
-                    type: notif.tipo,
-                    class: getNotificationClass(notif.tipo),
-                    title: `🔔 ${getNotificationTitle(notif.tipo)}`,
-                    message: notif.mensaje,
-                    timestamp: notif.fecha_creacion,
-                    read: notif.leida,
-                    actions: [
-                        { text: 'Marcar como leída', class: 'btn-secondary', action: 'mark-read' }
-                    ],
-                    notificationData: notif
-                }))
-            ];
-            
-            // Actualizar lastUpdateTime después de cargar
-            lastUpdateTime = new Date();
-            console.log('⏰ lastUpdateTime actualizado:', lastUpdateTime);
-            
-            // Renderizar con el filtro actual
-            renderNotifications(allNotifications, currentFilter);
-            
-            console.log(`✅ Datos cargados: ${reservasReales.length} reservas, ${notificacionesSistema.length} notificaciones sistema`);
-            
-        } catch (error) {
-            console.error('❌ Error cargando datos:', error);
-            document.getElementById('notifications-container').innerHTML = `
-                <div class="error-state">
-                    <strong>No se pudieron cargar los datos reales</strong><br>
-                    ${error.message}<br>
-                    <small>Verifica que el servidor Django esté corriendo en http://127.0.0.1:8000</small>
-                    <button class="refresh-btn" onclick="location.reload()">Reintentar</button>
-                </div>
-            `;
-        }
+      try {
+        console.log('🔄 Cargando todos los datos...');
+        
+        // Cargar reservas REALES del usuario (como lo tenías originalmente)
+        const reservasReales = await loadUserReservas();
+        
+        // Cargar notificaciones del sistema
+        const notificacionesSistema = await loadUserNotifications();
+
+        // Generar notificaciones desde reservas (formato original)
+        const notificationsFromReservas = generateNotificationsFromRealData(reservasReales);
+        
+        // Combinar notificaciones de reservas y del sistema
+        allNotifications = [
+          ...notificationsFromReservas,
+          ...notificacionesSistema.map(notif => ({
+            id: `notif-${notif.id}`,
+            type: notif.tipo,
+            class: getNotificationClass(notif.tipo),
+            title: `🔔 ${getNotificationTitle(notif.tipo)}`,
+            message: notif.mensaje,
+            timestamp: notif.fecha_creacion,
+            read: notif.leida,
+            actions: [
+              { text: 'Marcar como leída', class: 'btn-secondary', action: 'mark-read' }
+            ],
+            notificationData: notif
+          }))
+        ];
+        
+        // Renderizar con el filtro actual
+        renderNotifications(allNotifications, currentFilter);
+        
+        console.log(`✅ Datos cargados: ${reservasReales.length} reservas, ${notificacionesSistema.length} notificaciones sistema`);
+        
+      } catch (error) {
+        console.error('❌ Error cargando datos:', error);
+        document.getElementById('notifications-container').innerHTML = `
+          <div class="error-state">
+            <strong>No se pudieron cargar los datos reales</strong><br>
+            ${error.message}<br>
+            <small>Verifica que el servidor Django esté corriendo</small>
+            <button class="refresh-btn" onclick="location.reload()">Reintentar</button>
+          </div>
+        `;
+      }
     }
 
-    // Función para cargar reservas del usuario
+    // Función para cargar reservas del usuario (como lo tenías)
     async function loadUserReservas() {
       try {
         const response = await fetch(`${API_BASE_URL}/reservas/`, {
@@ -816,7 +772,7 @@
       }
     }
 
-    // ===== FUNCIONES DE RENDERIZADO =====
+    // ===== FUNCIONES DE TU CÓDIGO ORIGINAL =====
 
     function formatFecha(fecha) {
       if (!fecha) return 'Fecha no especificada';
@@ -851,7 +807,7 @@
       }
     }
 
-    // Generar notificaciones desde datos REALES
+    // Generar notificaciones desde datos REALES - VERSIÓN ORIGINAL
     function generateNotificationsFromRealData(reservas) {
       console.log('🔄 Generando notificaciones desde datos REALES:', reservas);
       
