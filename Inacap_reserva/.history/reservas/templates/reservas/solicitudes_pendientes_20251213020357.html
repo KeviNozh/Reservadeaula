@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes Pendientes - Sistema de Reservas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            {% include 'reservas/_theme_snippet.html' %}
+            {% load static %}
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Solicitudes Pendientes - Sistema de Reservas</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+            <style>
+                /* Puedes mover aquí los estilos globales o importarlos si es necesario */
+            </style>
+        </head>
+        <body>
+            <!-- Header -->
+            <header class="header">
+                <div class="logo-section">
+                    <div class="logo">SR</div>
+                    <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+                </div>
+                <nav class="nav-menu">
+                    <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+                    <a href="{% url 'solicitudes_pendientes' %}" class="nav-item active">Solicitudes</a>
+                    <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+                    <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+                    <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+                </nav>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        {% if user.first_name and user.last_name %}
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        {% else %}
+                            {{ user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <span>
+                        {% if user.first_name %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
+                    </span>
+                    <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="page-header" style="background: white; border-radius: 12px; padding: 32px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border-left: 6px solid #2563eb;">
+                    <div class="header-content" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h1 class="page-title">📋 Solicitudes Pendientes</h1>
+                            <p class="page-subtitle">Gestiona las solicitudes de reserva pendientes de aprobación</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solicitudes-grid">
+                    {% for solicitud in solicitudes %}
+                    <div class="solicitud-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 24px; border-left: 4px solid #F59E0B;">
+                        <div class="solicitud-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                            <h3 class="espacio-nombre">{{ solicitud.espacio.nombre }}</h3>
+                            <span class="solicitud-fecha">{{ solicitud.fecha_solicitud|date:"d M Y H:i" }}</span>
+                        </div>
+                        <div class="solicitud-info">
+                            <div class="info-item"><strong>Solicitante:</strong> {{ solicitud.solicitante.first_name }} {{ solicitud.solicitante.last_name }}</div>
+                            <div class="info-item"><strong>Email:</strong> {{ solicitud.solicitante.email }}</div>
+                            <div class="info-item"><strong>Fecha Reserva:</strong> {{ solicitud.fecha_reserva }}</div>
+                            <div class="info-item"><strong>Horario:</strong> {{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}</div>
+                            <div class="info-item"><strong>Asistentes:</strong> {{ solicitud.num_asistentes }} personas</div>
+                            <div class="info-item"><strong>Propósito:</strong> {{ solicitud.proposito }}</div>
+                        </div>
+                        <div class="solicitud-actions" style="display: flex; gap: 18px; justify-content: flex-start;">
+                            <button class="btn-approve d-flex align-items-center justify-content-center" style="min-width: 140px; font-size: 1.1em; gap: 8px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);" onclick="aprobarSolicitud({{ solicitud.id }})">
+                                <i class="bi bi-check-circle-fill"></i> Aprobar
+                            </button>
+                            <button class="btn-rechazar d-flex align-items-center justify-content-center" style="min-width: 140px; font-size: 1.1em; gap: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);" onclick="rechazarSolicitud({{ solicitud.id }})">
+                                <i class="bi bi-x-circle-fill"></i> Rechazar
+                            </button>
+                            <a href="{% url 'revisar_solicitud' %}?id={{ solicitud.id }}" class="btn-details d-flex align-items-center justify-content-center" style="min-width: 140px; font-size: 1.1em; gap: 8px; background: #2563EB; color: white; border: none; border-radius: 10px; font-weight: 600; text-decoration: none;">
+                                <i class="bi bi-clipboard-data"></i> Detalles
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">🎉</div>
+                        <h3>No hay solicitudes pendientes</h3>
+                        <p>Todas las solicitudes han sido procesadas</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </main>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                function getCSRFToken() {
+                    const name = 'csrftoken';
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+
+                async function aprobarSolicitud(solicitudId) {
+                    if (confirm('¿Estás seguro de que deseas aprobar esta solicitud?')) {
+                        try {
+                            const response = await fetch(`/api/reservas/${solicitudId}/aprobar/`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCSRFToken()
+                                },
+                                body: JSON.stringify({})
+                            });
+                    
+                            const data = await response.json();
+                    
+                            if (data.success) {
+                                alert('Solicitud aprobada exitosamente');
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        } catch (error) {
+                            alert('Error de conexión: ' + error);
+                        }
+                    }
+                }
+
+                async function rechazarSolicitud(solicitudId) {
+                    const motivo = prompt('Ingresa el motivo del rechazo:');
+                    if (motivo) {
+                        try {
+                            const response = await fetch(`/api/reservas/${solicitudId}/rechazar/`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCSRFToken()
+                                },
+                                body: JSON.stringify({
+                                    motivo: motivo
+                                })
+                            });
+                    
+                            const data = await response.json();
+                    
+                            if (data.success) {
+                                alert('Solicitud rechazada exitosamente');
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        } catch (error) {
+                            alert('Error de conexión: ' + error);
+                        }
+                    }
+                }
+            </script>
+        </body>
+        </html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes Pendientes - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .nav-item {
+            color: #6B7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: #2563EB;
+            background: #EFF6FF;
+        }
+        
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+        
+        .solicitudes-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .solicitud-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #F59E0B;
+        }
+        
+        .solicitud-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .espacio-nombre {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .solicitud-fecha {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        .solicitud-info {
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .solicitud-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-approve, .btn-reject, .btn-details {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-approve {
+            background: #10B981;
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: #059669;
+        }
+        
+        .btn-reject {
+            background: #DC2626;
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background: #B91C1C;
+        }
+        
+        .btn-details {
+            background: #2563EB;
+            color: white;
+        }
+        
+        .btn-details:hover {
+            background: #1D4ED8;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏢 Panel Administrativo</div>
+            <nav class="nav-menu">
+                <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+                <a href="{% url 'solicitudes_pendientes' %}" class="nav-item active">Solicitudes</a>
+                <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+                <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+                <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="page-title">📋 Solicitudes Pendientes</div>
+        <div class="page-subtitle">Gestiona las solicitudes de reserva pendientes de aprobación</div>
+
+        <div class="solicitudes-grid">
+            {% for solicitud in solicitudes %}
+            <div class="solicitud-card">
+                <div class="solicitud-header">
+                    <h3 class="espacio-nombre">{{ solicitud.espacio.nombre }}</h3>
+                    <span class="solicitud-fecha">{{ solicitud.fecha_solicitud|date:"d M Y H:i" }}</span>
+                </div>
+                
+                <div class="solicitud-info">
+                    <div class="info-item">
+                        <strong>Solicitante:</strong> 
+                        {{ solicitud.solicitante.first_name }} {{ solicitud.solicitante.last_name }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Email:</strong> {{ solicitud.solicitante.email }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Fecha Reserva:</strong> {{ solicitud.fecha_reserva }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Horario:</strong> {{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Asistentes:</strong> {{ solicitud.num_asistentes }} personas
+                    </div>
+                    <div class="info-item">
+                        <strong>Propósito:</strong> {{ solicitud.proposito }}
+                    </div>
+                </div>
+
+                <div class="solicitud-actions">
+                    <button class="btn-approve" onclick="aprobarSolicitud({{ solicitud.id }})">
+                        ✅ Aprobar
+                    </button>
+                    <button class="btn-reject" onclick="rechazarSolicitud({{ solicitud.id }})">
+                        ❌ Rechazar
+                    </button>
+                    <a href="{% url 'revisar_solicitud' %}?id={{ solicitud.id }}" class="btn-details">
+                        📋 Detalles
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <h3>No hay solicitudes pendientes</h3>
+                <p>Todas las solicitudes han sido procesadas</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function aprobarSolicitud(solicitudId) {
+            if (confirm('¿Estás seguro de que deseas aprobar esta solicitud?')) {
+                try {
+                    const response = await fetch(`/api/reservas/${solicitudId}/aprobar/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({})
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('Solicitud aprobada exitosamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('Error de conexión: ' + error);
+                }
+            }
+        }
+
+        async function rechazarSolicitud(solicitudId) {
+            const motivo = prompt('Ingresa el motivo del rechazo:');
+            if (motivo) {
+                try {
+                    const response = await fetch(`/api/reservas/${solicitudId}/rechazar/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({
+                            motivo: motivo
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('Solicitud rechazada exitosamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('Error de conexión: ' + error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+<script src="/static/js/theme.js"></script>

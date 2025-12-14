@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancelar Reserva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #111827;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Modal */
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            padding: 24px 24px 0 24px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .modal-subtitle {
+            color: #6B7280;
+            font-size: 14px;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        /* Reservation Summary */
+        .reservation-summary {
+            background: #F3F4F6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .summary-title {
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .summary-label {
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        .summary-value {
+            color: #111827;
+            font-weight: 600;
+        }
+        
+        /* Warning */
+        .warning {
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .warning-icon {
+            color: #F59E0B;
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .warning-content {
+            flex: 1;
+        }
+        
+        .warning-title {
+            font-weight: 600;
+            color: #92400E;
+            margin-bottom: 4px;
+        }
+        
+        .warning-text {
+            color: #78350F;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .required {
+            color: #DC2626;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-help {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+        
+        /* Buttons */
+        .modal-footer {
+            padding: 0 24px 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #6B7280;
+            border-color: #E5E7EB;
+        }
+        
+        .btn-secondary:hover {
+            background: #F9FAFB;
+            border-color: #D1D5DB;
+        }
+        
+        .btn-danger {
+            background: #DC2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #B91C1C;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Success State */
+        .success-modal {
+            text-align: center;
+            padding: 40px 24px;
+        }
+        
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+        
+        .success-message {
+            color: #6B7280;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        
+        .success-details {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        
+        .success-details h4 {
+            color: #15803D;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .success-details p {
+            color: #166534;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal de Cancelación -->
+    <div class="modal" id="cancelModal">
+        <div class="modal-header">
+            <h2 class="modal-title">❌ Cancelar Reserva</h2>
+            <p class="modal-subtitle">Esta acción no se puede deshacer</p>
+        </div>
+        
+        <div class="modal-body">
+            <!-- Resumen de la Reserva -->
+            <div class="reservation-summary">
+                <div class="summary-title">
+                    📋 Información de la Reserva
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Espacio:</span>
+                    <span class="summary-value">Sala de Conferencias A1</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Fecha:</span>
+                    <span class="summary-value">Viernes, 15 de Marzo 2025</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Hora:</span>
+                    <span class="summary-value">09:00 - 11:30</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Duración:</span>
+                    <span class="summary-value">2 horas 30 minutos</span>
+                </div>
+            </div>
+            
+            <!-- Advertencia -->
+            <div class="warning">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                    <div class="warning-title">Política de Cancelación</div>
+                    <div class="warning-text">
+                        • Las cancelaciones deben realizarse con al menos 24 horas de anticipación<br>
+                        • Esta acción no se puede deshacer<br>
+                        • Se enviará una notificación automática a todos los participantes
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulario -->
+            <div class="form-group">
+                <label for="cancelReason" class="form-label">
+                    Motivo de cancelación <span class="required">*</span>
+                </label>
+                <textarea 
+                    id="cancelReason" 
+                    class="form-control" 
+                    placeholder="Por favor, proporciona el motivo de la cancelación..."
+                    required
+                ></textarea>
+                <div class="form-help">
+                    Este motivo será incluido en la notificación enviada a los participantes
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                ↩️ No, mantener reserva
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmCancel()" disabled id="confirmBtn">
+                ❌ Sí, cancelar reserva
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modal de Confirmación de Éxito -->
+    <div class="modal hidden" id="successModal">
+        <div class="success-modal">
+            <span class="success-icon">✅</span>
+            <h2 class="success-title">Reserva Cancelada Exitosamente</h2>
+            <p class="success-message">
+                Tu reserva ha sido cancelada y se han enviado las notificaciones correspondientes.
+            </p>
+            
+            <div class="success-details">
+                <h4>📧 Información sobre Políticas</h4>
+                <p>
+                    Como la cancelación se realizó con más de 24 horas de anticipación, 
+                    no se aplicarán penalizaciones. Los participantes han sido notificados 
+                    automáticamente sobre la cancelación.
+                </p>
+            </div>
+            
+            <button type="button" class="btn btn-secondary" onclick="goToHistory()">
+                📋 Volver al historial
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Habilitar botón de confirmación cuando se escriba el motivo
+        document.getElementById('cancelReason').addEventListener('input', function() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            const hasText = this.value.trim().length > 10;
+            confirmBtn.disabled = !hasText;
+            
+            if (hasText) {
+                confirmBtn.style.opacity = '1';
+            } else {
+                confirmBtn.style.opacity = '0.5';
+            }
+        });
+        
+        function closeModal() {
+            // En una aplicación real, esto cerraría el modal
+            alert('Modal cerrado - La reserva se mantiene activa');
+        }
+        
+        function confirmCancel() {
+            const reason = document.getElementById('cancelReason').value.trim();
+            
+            if (reason.length < 10) {
+                alert('Por favor, proporciona un motivo más detallado (mínimo 10 caracteres)');
+                return;
+            }
+            
+            // Simular proceso de cancelación
+            document.getElementById('confirmBtn').innerHTML = '⏳ Cancelando...';
+            document.getElementById('confirmBtn').disabled = true;
+            
+            setTimeout(() => {
+                // Ocultar modal de cancelación y mostrar confirmación
+                document.getElementById('cancelModal').classList.add('hidden');
+                document.getElementById('successModal').classList.remove('hidden');
+            }, 1500);
+        }
+        
+        function goToHistory() {
+            // En una aplicación real, esto navegaría al historial
+            alert('Navegando al historial de reservas...');
+        }
+        
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
+<script src="/static/js/theme.js"></script>

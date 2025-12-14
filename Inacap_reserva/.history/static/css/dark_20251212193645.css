@@ -1,0 +1,709 @@
+/* Fondos oscuros para todos los bloques y botones relevantes en modo oscuro */
+html[data-theme="dark"] .spaces-grid,
+html[data-theme="dark"] .space-card,
+html[data-theme="dark"] .space-equipment,
+html[data-theme="dark"] .space-actions,
+html[data-theme="dark"] .equipment-tag,
+html[data-theme="dark"] .action-btn,
+html[data-theme="dark"] .status-tabs,
+html[data-theme="dark"] .status-tab,
+html[data-theme="dark"] .filters,
+html[data-theme="dark"] .data-source,
+html[data-theme="dark"] .notification,
+html[data-theme="dark"] .actions,
+html[data-theme="dark"] .calendar-legend,
+html[data-theme="dark"] .fc-header-toolbar,
+html[data-theme="dark"] .fc-toolbar,
+html[data-theme="dark"] .fc-view-harness,
+html[data-theme="dark"] .calendar,
+html[data-theme="dark"] .terms-section {
+    background-color: #101624 !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+/* Fondos oscuros para formularios y secciones de resumen en modo oscuro */
+html[data-theme="dark"] .form-navigation,
+html[data-theme="dark"] .form-group,
+html[data-theme="dark"] .form-step,
+html[data-theme="dark"] .reservation-summary,
+html[data-theme="dark"] .summary-title,
+html[data-theme="dark"] .summary-grid,
+html[data-theme="dark"] .terms-section,
+html[data-theme="dark"] .step-title,
+html[data-theme="dark"] .datetime-grid,
+html[data-theme="dark"] .checkbox-group,
+html[data-theme="dark"] .special-equipment {
+    background-color: #101624 !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+/* Fondos oscuros para main-section y sidebar-section en modo oscuro */
+html[data-theme="dark"] .main-section,
+html[data-theme="dark"] .sidebar-section {
+    background-color: #101624 !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+
+/* Fondos oscuros solo en bloques principales en modo oscuro */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .form-container,
+html[data-theme="dark"] .step-wizard,
+html[data-theme="dark"] .filters-section,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .white-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .main-content > div,
+html[data-theme="dark"] .main-content > section,
+html[data-theme="dark"] .dashboard-container > div,
+html[data-theme="dark"] .dashboard-container > section {
+    background-color: #101624 !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+/* Forzar fondo oscuro en todos los divs hijos directos de body (dashboard, wizard, etc) solo en modo oscuro */
+html[data-theme="dark"] > body > div,
+html[data-theme="dark"] .main-content > div,
+html[data-theme="dark"] .main-content > section,
+html[data-theme="dark"] .dashboard-container > div,
+html[data-theme="dark"] .dashboard-container > section {
+    background-color: #010409 !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+/* Global dark backgrounds for all main white blocks in dark mode */
+html[data-theme="dark"] .form-container,
+html[data-theme="dark"] .step-wizard,
+html[data-theme="dark"] .filters-section,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .white-card,
+html[data-theme="dark"] .wizard-header,
+html[data-theme="dark"] .wizard-title,
+html[data-theme="dark"] .wizard-subtitle,
+html[data-theme="dark"] .steps-indicator,
+html[data-theme="dark"] .step,
+html[data-theme="dark"] .step-connector,
+html[data-theme="dark"] .step-number,
+html[data-theme="dark"] .form-step,
+html[data-theme="dark"] .filters-grid,
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .filter-input,
+html[data-theme="dark"] .filter-group,
+html[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .input,
+html[data-theme="dark"] .step-connector {
+    background-color: #07070a !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+
+html[data-theme="dark"] .step.pending .step-number {
+    background-color: rgba(255,255,255,0.06) !important;
+}
+
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .filter-input,
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    background-color: #0b0f15 !important;
+    border-color: rgba(255,255,255,0.06) !important;
+}
+
+html[data-theme="dark"] .step-wizard {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6) !important;
+}
+/* dark.css - Tema oscuro para el sistema de reservas */
+
+:root {
+    /* Variables para tema oscuro */
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-tertiary: #888888;
+    --border-color: #444444;
+    --accent-color: #2563eb;
+    --accent-hover: #1d4ed8;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Aplicar tema oscuro cuando está activo */
+body.dark-theme {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Header */
+body.dark-theme .header {
+    background-color: var(--bg-secondary) !important;
+    border-bottom-color: var(--border-color) !important;
+    box-shadow: 0 1px 3px var(--shadow-color) !important;
+}
+
+/* Logo y navegación */
+body.dark-theme .logo-section div {
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .nav-item {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-theme .nav-item:hover,
+body.dark-theme .nav-item.active {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+}
+
+/* Contenido principal */
+body.dark-theme .main-content {
+    background-color: var(--bg-primary) !important;
+}
+
+/* Breadcrumb */
+body.dark-theme .breadcrumb {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-theme .breadcrumb a {
+    color: var(--accent-color) !important;
+}
+
+/* Secciones de tarjetas */
+body.dark-theme .page-header,
+body.dark-theme .filters-section,
+body.dark-theme .calendar-section,
+body.dark-theme .sidebar {
+    background-color: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 1px 3px var(--shadow-color) !important;
+}
+
+body.dark-theme .page-title {
+    color: var(--text-primary) !important;
+}
+
+/* Filtros */
+body.dark-theme .filter-label {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-theme .filter-select,
+body.dark-theme .filter-input {
+    background-color: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .filter-select:focus,
+body.dark-theme .filter-input:focus {
+    border-color: var(--accent-color) !important;
+}
+
+/* Botones */
+body.dark-theme .view-toggles {
+    background-color: var(--bg-tertiary) !important;
+}
+
+body.dark-theme .view-toggle {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-theme .view-toggle.active {
+    background-color: var(--bg-secondary) !important;
+    color: var(--accent-color) !important;
+}
+
+/* Calendario (FullCalendar) */
+body.dark-theme .fc {
+    --fc-page-bg-color: var(--bg-secondary) !important;
+    --fc-border-color: var(--border-color) !important;
+    --fc-neutral-bg-color: var(--bg-tertiary) !important;
+    --fc-neutral-text-color: var(--text-secondary) !important;
+    --fc-button-bg-color: var(--bg-tertiary) !important;
+    --fc-button-border-color: var(--border-color) !important;
+    --fc-button-text-color: var(--text-primary) !important;
+    --fc-button-hover-bg-color: var(--accent-color) !important;
+    --fc-button-hover-border-color: var(--accent-color) !important;
+    --fc-button-active-bg-color: var(--accent-hover) !important;
+    --fc-button-active-border-color: var(--accent-hover) !important;
+    --fc-today-bg-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+body.dark-theme .fc-header-toolbar button {
+    background-color: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .fc-header-toolbar button:hover {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+body.dark-theme .fc-toolbar-title {
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .fc-daygrid-day {
+    background-color: var(--bg-secondary) !important;
+}
+
+body.dark-theme .fc-col-header-cell {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .fc-day-today {
+    background-color: rgba(37, 99, 235, 0.15) !important;
+}
+
+/* Leyenda del calendario */
+body.dark-theme .calendar-legend {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* Reservas en sidebar */
+body.dark-theme .selected-date {
+    background-color: var(--bg-tertiary) !important;
+}
+
+body.dark-theme .selected-date-text {
+    color: var(--accent-color) !important;
+}
+
+body.dark-theme .reservation-item {
+    background-color: var(--bg-tertiary) !important;
+}
+
+body.dark-theme .reservation-time {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-theme .reservation-space {
+    color: var(--text-primary) !important;
+}
+
+/* Ayuda de teclado */
+body.dark-theme .keyboard-help {
+    background-color: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.dark-theme .keyboard-help-title {
+    color: var(--text-primary) !important;
+}
+
+body.dark-theme .keyboard-shortcuts {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-theme .keyboard-tip {
+    color: var(--text-tertiary) !important;
+}
+
+/* Botones */
+body.dark-theme .new-reservation-btn {
+    background-color: var(--success-color) !important;
+    color: white !important;
+}
+
+body.dark-theme .new-reservation-btn:hover {
+    background-color: #059669 !important;
+}
+
+/* Estados vacíos */
+body.dark-theme .empty-state p {
+    color: var(--text-secondary) !important;
+}
+
+/* Scrollbars */
+body.dark-theme ::-webkit-scrollbar {
+    width: 10px;
+    background-color: var(--bg-tertiary);
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 5px;
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-color);
+}
+
+/* Estilos para el botón de toggle inyectado */
+.theme-toggle-btn{ /* fallback básico por si no se carga JS */ }
+
+/* Asegurar mejor visibilidad del toggle inyectado por _theme_snippet */
+#themeToggle{ cursor:pointer; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,0.9); box-shadow:0 8px 24px rgba(2,6,23,0.08); }
+html[data-theme="dark"] #themeToggle{ background:rgba(8,10,15,0.85); color:#e6eef8 }
+
+/* --------------------------------------------------
+   Overrides adicionales para elementos con fondo blanco
+   -------------------------------------------------- */
+
+/* Aplicar a containers y tarjetas comunes */
+html[data-theme="dark"] .login-container,
+body.dark-theme .login-container,
+html[data-theme="dark"] .card,
+body.dark-theme .card,
+html[data-theme="dark"] .card-custom,
+body.dark-theme .card-custom,
+html[data-theme="dark"] .page-header,
+body.dark-theme .page-header,
+html[data-theme="dark"] .filters-section,
+body.dark-theme .filters-section,
+html[data-theme="dark"] .calendar-section,
+body.dark-theme .calendar-section,
+html[data-theme="dark"] .sidebar,
+body.dark-theme .sidebar,
+html[data-theme="dark"] .demo-credentials,
+body.dark-theme .demo-credentials,
+/* ----------------------------- */
+/* Fallback global overrides — fuerza tema oscuro en componentes blancos */
+/* ----------------------------- */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .card *,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .panel *,
+html[data-theme="dark"] .box,
+html[data-theme="dark"] .box *,
+html[data-theme="dark"] .white-card,
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .stepper,
+html[data-theme="dark"] .wizard,
+html[data-theme="dark"] .notification-card,
+html[data-theme="dark"] .card-body,
+html[data-theme="dark"] .card-header,
+html[data-theme="dark"] .panel-body,
+html[data-theme="dark"] .card-custom,
+html[data-theme="dark"] .panel-default,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .table,
+html[data-theme="dark"] .table * {
+    background-color: #0b1220 !important;
+    color: #e6eef8 !important;
+    border-color: rgba(255,255,255,0.06) !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6) !important;
+}
+
+/* Overrides for inline white backgrounds (atributo style) */
+html[data-theme="dark"] [style*="background: white"],
+html[data-theme="dark"] [style*="background:#fff"],
+html[data-theme="dark"] [style*="background: #fff"],
+html[data-theme="dark"] [style*="background: #ffffff"],
+html[data-theme="dark"] [style*="background:white"] {
+    background-color: #0b1220 !important;
+    color: #e6eef8 !important;
+}
+
+/* Tables and rows: keep table backgrounds dark and text readable */
+html[data-theme="dark"] table,
+html[data-theme="dark"] tbody,
+html[data-theme="dark"] tr,
+html[data-theme="dark"] td,
+html[data-theme="dark"] th {
+    background-color: transparent !important;
+    color: #e6eef8 !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+
+/* Buttons and badges: ensure contrast without changing their intent color */
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .badge {
+    color: #e6eef8 !important;
+}
+
+/* Small helper: make headings readable when inside forced-dark components */
+html[data-theme="dark"] .card h1,
+html[data-theme="dark"] .card h2,
+html[data-theme="dark"] .card h3,
+html[data-theme="dark"] .card h4,
+html[data-theme="dark"] .card h5,
+html[data-theme="dark"] .card h6 {
+    color: #ffffff !important;
+}
+
+/* ----------------------------- */
+/* Forzar: TODO lo blanco → negro/oscuro (SIN tocar color del texto) */
+/* Aplica a clases comunes y a estilos inline que contengan white/#fff */
+/* ----------------------------- */
+/* Clases comunes usadas en plantillas */
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-light,
+html[data-theme="dark"] .card-white,
+html[data-theme="dark"] .card, /* cubre muchas tarjetas */
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .box,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .wizard,
+html[data-theme="dark"] .stepper,
+html[data-theme="dark"] .notification-card,
+html[data-theme="dark"] .white-card,
+html[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .input,
+html[data-theme="dark"] .filter-box,
+html[data-theme="dark"] .filters-panel,
+html[data-theme="dark"] .card-body,
+html[data-theme="dark"] .card-header,
+html[data-theme="dark"] .panel-body {
+    background-color: #07070a !important;
+}
+
+/* No cambiar colores de texto: solo forzamos background. */
+/* Selectores que usan inline styles con color blanco explícito */
+html[data-theme="dark"] [style*="background: white"],
+html[data-theme="dark"] [style*="background: #fff"],
+html[data-theme="dark"] [style*="background:#fff"],
+html[data-theme="dark"] [style*="background: #ffffff"],
+html[data-theme="dark"] [style*="background:white"] {
+    background-color: #07070a !important;
+}
+
+/* Elementos con clases utilitarias que suelen ser blancos (botones claros, badges) */
+html[data-theme="dark"] .btn-light,
+html[data-theme="dark"] .badge-light,
+html[data-theme="dark"] .chip,
+html[data-theme="dark"] .pill {
+    background-color: #07070a !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+
+/* Inputs/controles que aparecen como blancos — solo background */
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+    background-color: #0b0f15 !important;
+}
+
+/* Objetos pseudo-element con fondo blanco */
+html[data-theme="dark"] *::before,
+html[data-theme="dark"] *::after {
+    background-color: inherit !important;
+}
+
+/* Asegurar cards de notificaciones y listas largas se vean oscuras */
+html[data-theme="dark"] .notification-list .item,
+html[data-theme="dark"] .notifications .card,
+html[data-theme="dark"] .list-item {
+    background-color: #07070a !important;
+}
+
+
+/* Solo aplicar en modo oscuro, nunca en claro */
+html[data-theme="dark"] .step-wizard,
+html[data-theme="dark"] .wizard-header,
+html[data-theme="dark"] .wizard-title,
+html[data-theme="dark"] .wizard-subtitle,
+html[data-theme="dark"] .steps-indicator,
+html[data-theme="dark"] .step,
+html[data-theme="dark"] .step-connector,
+html[data-theme="dark"] .step-number,
+html[data-theme="dark"] .step.pending .step-number,
+html[data-theme="dark"] .form-container,
+html[data-theme="dark"] .form-step,
+html[data-theme="dark"] .filters-section,
+html[data-theme="dark"] .filters-grid,
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .filter-input,
+html[data-theme="dark"] .filter-group,
+html[data-theme="dark"] .step-connector {
+    background-color: #07070a !important;
+    border-color: rgba(255,255,255,0.04) !important;
+}
+
+html[data-theme="dark"] .step.pending .step-number {
+    background-color: rgba(255,255,255,0.06) !important;
+}
+
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .filter-input,
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    background-color: #0b0f15 !important;
+    border-color: rgba(255,255,255,0.06) !important;
+}
+
+html[data-theme="dark"] .step-wizard {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6) !important;
+}
+
+
+html[data-theme="dark"] .modal-content,
+body.dark-theme .modal-content {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255,255,255,0.03) !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45) !important;
+}
+
+/* Formularios e inputs */
+html[data-theme="dark"] .form-input,
+body.dark-theme .form-input,
+html[data-theme="dark"] input,
+body.dark-theme input,
+html[data-theme="dark"] textarea,
+body.dark-theme textarea,
+html[data-theme="dark"] select,
+body.dark-theme select {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Botones neutros: mantener colores de acción pero mejorar contraste */
+html[data-theme="dark"] .action-button,
+body.dark-theme .action-button,
+html[data-theme="dark"] .action-button.register,
+body.dark-theme .action-button.register,
+html[data-theme="dark"] .action-button.admin,
+body.dark-theme .action-button.admin {
+    color: #fff !important;
+}
+
+/* Tabs y elementos de navegación internos */
+html[data-theme="dark"] .tabs,
+body.dark-theme .tabs,
+html[data-theme="dark"] .tab,
+body.dark-theme .tab {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] .tab.active,
+body.dark-theme .tab.active {
+    background: rgba(255,255,255,0.03) !important;
+    color: var(--accent-color) !important;
+}
+
+/* Links y textos interactivos */
+html[data-theme="dark"] a,
+body.dark-theme a {
+    color: var(--accent-color) !important;
+}
+
+/* Breadcrumbs y pequeños textos */
+html[data-theme="dark"] .breadcrumb,
+body.dark-theme .breadcrumb,
+html[data-theme="dark"] .muted,
+body.dark-theme .muted {
+    color: var(--text-secondary) !important;
+}
+
+/* Forzar fondo oscuro en elementos inline con estilos 'background: white' */
+html[data-theme="dark"] [style*="background: white"],
+body.dark-theme [style*="background: white"] {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Ajustes para login 'logo' card en específico */
+html[data-theme="dark"] .login-container .logo-text,
+body.dark-theme .login-container .logo-text {
+    color: var(--text-primary) !important;
+}
+
+/* Asegurar contraste en pequeñas cajas (badges, legendas) */
+html[data-theme="dark"] .calendar-legend,
+body.dark-theme .calendar-legend,
+html[data-theme="dark"] .reservation-item,
+body.dark-theme .reservation-item {
+    background: var(--bg-tertiary) !important;
+}
+
+/* Evitar que ciertas sombras sobresalgan demasiado en tema oscuro */
+html[data-theme="dark"] .box-shadow-light,
+body.dark-theme .box-shadow-light {
+    box-shadow: none !important;
+}
+
+/* Pequeño ajuste para el footer o áreas blancas no cubiertas */
+html[data-theme="dark"] footer,
+body.dark-theme footer {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+}
+
+/* --------------------------------------------------
+   Reglas específicas para tarjetas, títulos y tablas
+   -------------------------------------------------- */
+
+/* Forzar fondo oscuro y texto legible en las tarjetas de dashboard */
+html[data-theme="dark"] .card, body.dark-theme .card,
+html[data-theme="dark"] .stats-card, body.dark-theme .stats-card,
+html[data-theme="dark"] .panel, body.dark-theme .panel,
+html[data-theme="dark"] .info-box, body.dark-theme .info-box,
+html[data-theme="dark"] .white-card, body.dark-theme .white-card,
+html[data-theme="dark"] .card-body, body.dark-theme .card-body,
+html[data-theme="dark"] .card-header, body.dark-theme .card-header {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Títulos y subtítulos dentro de tarjetas */
+html[data-theme="dark"] .card .card-title,
+body.dark-theme .card .card-title,
+html[data-theme="dark"] .card h3,
+body.dark-theme .card h3,
+html[data-theme="dark"] .page-title,
+body.dark-theme .page-title {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+}
+
+/* Contenido de las tarjetas (texto principal) */
+html[data-theme="dark"] .card .card-text,
+body.dark-theme .card .card-text,
+html[data-theme="dark"] .card p,
+body.dark-theme .card p {
+    color: var(--text-secondary) !important;
+}
+
+/* Tablas y filas (reservas) - forzar contraste */
+html[data-theme="dark"] table, body.dark-theme table,
+html[data-theme="dark"] .table, body.dark-theme .table {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+}
+
+html[data-theme="dark"] table th, body.dark-theme table th,
+html[data-theme="dark"] table td, body.dark-theme table td,
+html[data-theme="dark"] .table th, body.dark-theme .table th,
+html[data-theme="dark"] .table td, body.dark-theme .table td {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Filas de lista de reservas - aumentar contraste */
+html[data-theme="dark"] .reservas-list li, body.dark-theme .reservas-list li,
+html[data-theme="dark"] .reservation-row, body.dark-theme .reservation-row {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Botones dentro de tarjetas: asegurar color de texto */
+html[data-theme="dark"] .card .action-button, body.dark-theme .card .action-button {
+    color: #fff !important;
+}
+
+/* Ajustes para badges y pequeños textos */
+html[data-theme="dark"] .badge, body.dark-theme .badge,
+html[data-theme="dark"] .small-text, body.dark-theme .small-text {
+    color: var(--text-secondary) !important;
+}
+
+/* Si aún hay áreas con CSS inline que obligan fondo blanco, detectarlas y sombrear */
+html[data-theme="dark"] [style*="background: #fff"], body.dark-theme [style*="background: #fff"],
+html[data-theme="dark"] [style*="background:#fff"], body.dark-theme [style*="background:#fff"] {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+

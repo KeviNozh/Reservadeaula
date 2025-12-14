@@ -1,10 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    {% include 'reservas/_icons.html' %}
+    {% include 'reservas/_theme_snippet.html' %}
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes - Sistema de Reservas</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ENjdO4Dr2bkBIFxQpeoA6DQD5N2Q6F0n6U8U6p6YkE9j6M9g6t5F5F5F5F5F5F5F5F5" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
+        /* Variables CSS para temas */
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --admin-color: #7c3aed;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #18191a;
+            --bg-secondary: #23272f;
+            --bg-tertiary: #2d3748;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e7eb;
+            --text-tertiary: #9ca3af;
+            --border-color: #4b5563;
+            --primary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --admin-color: #8b5cf6;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,19 +53,24 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f9fafb;
-            color: #111827;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* Header */
         .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             padding: 0 24px;
             height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .logo-section {
@@ -37,82 +82,119 @@
         .logo {
             width: 40px;
             height: 40px;
-            background: #2563eb;
+            background: var(--admin-color);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
+            font-size: 20px;
         }
 
         .nav-menu {
             display: flex;
-            gap: 32px;
+            gap: 24px;
+            align-items: center;
         }
 
         .nav-item {
-            color: #6b7280;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
             padding: 8px 12px;
             border-radius: 6px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .nav-item:hover, .nav-item.active {
-            background: #2563eb;
+            background: var(--admin-color);
             color: white;
         }
 
         .user-menu {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: #10b981;
+            width: 36px;
+            height: 36px;
+            background: var(--success-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 14px;
         }
 
+        /* Botón de tema */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--admin-color);
+        }
+
+        /* Main Content */
         .main-content {
             padding: 24px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
+        /* Breadcrumb */
         .breadcrumb {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 24px;
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-secondary);
         }
 
         .breadcrumb a {
-            color: #2563eb;
+            color: var(--admin-color);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .breadcrumb a:hover {
             text-decoration: underline;
         }
 
+        .breadcrumb-separator {
+            color: var(--text-tertiary);
+        }
+
+        /* Page Header */
         .page-header {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .header-content {
@@ -126,7 +208,10 @@
         .page-title {
             font-size: 28px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* Estadísticas Rápidas */
@@ -138,39 +223,50 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
             border-left: 4px solid;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card.total {
-            border-left-color: #2563eb;
+            border-left-color: var(--primary-color);
         }
 
         .stat-card.success {
-            border-left-color: #10b981;
+            border-left-color: var(--success-color);
         }
 
         .stat-card.warning {
-            border-left-color: #f59e0b;
+            border-left-color: var(--warning-color);
         }
 
         .stat-card.danger {
-            border-left-color: #dc2626;
+            border-left-color: var(--danger-color);
         }
 
         .stat-value {
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
         .stat-label {
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 14px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* Reportes Disponibles */
@@ -178,14 +274,15 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 24px;
+            margin-bottom: 32px;
         }
 
         .report-card {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
@@ -198,18 +295,19 @@
             font-size: 48px;
             margin-bottom: 16px;
             text-align: center;
+            color: var(--admin-color);
         }
 
         .report-title {
             font-size: 20px;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 12px;
             text-align: center;
         }
 
         .report-description {
-            color: #6b7280;
+            color: var(--text-secondary);
             line-height: 1.6;
             margin-bottom: 20px;
             text-align: center;
@@ -218,10 +316,11 @@
         .report-actions {
             display: flex;
             justify-content: center;
+            gap: 10px;
         }
 
         .download-btn {
-            background: #10b981;
+            background: var(--danger-color);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -236,24 +335,28 @@
         }
 
         .download-btn:hover {
-            background: #059669;
+            background: #b91c1c;
             transform: translateY(-1px);
         }
 
         /* Tablas de datos */
         .data-section {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .section-title {
             font-size: 20px;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .data-table {
@@ -265,29 +368,110 @@
         .data-table td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .data-table th {
-            background: #f9fafb;
+            background: var(--bg-tertiary);
             font-weight: 600;
-            color: #374151;
+            color: var(--text-secondary);
+        }
+
+        .data-table td {
+            color: var(--text-primary);
         }
 
         .data-table tr:hover {
-            background: #f9fafb;
+            background: var(--bg-tertiary);
         }
 
         .empty-state {
             text-align: center;
             padding: 40px;
-            color: #6b7280;
+            color: var(--text-tertiary);
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-badge.approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-badge.rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-badge.cancelled {
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--bg-tertiary);
+            border-top: 4px solid var(--admin-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .main-content {
                 padding: 16px;
+            }
+
+            .header {
+                padding: 0 16px;
+                height: 60px;
+            }
+
+            .nav-menu {
+                display: none;
             }
 
             .stats-grid {
@@ -298,35 +482,67 @@
                 grid-template-columns: 1fr;
             }
 
-            .nav-menu {
-                gap: 16px;
+            .data-table {
+                font-size: 14px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px;
             }
 
-            .nav-item {
-                padding: 6px 10px;
-                font-size: 14px;
+            .report-actions {
+                flex-direction: column;
+            }
+
+            .download-btn {
+                width: 100%;
             }
         }
     </style>
+    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}" disabled>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="logo-section">
-            <div class="logo">SR</div>
-            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+            <div class="logo"><i class="bi bi-shield-check"></i></div>
+            <div style="font-weight: 600; color: var(--text-primary);">Panel Administrativo</div>
         </div>
         
         <nav class="nav-menu">
-            <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
-            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
-            <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
-            <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
-            <a href="{% url 'reportes' %}" class="nav-item active">Reportes</a>
-            <a href="{% url 'notificaciones_admin' %}" class="nav-item">Notificaciones</a>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">
+                <i class="bi bi-clock"></i> Solicitudes
+            </a>
+            <a href="{% url 'gestion_espacios' %}" class="nav-item">
+                <i class="bi bi-door-open"></i> Espacios
+            </a>
+            <a href="{% url 'gestion_usuarios' %}" class="nav-item">
+                <i class="bi bi-people-fill"></i> Usuarios
+            </a>
+            <a href="{% url 'reportes' %}" class="nav-item active">
+                <i class="bi bi-bar-chart"></i> Reportes
+            </a>
+            <a href="{% url 'notificaciones_admin' %}" class="nav-item">
+                <i class="bi bi-bell"></i> Notificaciones
+            </a>
         </nav>
         
         <div class="user-menu">
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                <i class="bi bi-moon" id="themeIcon"></i>
+            </button>
+            
+            <!-- Notificaciones -->
+            <button class="notification-btn" id="notificationBtn" style="background:none;border:none;position:relative;font-size:20px;cursor:pointer;color:var(--admin-color);">
+                <i class="bi bi-bell"></i>
+                <span id="notifBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--danger-color);color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;">0</span>
+            </button>
+            
             <div class="user-avatar">
                 {% if user.first_name and user.last_name %}
                     {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
@@ -334,14 +550,16 @@
                     {{ user.username|first|upper }}
                 {% endif %}
             </div>
-            <span>
+            <span style="color: var(--text-primary);">
                 {% if user.first_name %}
                     {{ user.first_name }} {{ user.last_name }}
                 {% else %}
                     {{ user.username }}
                 {% endif %}
             </span>
-            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+            <a href="{% url 'logout' %}" class="theme-toggle" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
         </div>
     </header>
 
@@ -349,15 +567,19 @@
     <main class="main-content">
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            <span>›</span>
-            <span>Reportes</span>
+            <a href="{% url 'admin_dashboard' %}">
+                <i class="bi bi-house"></i> Dashboard
+            </a>
+            <span class="breadcrumb-separator">›</span>
+            <span style="color: var(--text-primary);">Reportes y Estadísticas</span>
         </nav>
 
         <!-- Page Header -->
         <div class="page-header">
             <div class="header-content">
-                <h1 class="page-title">📊 Reportes y Estadísticas</h1>
+                <h1 class="page-title">
+                    <i class="bi bi-bar-chart"></i> Reportes y Estadísticas
+                </h1>
             </div>
         </div>
 
@@ -365,84 +587,91 @@
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-value">{{ total_reservas }}</div>
-                <div class="stat-label">Total de Reservas</div>
+                <div class="stat-label">
+                    <i class="bi bi-calendar-check"></i> Total de Reservas
+                </div>
             </div>
             <div class="stat-card success">
                 <div class="stat-value">{{ usuarios_activos }}</div>
-                <div class="stat-label">Usuarios Activos</div>
+                <div class="stat-label">
+                    <i class="bi bi-person-check"></i> Usuarios Activos
+                </div>
             </div>
             <div class="stat-card warning">
                 <div class="stat-value">{{ total_espacios }}</div>
-                <div class="stat-label">Espacios Disponibles</div>
+                <div class="stat-label">
+                    <i class="bi bi-building"></i> Espacios Disponibles
+                </div>
             </div>
             <div class="stat-card danger">
                 <div class="stat-value">{{ tasa_aprobacion }}%</div>
-                <div class="stat-label">Tasa de Aprobación</div>
+                <div class="stat-label">
+                    <i class="bi bi-graph-up"></i> Tasa de Aprobación
+                </div>
             </div>
         </div>
 
         <!-- Reportes Disponibles -->
-        <div class="data-section">
-            <h2 class="section-title">📈 Reportes Disponibles</h2>
-            <div class="reports-grid">
-                <!-- Reporte de Uso de Espacios -->
-                <div class="report-card">
-                    <div class="report-icon">🏢</div>
-                    <h3 class="report-title">Reporte de Uso de Espacios</h3>
-                    <p class="report-description">
-                        Análisis detallado del uso y ocupación de cada espacio durante el período seleccionado.
-                        Incluye estadísticas de frecuencia de uso y espacios más populares.
-                    </p>
-                    <div class="report-actions">
-                        <a href="{% url 'generar_reporte_pdf' 'uso_espacios' %}" class="download-btn">
-                            📥 Descargar PDF
-                        </a>
-                    </div>
+        <div class="reports-grid">
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="bi bi-building"></i>
                 </div>
-
-                <!-- Reporte de Usuarios -->
-                <div class="report-card">
-                    <div class="report-icon">👥</div>
-                    <h3 class="report-title">Reporte de Usuarios</h3>
-                    <p class="report-description">
-                        Estadísticas de actividad de usuarios, frecuencia de reservas y patrones de uso.
-                        Identifica a los usuarios más activos y sus preferencias.
-                    </p>
-                    <div class="report-actions">
-                        <a href="{% url 'generar_reporte_pdf' 'usuarios' %}" class="download-btn">
-                            📥 Descargar PDF
-                        </a>
-                    </div>
+                <h3 class="report-title">Reporte de Uso de Espacios</h3>
+                <p class="report-description">
+                    Análisis de utilización de espacios, horas pico y disponibilidad.
+                </p>
+                <div class="report-actions">
+                    <a href="{% url 'generar_reporte_pdf' 'uso_espacios' %}" class="download-btn" target="_blank" onclick="showLoading(true)">
+                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                    </a>
                 </div>
+            </div>
 
-                <!-- Reporte Mensual -->
-                <div class="report-card">
-                    <div class="report-icon">📅</div>
-                    <h3 class="report-title">Reporte Mensual</h3>
-                    <p class="report-description">
-                        Resumen mensual de todas las actividades del sistema de reservas.
-                        Incluye métricas clave, tendencias y análisis comparativo.
-                    </p>
-                    <div class="report-actions">
-                        <a href="{% url 'generar_reporte_pdf' 'mensual' %}" class="download-btn">
-                            📥 Descargar PDF
-                        </a>
-                    </div>
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h3 class="report-title">Reporte de Usuarios</h3>
+                <p class="report-description">
+                    Informe de actividad de usuarios, incluyendo estadísticas de uso y preferencias.
+                </p>
+                <div class="report-actions">
+                    <a href="{% url 'generar_reporte_pdf' 'usuarios' %}" class="download-btn" target="_blank" onclick="showLoading(true)">
+                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                    </a>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="bi bi-calendar-month"></i>
+                </div>
+                <h3 class="report-title">Reporte Mensual</h3>
+                <p class="report-description">
+                    Resumen mensual de actividad del sistema, tendencias y métricas clave.
+                </p>
+                <div class="report-actions">
+                    <a href="{% url 'generar_reporte_pdf' 'mensual' %}" class="download-btn" target="_blank" onclick="showLoading(true)">
+                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- Datos Adicionales -->
         <div class="data-section">
-            <h2 class="section-title">🏆 Espacios Más Utilizados</h2>
+            <h2 class="section-title">
+                <i class="bi bi-trophy"></i> Espacios Más Utilizados
+            </h2>
             {% if espacios_mas_usados %}
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Espacio</th>
-                        <th>Tipo</th>
-                        <th>Capacidad</th>
-                        <th>Reservas</th>
+                        <th><i class="bi bi-door-open"></i> Espacio</th>
+                        <th><i class="bi bi-tag"></i> Tipo</th>
+                        <th><i class="bi bi-people"></i> Capacidad</th>
+                        <th><i class="bi bi-calendar-check"></i> Reservas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -458,20 +687,23 @@
             </table>
             {% else %}
             <div class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
                 <p>No hay datos de uso de espacios disponibles.</p>
             </div>
             {% endif %}
         </div>
 
         <div class="data-section">
-            <h2 class="section-title">⭐ Usuarios Más Activos</h2>
+            <h2 class="section-title">
+                <i class="bi bi-star"></i> Usuarios Más Activos
+            </h2>
             {% if usuarios_activos_top %}
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Usuario</th>
-                        <th>Nombre</th>
-                        <th>Reservas</th>
+                        <th><i class="bi bi-person"></i> Usuario</th>
+                        <th><i class="bi bi-person-badge"></i> Nombre</th>
+                        <th><i class="bi bi-calendar-check"></i> Reservas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -486,39 +718,58 @@
             </table>
             {% else %}
             <div class="empty-state">
+                <i class="bi bi-people" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
                 <p>No hay datos de usuarios disponibles.</p>
             </div>
             {% endif %}
         </div>
 
         <div class="data-section">
-            <h2 class="section-title">📋 Resumen de Estados</h2>
+            <h2 class="section-title">
+                <i class="bi bi-clipboard-data"></i> Resumen de Estados
+            </h2>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Estado</th>
-                        <th>Cantidad</th>
-                        <th>Porcentaje</th>
+                        <th><i class="bi bi-tag"></i> Estado</th>
+                        <th><i class="bi bi-hash"></i> Cantidad</th>
+                        <th><i class="bi bi-percent"></i> Porcentaje</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>✅ Aprobadas</td>
+                        <td>
+                            <span class="status-badge approved">
+                                <i class="bi bi-check-circle"></i> Aprobadas
+                            </span>
+                        </td>
                         <td>{{ reservas_aprobadas }}</td>
                         <td>{{ tasa_aprobacion }}%</td>
                     </tr>
                     <tr>
-                        <td>⏳ Pendientes</td>
+                        <td>
+                            <span class="status-badge pending">
+                                <i class="bi bi-clock"></i> Pendientes
+                            </span>
+                        </td>
                         <td>{{ reservas_pendientes }}</td>
                         <td>{% widthratio reservas_pendientes total_reservas 100 %}%</td>
                     </tr>
                     <tr>
-                        <td>❌ Rechazadas</td>
+                        <td>
+                            <span class="status-badge rejected">
+                                <i class="bi bi-x-circle"></i> Rechazadas
+                            </span>
+                        </td>
                         <td>{{ reservas_rechazadas }}</td>
                         <td>{% widthratio reservas_rechazadas total_reservas 100 %}%</td>
                     </tr>
                     <tr>
-                        <td>📝 Canceladas</td>
+                        <td>
+                            <span class="status-badge cancelled">
+                                <i class="bi bi-x-circle"></i> Canceladas
+                            </span>
+                        </td>
                         <td>{{ reservas_canceladas }}</td>
                         <td>{% widthratio reservas_canceladas total_reservas 100 %}%</td>
                     </tr>
@@ -526,5 +777,151 @@
             </table>
         </div>
     </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Generando reporte PDF...</p>
+            <p style="font-size: 14px; color: var(--text-tertiary); margin-top: 10px;">Por favor, espera un momento</p>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de tema claro/oscuro
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            // Verificar tema guardado en localStorage
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.classList.remove('bi-moon');
+                themeIcon.classList.add('bi-sun');
+            }
+            
+            // Función para cambiar tema
+            themeToggle.addEventListener('click', () => {
+                const isDark = body.getAttribute('data-theme') === 'dark';
+                
+                if (isDark) {
+                    body.removeAttribute('data-theme');
+                    themeIcon.classList.remove('bi-sun');
+                    themeIcon.classList.add('bi-moon');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.setAttribute('data-theme', 'dark');
+                    themeIcon.classList.remove('bi-moon');
+                    themeIcon.classList.add('bi-sun');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Función para mostrar/ocultar loading
+            window.showLoading = function(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = show ? 'flex' : 'none';
+                
+                // Ocultar automáticamente después de 5 segundos (por si acaso)
+                if (show) {
+                    setTimeout(() => {
+                        showLoading(false);
+                    }, 5000);
+                }
+            };
+            
+            // Añadir eventos a los enlaces de PDF para mostrar loading
+            document.querySelectorAll('a.download-btn').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Mostrar loading
+                    showLoading(true);
+                    
+                    // El enlace se abrirá en nueva pestaña, el loading se ocultará automáticamente
+                });
+            });
+            
+            // Función para mostrar alertas
+            function showAlert(message, type = 'info') {
+                const colors = {
+                    success: '#10b981',
+                    error: '#ef4444',
+                    warning: '#f59e0b',
+                    info: '#3b82f6'
+                };
+                
+                const icon = {
+                    success: 'bi-check-circle',
+                    error: 'bi-exclamation-triangle',
+                    warning: 'bi-exclamation-circle',
+                    info: 'bi-info-circle'
+                }[type];
+                
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${colors[type]}20;
+                    color: ${colors[type]};
+                    padding: 16px 20px;
+                    border-radius: 12px;
+                    border: 1px solid ${colors[type]}40;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    z-index: 9999;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                
+                alertDiv.innerHTML = `
+                    <i class="bi ${icon}" style="font-size: 20px;"></i>
+                    <span>${message}</span>
+                `;
+                
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    alertDiv.style.animation = 'slideOutRight 0.3s ease-in forwards';
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.parentNode.removeChild(alertDiv);
+                        }
+                    }, 300);
+                }, 5000);
+            }
+            
+            // Animación CSS para alertas
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                @keyframes slideOutRight {
+                    from {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            console.log('Reportes cargados correctamente');
+        });
+    </script>
+    <script src="{% static 'js/theme.js' %}"></script>
 </body>
 </html>

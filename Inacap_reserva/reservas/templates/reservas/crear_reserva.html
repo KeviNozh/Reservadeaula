@@ -4,29 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Reserva - Sistema de Reservas</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
     <style>
+        /* Variables CSS para temas */
+        :root {
+            /* Tema Claro (default) */
+            --bg-primary: #f9fafb;
+            --bg-secondary: white;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --accent-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-dark {
+            /* Tema Oscuro */
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #4b5563;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f9fafb;
-            color: #111827;
+            background: var(--bg-primary);
+            color: var(--text-primary);
         }
 
         /* Header */
         .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             padding: 0 24px;
             height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .logo-section {
@@ -38,31 +81,80 @@
         .logo {
             width: 40px;
             height: 40px;
-            background: #2563eb;
+            background: var(--accent-color);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--accent-color);
+            color: white;
         }
 
         .user-menu {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .user-avatar {
             width: 32px;
             height: 32px;
-            background: #10b981;
+            background: var(--success-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Botón de tema */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-color);
         }
 
         /* Main Content */
@@ -79,12 +171,15 @@
             gap: 8px;
             margin-bottom: 24px;
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-secondary);
         }
 
         .breadcrumb a {
-            color: #2563eb;
+            color: var(--accent-color);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .breadcrumb a:hover {
@@ -93,11 +188,12 @@
 
         /* Step Wizard */
         .step-wizard {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
 
         .wizard-header {
@@ -108,12 +204,16 @@
         .wizard-title {
             font-size: 28px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
 
         .wizard-subtitle {
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 16px;
         }
 
@@ -144,46 +244,47 @@
         }
 
         .step.active .step-number {
-            background: #2563eb;
+            background: var(--accent-color);
             color: white;
         }
 
         .step.completed .step-number {
-            background: #10b981;
+            background: var(--success-color);
             color: white;
         }
 
         .step.pending .step-number {
-            background: #e5e7eb;
-            color: #6b7280;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
         }
 
         .step-label {
             font-size: 14px;
             font-weight: 500;
-            color: #374151;
+            color: var(--text-secondary);
         }
 
         .step.active .step-label {
-            color: #2563eb;
+            color: var(--accent-color);
         }
 
         .step-connector {
             width: 40px;
             height: 2px;
-            background: #e5e7eb;
+            background: var(--border-color);
         }
 
         .step-connector.completed {
-            background: #10b981;
+            background: var(--success-color);
         }
 
         /* Form Container */
         .form-container {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             overflow: hidden;
+            border: 1px solid var(--border-color);
         }
 
         .form-step {
@@ -198,16 +299,20 @@
         .step-title {
             font-size: 24px;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         /* Step 1 - Space Selection */
         .filters-section {
-            background: #f9fafb;
+            background: var(--bg-tertiary);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 24px;
+            border: 1px solid var(--border-color);
         }
 
         .filters-grid {
@@ -225,52 +330,64 @@
         .filter-label {
             font-size: 14px;
             font-weight: 500;
-            color: #374151;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .filter-select, .filter-input {
             padding: 10px 12px;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
-            background: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             transition: border-color 0.3s ease;
         }
 
         .filter-select:focus, .filter-input:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .spaces-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
+            align-items: stretch;
         }
 
         .space-card {
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            background: white;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 400px;
+            transform-origin: center;
         }
 
         .space-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
 
         .space-card.selected {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2), 0 8px 16px rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
         }
 
         .space-image {
             width: 100%;
             height: 160px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -287,27 +404,33 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: 500;
-        }
-
-        .space-status.available {
-            background: rgba(16, 185, 129, 0.9);
-            color: white;
-        }
-
-        .space-status.occupied {
-            background: rgba(220, 38, 38, 0.9);
-            color: white;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--success-color);
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .space-content {
             padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .space-name {
             font-size: 18px;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 8px;
+        }
+
+        .space-location {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .space-details {
@@ -316,62 +439,92 @@
             gap: 16px;
             margin-bottom: 12px;
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-secondary);
         }
 
         .space-detail {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            min-height: 24px;
+        }
+
+        .space-detail i, .space-location i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .space-content p {
+            flex-grow: 1;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
         .space-equipment {
             display: flex;
             gap: 8px;
             margin-top: 8px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .equipment-tag {
-            background: #f3f4f6;
-            padding: 4px 8px;
-            border-radius: 12px;
+            background: var(--bg-tertiary);
+            padding: 4px 10px;
+            border-radius: 16px;
             font-size: 12px;
-            color: #6b7280;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
         }
 
         .space-actions {
             display: flex;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
         }
 
         .action-btn {
             flex: 1;
             padding: 10px 16px;
-            border: 2px solid #e5e7eb;
-            background: white;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
             border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s ease;
             text-align: center;
             text-decoration: none;
-            color: #374151;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 120px;
+            transition: all 0.2s ease;
         }
 
         .action-btn:hover {
-            border-color: #2563eb;
-            color: #2563eb;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-1px);
         }
 
         .action-btn.primary {
-            background: #2563eb;
+            background: var(--accent-color);
             color: white;
-            border-color: #2563eb;
+            border-color: var(--accent-color);
         }
 
         .action-btn.primary:hover {
             background: #1d4ed8;
+            transform: translateY(-1px) scale(1.05);
         }
 
         /* Step 2 - Date and Time */
@@ -391,28 +544,34 @@
         .form-label {
             font-size: 14px;
             font-weight: 500;
-            color: #374151;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .form-input {
             padding: 12px;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             transition: border-color 0.3s ease;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .availability-check {
-            background: #f3f4f6;
+            background: var(--bg-tertiary);
             border-radius: 8px;
             padding: 16px;
             margin-top: 16px;
+            border: 1px solid var(--border-color);
         }
 
         .availability-status {
@@ -423,18 +582,19 @@
         }
 
         .availability-status.available {
-            color: #10b981;
+            color: var(--success-color);
         }
 
         .availability-status.unavailable {
-            color: #dc2626;
+            color: var(--danger-color);
         }
 
         .recurring-options {
             margin-top: 20px;
             padding: 16px;
-            background: #f9fafb;
+            background: var(--bg-tertiary);
             border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         .checkbox-group {
@@ -448,6 +608,7 @@
         .form-textarea {
             min-height: 100px;
             resize: vertical;
+            font-family: inherit;
         }
 
         .special-equipment {
@@ -461,17 +622,21 @@
 
         /* Step 4 - Confirmation */
         .reservation-summary {
-            background: #f9fafb;
+            background: var(--bg-tertiary);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
+            border: 1px solid var(--border-color);
         }
 
         .summary-title {
             font-size: 18px;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .summary-grid {
@@ -481,14 +646,15 @@
         }
 
         .summary-item {
-            background: white;
+            background: var(--bg-secondary);
             padding: 12px;
             border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         .summary-label {
             font-size: 12px;
-            color: #6b7280;
+            color: var(--text-secondary);
             text-transform: uppercase;
             font-weight: 500;
             margin-bottom: 4px;
@@ -496,26 +662,31 @@
 
         .summary-value {
             font-size: 16px;
-            color: #111827;
+            color: var(--text-primary);
             font-weight: 500;
         }
 
         .terms-section {
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 16px;
             margin-bottom: 24px;
+            background: var(--bg-tertiary);
         }
 
         .terms-title {
             font-size: 16px;
             font-weight: 500;
             margin-bottom: 12px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .terms-text {
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-secondary);
             line-height: 1.5;
         }
 
@@ -525,8 +696,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 24px 32px;
-            background: #f9fafb;
-            border-top: 1px solid #e5e7eb;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
         }
 
         .nav-btn {
@@ -537,51 +708,86 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .nav-btn.secondary {
-            background: #6b7280;
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         .nav-btn.secondary:hover {
-            background: #4b5563;
+            background: var(--border-color);
         }
 
         .nav-btn.primary {
-            background: #2563eb;
+            background: var(--accent-color);
             color: white;
         }
 
         .nav-btn.primary:hover {
             background: #1d4ed8;
             transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
         }
 
         .nav-btn.success {
-            background: #10b981;
+            background: var(--success-color);
             color: white;
         }
 
         .nav-btn.success:hover {
             background: #059669;
             transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
         }
 
         .nav-btn:disabled {
-            background: #9ca3af;
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         /* Error Message */
         .error-message {
-            background: #fee2e2;
-            color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger-color);
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 16px;
             display: none;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
         /* Responsive */
@@ -613,17 +819,69 @@
             .summary-grid {
                 grid-template-columns: 1fr;
             }
+
+            .form-navigation {
+                padding: 16px;
+            }
+
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .header {
+                padding: 0 16px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
         }
     </style>
 </head>
-<body>
+<body class="theme-light">
     <!-- Header -->
     <header class="header">
         <div class="logo-section">
-            <div class="logo">SR</div>
+            <div class="logo">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div style="font-weight: 600; color: var(--text-primary);">Sistema de Reservas</div>
         </div>
         
+        <nav class="nav-menu">
+            <a href="{% url 'dashboard' %}" class="nav-item">
+                <i class="bi bi-speedometer2"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item active">
+                <i class="bi bi-plus-circle"></i>
+                Reservar
+            </a>
+            <a href="{% url 'reservas' %}" class="nav-item">
+                <i class="bi bi-clock-history"></i>
+                Historial
+            </a>
+            <a href="{% url 'calendario' %}" class="nav-item">
+                <i class="bi bi-calendar-week"></i>
+                Calendario
+            </a>
+            <a href="{% url 'espacios' %}" class="nav-item">
+                <i class="bi bi-building"></i>
+                Espacios
+            </a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">
+                <i class="bi bi-bell"></i>
+                Notificaciones
+            </a>
+        </nav>
+        
         <div class="user-menu">
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                <i class="bi bi-moon" id="themeIcon"></i>
+            </button>
+            
             <div class="user-avatar">
                 {% if user.first_name and user.last_name %}
                     {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
@@ -631,13 +889,16 @@
                     {{ user.username|first|upper }}
                 {% endif %}
             </div>
-            <span>
+            <span style="color: var(--text-primary);">
                 {% if user.first_name %}
-                    {{ user.first_name }}
+                    {{ user.first_name }} {{ user.last_name }}
                 {% else %}
                     {{ user.username }}
                 {% endif %}
             </span>
+            <a href="{% url 'logout' %}" class="theme-toggle" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
         </div>
     </header>
 
@@ -645,17 +906,26 @@
     <main class="main-content">
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            <span>›</span>
-            <a href="{% url 'crear_reserva' %}">Reservar</a>
-            <span>›</span>
+            <a href="{% url 'dashboard' %}">
+                <i class="bi bi-house"></i>
+                Dashboard
+            </a>
+            <span style="color: var(--text-tertiary);">›</span>
+            <a href="{% url 'crear_reserva' %}">
+                <i class="bi bi-plus-circle"></i>
+                Reservar
+            </a>
+            <span style="color: var(--text-tertiary);">›</span>
             <span>Nueva Reserva</span>
         </nav>
 
         <!-- Step Wizard -->
         <div class="step-wizard">
             <div class="wizard-header">
-                <h1 class="wizard-title">Nueva Reserva</h1>
+                <h1 class="wizard-title">
+                    <i class="bi bi-plus-circle"></i>
+                    Nueva Reserva
+                </h1>
                 <p class="wizard-subtitle">Completa los siguientes pasos para solicitar tu reserva</p>
             </div>
 
@@ -689,13 +959,19 @@
         <div class="form-container">
             <!-- Step 1: Space Selection -->
             <div id="step1" class="form-step active">
-                <h2 class="step-title">Selecciona un Espacio</h2>
+                <h2 class="step-title">
+                    <i class="bi bi-building"></i>
+                    Selecciona un Espacio
+                </h2>
 
                 <!-- Filters -->
                 <div class="filters-section">
                     <div class="filters-grid">
                         <div class="filter-group">
-                            <label class="filter-label">👥 Capacidad</label>
+                            <label class="filter-label">
+                                <i class="bi bi-people"></i>
+                                Capacidad
+                            </label>
                             <select class="filter-select" id="capacityFilter">
                                 <option value="">Cualquier capacidad</option>
                                 <option value="1-10">1-10 personas</option>
@@ -706,7 +982,10 @@
                         </div>
 
                         <div class="filter-group">
-                            <label class="filter-label">🏢 Edificio</label>
+                            <label class="filter-label">
+                                <i class="bi bi-building"></i>
+                                Edificio
+                            </label>
                             <select class="filter-select" id="buildingFilter">
                                 <option value="">Todos los edificios</option>
                                 <option value="a">Edificio A</option>
@@ -716,7 +995,10 @@
                         </div>
 
                         <div class="filter-group">
-                            <label class="filter-label">🔧 Equipamiento</label>
+                            <label class="filter-label">
+                                <i class="bi bi-tools"></i>
+                                Equipamiento
+                            </label>
                             <select class="filter-select" id="equipmentFilter">
                                 <option value="">Sin filtro</option>
                                 <option value="projector">Proyector</option>
@@ -734,24 +1016,26 @@
                     <div class="space-card" data-space-id="{{ espacio.id }}">
                         <div class="space-image">
                             {% if espacio.tipo == 'Sala de Reuniones' %}
-                                🏛️
+                                <i class="bi bi-buildings" style="font-size: 48px;"></i>
                             {% elif espacio.tipo == 'Auditorio' %}
-                                🎭
+                                <i class="bi bi-mic" style="font-size: 48px;"></i>
                             {% elif espacio.tipo == 'Laboratorio' %}
-                                🔬
+                                <i class="bi bi-thermometer" style="font-size: 48px;"></i>
                             {% elif espacio.tipo == 'Oficina' %}
-                                💼
+                                <i class="bi bi-briefcase" style="font-size: 48px;"></i>
                             {% elif espacio.tipo == 'Aula' %}
-                                🏫
+                                <i class="bi bi-mortarboard" style="font-size: 48px;"></i>
                             {% else %}
-                                🏢
+                                <i class="bi bi-building" style="font-size: 48px;"></i>
                             {% endif %}
-                            <div class="space-status available">Disponible</div>
+                            <div class="space-status">
+                                <i class="bi bi-check-circle"></i> Disponible
+                            </div>
                         </div>
                         <div class="space-content">
                             <h3 class="space-name">{{ espacio.nombre }}</h3>
                             <div class="space-location">
-                                <span>📍</span>
+                                <i class="bi bi-geo-alt"></i>
                                 <span>
                                     {% if espacio.edificio and espacio.piso %}
                                         {{ espacio.edificio }}, Piso {{ espacio.piso }}
@@ -765,34 +1049,43 @@
                             
                             <div class="space-details">
                                 <div class="space-detail">
-                                    <span>👥</span>
+                                    <i class="bi bi-people"></i>
                                     <span>{{ espacio.capacidad }} personas</span>
                                 </div>
                                 <div class="space-detail">
-                                    <span>📐</span>
+                                    <i class="bi bi-tag"></i>
                                     <span>{{ espacio.tipo }}</span>
                                 </div>
                             </div>
 
                             {% if espacio.descripcion %}
-                            <p style="color: #6b7280; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">
+                            <p>
                                 {{ espacio.descripcion }}
                             </p>
                             {% endif %}
 
                             <div class="space-equipment">
                                 {% for equipamiento in espacio.equipamientos.all %}
-                                <span class="equipment-tag">{{ equipamiento.nombre_equipo }}</span>
+                                <span class="equipment-tag">
+                                    <i class="bi bi-tools"></i> {{ equipamiento.nombre_equipo }}
+                                </span>
                                 {% empty %}
-                                <span class="equipment-tag">Equipamiento básico</span>
+                                <span class="equipment-tag">
+                                    <i class="bi bi-wrench"></i> Equipamiento básico
+                                </span>
                                 {% endfor %}
                             </div>
 
                             <div class="space-actions">
-                                <button class="action-btn primary" onclick="selectSpace(this, {{ espacio.id }}, '{{ espacio.nombre }}')">
+                                <button class="action-btn primary select-space-btn" 
+                                        data-space-id="{{ espacio.id }}" 
+                                        data-space-name="{{ espacio.nombre }}">
+                                    <i class="bi bi-check-circle"></i>
                                     Seleccionar
                                 </button>
-                                <button class="action-btn" onclick="verDetallesEspacio({{ espacio.id }})">
+                                <button class="action-btn view-details-btn" 
+                                        data-space-id="{{ espacio.id }}">
+                                    <i class="bi bi-info-circle"></i>
                                     Ver Detalles
                                 </button>
                             </div>
@@ -800,16 +1093,17 @@
                     </div>
                     {% empty %}
                     <div class="empty-state">
-                        <div style="text-align: center; padding: 40px;">
-                            <div style="font-size: 48px; margin-bottom: 16px;">🏢</div>
-                            <h3 style="color: #6b7280; margin-bottom: 8px;">No hay espacios disponibles</h3>
-                            <p style="color: #9ca3af; margin-bottom: 20px;">
-                                Todos los espacios están ocupados o en mantenimiento.
-                            </p>
-                            <a href="{% url 'dashboard' %}" class="action-btn primary">
-                                Volver al Dashboard
-                            </a>
+                        <div class="empty-state-icon">
+                            <i class="bi bi-building"></i>
                         </div>
+                        <h3 class="empty-state-title">No hay espacios disponibles</h3>
+                        <p class="empty-state-text">
+                            Todos los espacios están ocupados o en mantenimiento.
+                        </p>
+                        <a href="{% url 'dashboard' %}" class="action-btn primary" style="margin-top: 16px;">
+                            <i class="bi bi-arrow-left"></i>
+                            Volver al Dashboard
+                        </a>
                     </div>
                     {% endfor %}
                 </div>
@@ -817,16 +1111,25 @@
 
             <!-- Step 2: Date and Time -->
             <div id="step2" class="form-step">
-                <h2 class="step-title">Selecciona Fecha y Hora</h2>
+                <h2 class="step-title">
+                    <i class="bi bi-calendar-date"></i>
+                    Selecciona Fecha y Hora
+                </h2>
 
                 <div class="datetime-grid">
                     <div class="form-group">
-                        <label class="form-label">📅 Fecha de la Reserva</label>
+                        <label class="form-label">
+                            <i class="bi bi-calendar"></i>
+                            Fecha de la Reserva
+                        </label>
                         <input type="date" class="form-input" id="reservationDate" min="{{ today }}">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">⏰ Hora de Inicio</label>
+                        <label class="form-label">
+                            <i class="bi bi-clock"></i>
+                            Hora de Inicio
+                        </label>
                         <select class="form-input" id="startTime">
                             <option value="">Selecciona hora</option>
                             <option value="08:00">08:00</option>
@@ -854,7 +1157,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">⏰ Hora de Fin</label>
+                        <label class="form-label">
+                            <i class="bi bi-clock"></i>
+                            Hora de Fin
+                        </label>
                         <select class="form-input" id="endTime">
                             <option value="">Selecciona hora</option>
                             <option value="09:00">09:00</option>
@@ -882,25 +1188,35 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">⏱️ Duración</label>
+                        <label class="form-label">
+                            <i class="bi bi-stopwatch"></i>
+                            Duración
+                        </label>
                         <input type="text" class="form-input" id="duration" readonly placeholder="Selecciona horas para calcular">
                     </div>
                 </div>
 
                 <div class="availability-check">
                     <div class="availability-status available">
-                        ✅ Horario disponible para el espacio seleccionado
+                        <i class="bi bi-check-circle"></i>
+                        Horario disponible para el espacio seleccionado
                     </div>
                 </div>
 
                 <div class="recurring-options">
                     <div class="checkbox-group">
                         <input type="checkbox" id="recurring">
-                        <label for="recurring">🔄 Reserva recurrente</label>
+                        <label for="recurring" style="color: var(--text-primary);">
+                            <i class="bi bi-arrow-repeat"></i>
+                            Reserva recurrente
+                        </label>
                     </div>
                     <div id="recurringDetails" style="display: none;">
                         <div class="form-group" style="margin-top: 12px;">
-                            <label class="form-label">Repetir cada:</label>
+                            <label class="form-label">
+                                <i class="bi bi-calendar-event"></i>
+                                Repetir cada:
+                            </label>
                             <select class="form-input">
                                 <option value="weekly">Semanal</option>
                                 <option value="biweekly">Cada 2 semanas</option>
@@ -913,33 +1229,51 @@
 
             <!-- Step 3: Details -->
             <div id="step3" class="form-step">
-                <h2 class="step-title">Detalles de la Reserva</h2>
+                <h2 class="step-title">
+                    <i class="bi bi-card-text"></i>
+                    Detalles de la Reserva
+                </h2>
 
                 <div class="form-group">
-                    <label class="form-label">📝 Propósito de la Reserva *</label>
+                    <label class="form-label">
+                        <i class="bi bi-pencil"></i>
+                        Propósito de la Reserva *
+                    </label>
                     <textarea class="form-input form-textarea" id="purpose" placeholder="Describe brevemente el propósito de tu reserva..." required></textarea>
                 </div>
 
                 <div class="datetime-grid">
                     <div class="form-group">
-                        <label class="form-label">👥 Número de Asistentes *</label>
+                        <label class="form-label">
+                            <i class="bi bi-people"></i>
+                            Número de Asistentes *
+                        </label>
                         <input type="number" class="form-input" id="attendees" placeholder="0" min="1" max="200" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">📞 Contacto Responsable</label>
+                        <label class="form-label">
+                            <i class="bi bi-telephone"></i>
+                            Contacto Responsable
+                        </label>
                         <input type="tel" class="form-input" id="contact" placeholder="+56 9 1234 5678">
                     </div>
                 </div>
 
                 <div class="checkbox-group">
                     <input type="checkbox" id="specialEquipment">
-                    <label for="specialEquipment">🔧 Requiere equipos especiales</label>
+                    <label for="specialEquipment" style="color: var(--text-primary);">
+                        <i class="bi bi-tools"></i>
+                        Requiere equipos especiales
+                    </label>
                 </div>
 
                 <div class="special-equipment" id="specialEquipmentDetails">
                     <div class="form-group">
-                        <label class="form-label">Detalles del equipamiento especial</label>
+                        <label class="form-label">
+                            <i class="bi bi-gear"></i>
+                            Detalles del equipamiento especial
+                        </label>
                         <textarea class="form-input" placeholder="Especifica qué equipos adicionales necesitas..."></textarea>
                     </div>
                 </div>
@@ -947,10 +1281,16 @@
 
             <!-- Step 4: Confirmation -->
             <div id="step4" class="form-step">
-                <h2 class="step-title">Confirmar Reserva</h2>
+                <h2 class="step-title">
+                    <i class="bi bi-check-circle"></i>
+                    Confirmar Reserva
+                </h2>
 
                 <div class="reservation-summary">
-                    <h3 class="summary-title">Resumen de la Reserva</h3>
+                    <h3 class="summary-title">
+                        <i class="bi bi-file-text"></i>
+                        Resumen de la Reserva
+                    </h3>
                     <div class="summary-grid">
                         <div class="summary-item">
                             <div class="summary-label">Espacio</div>
@@ -980,10 +1320,13 @@
                 </div>
 
                 <div class="terms-section">
-                    <h4 class="terms-title">📋 Términos y Condiciones</h4>
+                    <h4 class="terms-title">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Términos y Condiciones
+                    </h4>
                     <div class="terms-text">
                         <p>Al enviar esta solicitud de reserva, acepto los siguientes términos:</p>
-                        <ul style="margin: 12px 0 12px 20px; line-height: 1.6;">
+                        <ul style="margin: 12px 0 12px 20px; line-height: 1.6; color: var(--text-secondary);">
                             <li>La reserva está sujeta a aprobación por parte del administrador</li>
                             <li>Debo llegar puntualmente y utilizar el espacio responsablemente</li>
                             <li>Cualquier daño será responsabilidad del solicitante</li>
@@ -994,326 +1337,464 @@
                     
                     <div class="checkbox-group" style="margin-top: 16px;">
                         <input type="checkbox" id="acceptTerms" required>
-                        <label for="acceptTerms">✅ Acepto los términos y condiciones *</label>
+                        <label for="acceptTerms" style="color: var(--text-primary);">
+                            <i class="bi bi-check-circle"></i>
+                            Acepto los términos y condiciones *
+                        </label>
                     </div>
                 </div>
             </div>
 
             <!-- Form Navigation -->
             <div class="form-navigation">
-                <button type="button" class="nav-btn secondary" id="prevBtn" style="visibility: hidden;">⬅️ Anterior</button>
-                <button type="button" class="nav-btn primary" id="nextBtn">Siguiente ➡️</button>
+                <button type="button" class="nav-btn secondary" id="prevBtn" style="visibility: hidden;">
+                    <i class="bi bi-arrow-left"></i>
+                    Anterior
+                </button>
+                <button type="button" class="nav-btn primary" id="nextBtn">
+                    Siguiente
+                    <i class="bi bi-arrow-right"></i>
+                </button>
             </div>
         </div>
     </main>
 
-<script>
-    // ========== FORM WIZARD FUNCTIONALITY ==========
-    let currentStep = 1;
-    let selectedSpace = {
-        id: null,
-        name: null
-    };
-
-    const steps = document.querySelectorAll('.step');
-    const formSteps = document.querySelectorAll('.form-step');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const errorMessage = document.getElementById('errorMessage');
-
-    // Space selection
-    function selectSpace(button, spaceId, spaceName) {
-        // Remover selección anterior
-        document.querySelectorAll('.space-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Agregar selección actual
-        const spaceCard = button.closest('.space-card');
-        spaceCard.classList.add('selected');
-        
-        // Guardar datos del espacio seleccionado
-        selectedSpace.id = spaceId;
-        selectedSpace.name = spaceName;
-        
-        hideError();
-    }
-
-    function verDetallesEspacio(espacioId) {
-        alert(`Mostrando detalles del espacio ID: ${espacioId}`);
-    }
-
-    // Date and time handling
-    const startTimeSelect = document.getElementById('startTime');
-    const endTimeSelect = document.getElementById('endTime');
-    const durationInput = document.getElementById('duration');
-
-    function calculateDuration() {
-        const startTime = startTimeSelect.value;
-        const endTime = endTimeSelect.value;
-
-        if (startTime && endTime) {
-            const start = new Date(`2024-01-01T${startTime}`);
-            const end = new Date(`2024-01-01T${endTime}`);
-            const diff = (end - start) / (1000 * 60); // minutes
-
-            if (diff > 0) {
-                const hours = Math.floor(diff / 60);
-                const minutes = diff % 60;
-                durationInput.value = `${hours}h ${minutes > 0 ? minutes + 'm' : ''}`;
-            } else {
-                durationInput.value = 'Horario inválido';
-            }
-        }
-    }
-
-    startTimeSelect.addEventListener('change', calculateDuration);
-    endTimeSelect.addEventListener('change', calculateDuration);
-
-    // Recurring checkbox
-    const recurringCheckbox = document.getElementById('recurring');
-    const recurringDetails = document.getElementById('recurringDetails');
-
-    recurringCheckbox.addEventListener('change', function() {
-        recurringDetails.style.display = this.checked ? 'block' : 'none';
-    });
-
-    // Special equipment checkbox
-    const specialEquipmentCheckbox = document.getElementById('specialEquipment');
-    const specialEquipmentDetails = document.getElementById('specialEquipmentDetails');
-
-    specialEquipmentCheckbox.addEventListener('change', function() {
-        specialEquipmentDetails.classList.toggle('visible', this.checked);
-    });
-
-    // Navigation functions
-    function showStep(step) {
-        // Hide all steps
-        formSteps.forEach(s => s.classList.remove('active'));
-        
-        // Show current step
-        document.getElementById(`step${step}`).classList.add('active');
-
-        // Update step indicators
-        steps.forEach((s, index) => {
-            const stepNumber = parseInt(s.dataset.step);
-            s.classList.remove('active', 'completed');
+    <script>
+        // ========== SISTEMA DE TEMA ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
             
-            if (stepNumber < step) {
-                s.classList.add('completed');
-            } else if (stepNumber === step) {
-                s.classList.add('active');
+            // Verificar tema guardado
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                body.classList.add('theme-dark');
+                themeIcon.classList.remove('bi-moon');
+                themeIcon.classList.add('bi-sun');
             }
-        });
-
-        // Update step connectors
-        const connectors = document.querySelectorAll('.step-connector');
-        connectors.forEach((connector, index) => {
-            connector.classList.toggle('completed', index + 1 < step);
-        });
-
-        // Update navigation buttons
-        prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
-        
-        if (step === 4) {
-            nextBtn.textContent = '✅ Enviar Solicitud';
-            nextBtn.classList.remove('primary');
-            nextBtn.classList.add('success');
-            updateSummary();
-        } else {
-            nextBtn.textContent = 'Siguiente ➡️';
-            nextBtn.classList.remove('success');
-            nextBtn.classList.add('primary');
-        }
-
-        currentStep = step;
-    }
-
-    function validateStep(step) {
-        hideError();
-        
-        switch(step) {
-            case 1:
-                if (!selectedSpace.id) {
-                    showError('Por favor, selecciona un espacio disponible.');
-                    return false;
-                }
-                return true;
+            
+            // Función para cambiar tema
+            themeToggle.addEventListener('click', () => {
+                const isDark = body.classList.contains('theme-dark');
                 
-            case 2:
-                const date = document.getElementById('reservationDate').value;
-                const startTime = document.getElementById('startTime').value;
-                const endTime = document.getElementById('endTime').value;
-                
-                if (!date) {
-                    showError('Por favor, selecciona una fecha para la reserva.');
-                    return false;
+                if (isDark) {
+                    body.classList.remove('theme-dark');
+                    themeIcon.classList.remove('bi-sun');
+                    themeIcon.classList.add('bi-moon');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('theme-dark');
+                    themeIcon.classList.remove('bi-moon');
+                    themeIcon.classList.add('bi-sun');
+                    localStorage.setItem('theme', 'dark');
                 }
-                if (!startTime) {
-                    showError('Por favor, selecciona una hora de inicio.');
-                    return false;
-                }
-                if (!endTime) {
-                    showError('Por favor, selecciona una hora de fin.');
-                    return false;
-                }
-                
-                if (startTime >= endTime) {
-                    showError('La hora de fin debe ser posterior a la hora de inicio.');
-                    return false;
-                }
-                return true;
-                
-            case 3:
-                const purpose = document.getElementById('purpose').value.trim();
-                const attendees = document.getElementById('attendees').value;
-                
-                if (!purpose) {
-                    showError('Por favor, describe el propósito de la reserva.');
-                    return false;
-                }
-                if (purpose.length < 10) {
-                    showError('El propósito debe tener al menos 10 caracteres.');
-                    return false;
-                }
-                if (!attendees || parseInt(attendees) < 1) {
-                    showError('Por favor, ingresa un número válido de asistentes.');
-                    return false;
-                }
-                return true;
-                
-            default:
-                return true;
-        }
-    }
+            });
+            
+            // ========== FORM WIZARD FUNCTIONALITY ==========
+            let currentStep = 1;
+            let selectedSpace = {
+                id: null,
+                name: null
+            };
 
-    function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-    }
+            const steps = document.querySelectorAll('.step');
+            const formSteps = document.querySelectorAll('.form-step');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const errorMessage = document.getElementById('errorMessage');
 
-    function hideError() {
-        errorMessage.style.display = 'none';
-    }
-
-    function updateSummary() {
-        document.getElementById('summarySpace').textContent = selectedSpace.name || '-';
-        document.getElementById('summaryDate').textContent = document.getElementById('reservationDate').value || '-';
-        document.getElementById('summaryTime').textContent = 
-            `${document.getElementById('startTime').value} - ${document.getElementById('endTime').value}`;
-        document.getElementById('summaryDuration').textContent = document.getElementById('duration').value || '-';
-        document.getElementById('summaryAttendees').textContent = document.getElementById('attendees').value || '-';
-        document.getElementById('summaryPurpose').textContent = document.getElementById('purpose').value || '-';
-    }
-
-    // CSRF Token function
-    function getCSRFToken() {
-        const name = 'csrftoken';
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+            // ========== FUNCIONES PARA ESPACIOS ==========
+            function selectSpace(element) {
+                const spaceId = element.dataset.spaceId;
+                const spaceName = element.dataset.spaceName;
+                
+                // Remover selección anterior
+                document.querySelectorAll('.space-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Agregar selección actual
+                const spaceCard = element.closest('.space-card');
+                spaceCard.classList.add('selected');
+                
+                // Guardar datos del espacio seleccionado
+                selectedSpace.id = spaceId;
+                selectedSpace.name = spaceName;
+                
+                console.log(`Espacio seleccionado: ${spaceName} (ID: ${spaceId})`);
+                hideError();
             }
-        }
-        return cookieValue;
-    }
 
-    // Main reservation function
-    async function crearReservaReal() {
-        // Validar términos
-        if (!document.getElementById('acceptTerms').checked) {
-            showError('Por favor, acepta los términos y condiciones para continuar.');
-            return false;
-        }
+            function verDetallesEspacio(spaceId) {
+                // Aquí puedes implementar un modal o redirección para ver detalles
+                // Por ahora, mostraremos un modal simple
+                const espacio = document.querySelector(`.space-card[data-space-id="${spaceId}"]`);
+                const nombre = espacio.querySelector('.space-name').textContent;
+                const ubicacion = espacio.querySelector('.space-location span').textContent;
+                const capacidad = espacio.querySelector('.space-detail:first-child span').textContent;
+                const tipo = espacio.querySelector('.space-detail:last-child span').textContent;
+                
+                const detalles = `
+                    Detalles del espacio:
+                    
+                    Nombre: ${nombre}
+                    Ubicación: ${ubicacion}
+                    Capacidad: ${capacidad}
+                    Tipo: ${tipo}
+                    
+                    ID: ${spaceId}
+                    
+                    Para más información, contacta al administrador o revisa los detalles completos en la sección de Espacios.
+                `;
+                
+                alert(detalles);
+            }
 
-        // Validar que hay un espacio seleccionado
-        if (!selectedSpace.id) {
-            showError('Por favor, selecciona un espacio.');
-            return false;
-        }
-
-        // Recopilar datos del formulario
-        const reservaData = {
-            espacio_id: selectedSpace.id,
-            fecha_reserva: document.getElementById('reservationDate').value,
-            hora_inicio: document.getElementById('startTime').value,
-            hora_fin: document.getElementById('endTime').value,
-            proposito: document.getElementById('purpose').value,
-            num_asistentes: parseInt(document.getElementById('attendees').value)
-        };
-
-        // Validaciones finales
-        if (!reservaData.fecha_reserva || !reservaData.hora_inicio || !reservaData.hora_fin) {
-            showError('Por favor, completa la fecha y hora de la reserva.');
-            return false;
-        }
-
-        if (!reservaData.proposito || reservaData.proposito.length < 10) {
-            showError('Por favor, proporciona un propósito más detallado (mínimo 10 caracteres).');
-            return false;
-        }
-
-        // Mostrar loading
-        nextBtn.innerHTML = '⏳ Creando reserva...';
-        nextBtn.disabled = true;
-
-        try {
-            const response = await fetch('/api/crear-reserva/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify(reservaData)
+            // Event delegation para manejar clics en botones
+            document.addEventListener('click', function(e) {
+                // Manejar clic en botón "Seleccionar"
+                if (e.target.closest('.select-space-btn')) {
+                    const btn = e.target.closest('.select-space-btn');
+                    selectSpace(btn);
+                }
+                
+                // Manejar clic en botón "Ver Detalles"
+                if (e.target.closest('.view-details-btn')) {
+                    const btn = e.target.closest('.view-details-btn');
+                    const spaceId = btn.dataset.spaceId;
+                    verDetallesEspacio(spaceId);
+                }
             });
 
-            const data = await response.json();
+            // ========== FUNCIONES PARA FILTRAR HORAS ==========
+            const startTimeSelect = document.getElementById('startTime');
+            const endTimeSelect = document.getElementById('endTime');
+            const durationInput = document.getElementById('duration');
 
-            if (data.success) {
-                window.location.href = data.redirect_url || `/reserva-exitosa/?reserva_id=${data.reserva_id}`;
-            } else {
-                showError('Error al crear la reserva: ' + (data.message || data.error || 'Error desconocido'));
-                nextBtn.innerHTML = '✅ Enviar Solicitud';
-                nextBtn.disabled = false;
+            function updateEndTimeOptions() {
+                const startTime = startTimeSelect.value;
+                const endTimeOptions = endTimeSelect.querySelectorAll('option');
+                
+                // Resetear todas las opciones
+                endTimeOptions.forEach(option => {
+                    if (option.value === '') {
+                        option.disabled = false;
+                        option.style.display = '';
+                    } else {
+                        option.disabled = false;
+                        option.style.display = '';
+                    }
+                });
+                
+                // Si hay una hora de inicio seleccionada, deshabilitar horas anteriores o iguales
+                if (startTime) {
+                    endTimeOptions.forEach(option => {
+                        if (option.value !== '' && option.value <= startTime) {
+                            option.disabled = true;
+                            option.style.display = 'none';
+                        }
+                    });
+                    
+                    // Si la hora de término actual es menor o igual a la de inicio, limpiarla
+                    if (endTimeSelect.value && endTimeSelect.value <= startTime) {
+                        endTimeSelect.value = '';
+                        durationInput.value = '';
+                    }
+                }
+                
+                calculateDuration();
             }
 
-        } catch (error) {
-            showError('Error de conexión. Intenta nuevamente.');
-            nextBtn.innerHTML = '✅ Enviar Solicitud';
-            nextBtn.disabled = false;
-        }
-    }
+            function calculateDuration() {
+                const startTime = startTimeSelect.value;
+                const endTime = endTimeSelect.value;
 
-    // Event listeners
-    nextBtn.addEventListener('click', function() {
-        if (currentStep === 4) {
-            crearReservaReal();
-        } else {
-            if (validateStep(currentStep)) {
-                currentStep++;
-                showStep(currentStep);
+                if (startTime && endTime) {
+                    const start = new Date(`2024-01-01T${startTime}`);
+                    const end = new Date(`2024-01-01T${endTime}`);
+                    const diff = (end - start) / (1000 * 60); // minutes
+
+                    if (diff > 0) {
+                        const hours = Math.floor(diff / 60);
+                        const minutes = diff % 60;
+                        durationInput.value = `${hours}h ${minutes > 0 ? minutes + 'm' : ''}`;
+                    } else {
+                        durationInput.value = 'Horario inválido';
+                    }
+                } else {
+                    durationInput.value = '';
+                }
             }
-        }
-    });
 
-    prevBtn.addEventListener('click', function() {
-        if (currentStep > 1) {
-            currentStep--;
-            showStep(currentStep);
-        }
-    });
+            // Event listeners para las horas
+            startTimeSelect.addEventListener('change', function() {
+                updateEndTimeOptions();
+                hideError();
+            });
 
-    // Initialize
-    showStep(1);
+            endTimeSelect.addEventListener('change', function() {
+                calculateDuration();
+                hideError();
+            });
 
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('reservationDate').min = today;
-</script>
+            // Inicializar las opciones de hora de término
+            updateEndTimeOptions();
+
+            // Recurring checkbox
+            const recurringCheckbox = document.getElementById('recurring');
+            const recurringDetails = document.getElementById('recurringDetails');
+
+            recurringCheckbox.addEventListener('change', function() {
+                recurringDetails.style.display = this.checked ? 'block' : 'none';
+            });
+
+            // Special equipment checkbox
+            const specialEquipmentCheckbox = document.getElementById('specialEquipment');
+            const specialEquipmentDetails = document.getElementById('specialEquipmentDetails');
+
+            specialEquipmentCheckbox.addEventListener('change', function() {
+                specialEquipmentDetails.classList.toggle('visible', this.checked);
+            });
+
+            // Navigation functions
+            function showStep(step) {
+                // Hide all steps
+                formSteps.forEach(s => s.classList.remove('active'));
+                
+                // Show current step
+                document.getElementById(`step${step}`).classList.add('active');
+
+                // Update step indicators
+                steps.forEach((s, index) => {
+                    const stepNumber = parseInt(s.dataset.step);
+                    s.classList.remove('active', 'completed');
+                    
+                    if (stepNumber < step) {
+                        s.classList.add('completed');
+                    } else if (stepNumber === step) {
+                        s.classList.add('active');
+                    }
+                });
+
+                // Update step connectors
+                const connectors = document.querySelectorAll('.step-connector');
+                connectors.forEach((connector, index) => {
+                    connector.classList.toggle('completed', index + 1 < step);
+                });
+
+                // Update navigation buttons
+                prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
+                
+                if (step === 4) {
+                    nextBtn.innerHTML = '<i class="bi bi-check-circle"></i> Enviar Solicitud';
+                    nextBtn.classList.remove('primary');
+                    nextBtn.classList.add('success');
+                    updateSummary();
+                } else {
+                    nextBtn.innerHTML = 'Siguiente <i class="bi bi-arrow-right"></i>';
+                    nextBtn.classList.remove('success');
+                    nextBtn.classList.add('primary');
+                }
+
+                currentStep = step;
+            }
+
+            function validateStep(step) {
+                hideError();
+                
+                switch(step) {
+                    case 1:
+                        if (!selectedSpace.id) {
+                            showError('Por favor, selecciona un espacio disponible haciendo clic en el botón "Seleccionar" de la tarjeta del espacio que deseas reservar.');
+                            return false;
+                        }
+                        return true;
+                        
+                    case 2:
+                        const date = document.getElementById('reservationDate').value;
+                        const startTime = document.getElementById('startTime').value;
+                        const endTime = document.getElementById('endTime').value;
+                        
+                        if (!date) {
+                            showError('Por favor, selecciona una fecha para la reserva.');
+                            return false;
+                        }
+                        if (!startTime) {
+                            showError('Por favor, selecciona una hora de inicio.');
+                            return false;
+                        }
+                        if (!endTime) {
+                            showError('Por favor, selecciona una hora de fin.');
+                            return false;
+                        }
+                        
+                        if (startTime >= endTime) {
+                            showError('La hora de fin debe ser posterior a la hora de inicio.');
+                            return false;
+                        }
+                        return true;
+                        
+                    case 3:
+                        const purpose = document.getElementById('purpose').value.trim();
+                        const attendees = document.getElementById('attendees').value;
+                        
+                        if (!purpose) {
+                            showError('Por favor, describe el propósito de la reserva.');
+                            return false;
+                        }
+                        if (purpose.length < 10) {
+                            showError('El propósito debe tener al menos 10 caracteres.');
+                            return false;
+                        }
+                        if (!attendees || parseInt(attendees) < 1) {
+                            showError('Por favor, ingresa un número válido de asistentes.');
+                            return false;
+                        }
+                        return true;
+                        
+                    default:
+                        return true;
+                }
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+
+            function hideError() {
+                errorMessage.style.display = 'none';
+            }
+
+            function updateSummary() {
+                document.getElementById('summarySpace').textContent = selectedSpace.name || '-';
+                document.getElementById('summaryDate').textContent = document.getElementById('reservationDate').value || '-';
+                document.getElementById('summaryTime').textContent = 
+                    `${document.getElementById('startTime').value} - ${document.getElementById('endTime').value}`;
+                document.getElementById('summaryDuration').textContent = document.getElementById('duration').value || '-';
+                document.getElementById('summaryAttendees').textContent = document.getElementById('attendees').value || '-';
+                document.getElementById('summaryPurpose').textContent = document.getElementById('purpose').value || '-';
+            }
+
+            // CSRF Token function
+            function getCSRFToken() {
+                const name = 'csrftoken';
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            // Main reservation function
+            async function crearReservaReal() {
+                // Validar términos
+                if (!document.getElementById('acceptTerms').checked) {
+                    showError('Por favor, acepta los términos y condiciones para continuar.');
+                    return false;
+                }
+
+                // Validar que hay un espacio seleccionado
+                if (!selectedSpace.id) {
+                    showError('Por favor, selecciona un espacio.');
+                    return false;
+                }
+
+                // Recopilar datos del formulario
+                const reservaData = {
+                    espacio_id: selectedSpace.id,
+                    fecha_reserva: document.getElementById('reservationDate').value,
+                    hora_inicio: document.getElementById('startTime').value,
+                    hora_fin: document.getElementById('endTime').value,
+                    proposito: document.getElementById('purpose').value,
+                    num_asistentes: parseInt(document.getElementById('attendees').value)
+                };
+
+                // Validaciones finales
+                if (!reservaData.fecha_reserva || !reservaData.hora_inicio || !reservaData.hora_fin) {
+                    showError('Por favor, completa la fecha y hora de la reserva.');
+                    return false;
+                }
+
+                if (!reservaData.proposito || reservaData.proposito.length < 10) {
+                    showError('Por favor, proporciona un propósito más detallado (mínimo 10 caracteres).');
+                    return false;
+                }
+
+                // Mostrar loading
+                nextBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creando reserva...';
+                nextBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/api/crear-reserva/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify(reservaData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        window.location.href = data.redirect_url || `/reserva-exitosa/?reserva_id=${data.reserva_id}`;
+                    } else {
+                        showError('Error al crear la reserva: ' + (data.message || data.error || 'Error desconocido'));
+                        nextBtn.innerHTML = '<i class="bi bi-check-circle"></i> Enviar Solicitud';
+                        nextBtn.disabled = false;
+                    }
+
+                } catch (error) {
+                    showError('Error de conexión. Intenta nuevamente.');
+                    nextBtn.innerHTML = '<i class="bi bi-check-circle"></i> Enviar Solicitud';
+                    nextBtn.disabled = false;
+                }
+            }
+
+            // Event listeners
+            nextBtn.addEventListener('click', function() {
+                if (currentStep === 4) {
+                    crearReservaReal();
+                } else {
+                    if (validateStep(currentStep)) {
+                        currentStep++;
+                        showStep(currentStep);
+                    }
+                }
+            });
+
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+
+            // Initialize
+            showStep(1);
+
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('reservationDate');
+            if (dateInput) {
+                dateInput.min = today;
+                // Establecer fecha mínima visual
+                if (!dateInput.value) {
+                    dateInput.value = today;
+                }
+            }
+            
+            console.log('Formulario de reserva cargado correctamente');
+        });
+    </script>
 </body>
 </html>

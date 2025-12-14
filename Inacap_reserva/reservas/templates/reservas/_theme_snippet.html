@@ -1,0 +1,206 @@
+<!-- templates/reservas/_theme_snippet.html -->
+{% load static %}
+
+<!-- Bootstrap CSS con tema -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!-- Tu archivo de temas personalizado -->
+<link rel="stylesheet" href="{% static 'css/theme.css' %}">
+
+<style>
+/* Variables CSS para temas - Alta prioridad */
+:root {
+    --bg: #ffffff;
+    --text: #111827;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --header: #23272f;
+    --border: #e5e7eb;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #dc3545;
+    --info: #0dcaf0;
+    --admin: #7c3aed;
+}
+
+[data-bs-theme="dark"] {
+    --bg: #0f172a;
+    --text: #e6eef8;
+    --card: #1e293b;
+    --muted: #94a3b8;
+    --accent: #60a5fa;
+    --header: #1e293b;
+    --border: #334155;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #22d3ee;
+    --admin: #8b5cf6;
+}
+
+/* Aplicar variables inmediatamente */
+body {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Override para elementos específicos */
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .table,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+[data-bs-theme="dark"] .header,
+[data-bs-theme="dark"] .navbar-dark {
+    background-color: var(--header) !important;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+/* Botón de toggle fijo */
+.theme-toggle {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 9999;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    font-size: 16px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+</style>
+
+<button id="themeToggle" class="theme-toggle" aria-label="Alternar tema" title="Cambiar tema">
+    <i class="bi bi-moon" id="themeIcon"></i>
+</button>
+
+<script>
+// Sistema de temas optimizado
+(function() {
+    'use strict';
+    
+    // Elementos del DOM
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const htmlElement = document.documentElement;
+    
+    // Cargar tema guardado o detectar preferencia del sistema
+    function loadTheme() {
+        try {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                applyTheme('dark');
+            } else {
+                applyTheme('light');
+            }
+        } catch (error) {
+            console.warn('Error cargando tema:', error);
+            applyTheme('light');
+        }
+    }
+    
+    // Aplicar tema
+    function applyTheme(theme) {
+        // Usar data-bs-theme para Bootstrap 5.3+
+        htmlElement.setAttribute('data-bs-theme', theme);
+        
+        // También mantener data-theme para compatibilidad
+        if (theme === 'dark') {
+            htmlElement.setAttribute('data-theme', 'dark');
+            if (themeIcon) {
+                themeIcon.className = 'bi bi-sun';
+                themeToggle.setAttribute('title', 'Cambiar a tema claro');
+            }
+        } else {
+            htmlElement.removeAttribute('data-theme');
+            if (themeIcon) {
+                themeIcon.className = 'bi bi-moon';
+                themeToggle.setAttribute('title', 'Cambiar a tema oscuro');
+            }
+        }
+        
+        // Guardar preferencia
+        try {
+            localStorage.setItem('theme', theme);
+        } catch (error) {
+            console.warn('Error guardando tema:', error);
+        }
+    }
+    
+    // Alternar tema
+    function toggleTheme() {
+        const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+    }
+    
+    // Inicializar
+    function init() {
+        // Cargar tema
+        loadTheme();
+        
+        // Configurar evento del botón
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+        
+        // Escuchar cambios en la preferencia del sistema
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            const savedTheme = localStorage.getItem('theme');
+            if (!savedTheme) { // Solo cambiar si el usuario no ha guardado preferencia
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+        
+        // Aplicar tema a elementos Bootstrap específicos después de que se cargue
+        setTimeout(() => {
+            const theme = htmlElement.getAttribute('data-bs-theme') || 'light';
+            applyTheme(theme);
+        }, 100);
+    }
+    
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    // Exportar funciones para uso global
+    window.ThemeManager = {
+        toggleTheme,
+        applyTheme,
+        loadTheme
+    };
+    
+})();
+</script>

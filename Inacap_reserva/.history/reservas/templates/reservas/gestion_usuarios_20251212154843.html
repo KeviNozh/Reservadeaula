@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Table Section */
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .table-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .user-count {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .users-table th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        .users-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .users-table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* User info */
+        .user-name {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .user-email {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .user-department {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* Badges */
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .role-usuario { background: #dbeafe; color: #1e40af; }
+        .role-docente { background: #fef3c7; color: #92400e; }
+        .role-investigacion { background: #fce7f3; color: #be185d; }
+        .role-administrativo { background: #dcfce7; color: #166534; }
+        .role-aprobador { background: #f3e8ff; color: #7c3aed; }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-inactive { background: #fee2e2; color: #dc2626; }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .btn-edit:hover {
+            background: #bfdbfe;
+        }
+
+        .btn-deactivate {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-deactivate:hover {
+            background: #fecaca;
+        }
+
+        .btn-activate {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .btn-activate:hover {
+            background: #a7f3d0;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .users-table {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
+            <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'gestion_usuarios' %}" class="nav-item active">Usuarios</a>
+            <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+            <a href="{% url 'notificaciones_admin' %}" class="nav-item">Notificaciones</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Gestión de Usuarios</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">👥 Gestión de Usuarios</h1>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">🔍 Buscar</label>
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Buscar por nombre, email...">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">👤 Rol</label>
+                    <select class="filter-select" id="roleFilter">
+                        <option value="">Todos los roles</option>
+                        <option value="Usuario">Usuario</option>
+                        <option value="Docente">Docente</option>
+                        <option value="Investigacion">Investigación</option>
+                        <option value="Administrativo">Administrativo</option>
+                        <option value="Aprobador">Aprobador</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📊 Estado</label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <button class="btn-action" onclick="clearFilters()" style="background: #e5e7eb; color: #374151;">
+                        🗑️ Limpiar filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">Lista de Usuarios</h3>
+                <div class="user-count" id="userCount">Cargando...</div>
+            </div>
+
+            <div class="table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Departamento</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px;">
+                                <div class="loading-spinner">⏳ Cargando usuarios...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Función para cargar usuarios
+        async function loadUsers() {
+            try {
+                const search = document.getElementById('searchInput').value;
+                const role = document.getElementById('roleFilter').value;
+                const status = document.getElementById('statusFilter').value;
+
+                let url = '/api/usuarios/filtrar/';
+                const params = new URLSearchParams();
+                
+                if (search) params.append('search', search);
+                if (role) params.append('rol', role);
+                if (status) params.append('estado', status);
+
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderUsersTable(data.usuarios);
+                    document.getElementById('userCount').textContent = `${data.total} usuarios encontrados`;
+                } else {
+                    console.error('Error:', data.error);
+                    document.getElementById('usersTableBody').innerHTML = 
+                        '<tr><td colspan="8" style="text-align: center; color: #dc2626;">❌ Error al cargar usuarios</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('usersTableBody').innerHTML = 
+                    '<tr><td colspan="8" style="text-align: center; color: #dc2626;">❌ Error de conexión</td></tr>';
+            }
+        }
+
+        // Función para renderizar la tabla de usuarios
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
+                            👥 No se encontraron usuarios
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <strong>#${user.id}</strong>
+                    </td>
+                    <td>
+                        <div class="user-name">${user.first_name || 'No especificado'} ${user.last_name || ''}</div>
+                    </td>
+                    <td>
+                        <div class="user-email">${user.email}</div>
+                    </td>
+                    <td>
+                        <div class="user-department">${user.departamento || 'No asignado'}</div>
+                    </td>
+                    <td>
+                        <span class="role-badge role-${user.rol.toLowerCase()}">
+                            ${getRoleIcon(user.rol)} ${user.rol}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${user.is_active ? 'active' : 'inactive'}">
+                            ${user.is_active ? '✅ Activo' : '❌ Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        ${formatDate(user.date_joined)}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editUser(${user.id})" title="Editar usuario">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn-action btn-${user.is_active ? 'deactivate' : 'activate'}" 
+                                    onclick="toggleUserStatus(${user.id}, ${!user.is_active})"
+                                    title="${user.is_active ? 'Desactivar usuario' : 'Activar usuario'}">
+                                ${user.is_active ? '❌ Desactivar' : '✅ Activar'}
+                            </button>
+                            ${ isSuperAdmin() ? `
+                              <button class="btn-action" style="background:#fde68a; color:#92400e;" onclick="openChangeRole(${user.id}, '${user.rol.replace("'","\'")}')">🔧 Cambiar rol</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Función para obtener ícono del rol
+        function getRoleIcon(role) {
+            const icons = {
+                'Usuario': '👤',
+                'Docente': '🎓',
+                'Investigacion': '🔬',
+                'Administrativo': '💼',
+                'Aprobador': '✅'
+            };
+            return icons[role] || '👤';
+        }
+
+        // Función para formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'No disponible';
+            
+            try {
+                let date;
+                
+                // Intentar diferentes formatos de fecha
+                if (dateString.includes('T')) {
+                    // Formato ISO (2024-01-15T10:30:00Z)
+                    date = new Date(dateString);
+                } else if (dateString.includes('/')) {
+                    // Formato con slash (15/01/2024)
+                    const parts = dateString.split('/');
+                    if (parts.length === 3) {
+                        date = new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                } else if (dateString.includes('-')) {
+                    // Formato con guión (2024-01-15)
+                    date = new Date(dateString);
+                } else {
+                    // Intentar parsear directamente
+                    date = new Date(dateString);
+                }
+                
+                if (isNaN(date.getTime())) {
+                    // Si falla el parsing, mostrar la fecha original
+                    console.warn('Fecha no parseable:', dateString);
+                    return dateString || 'No disponible';
+                }
+                
+                return date.toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch (error) {
+                console.error('Error formateando fecha:', error, 'Fecha original:', dateString);
+                return dateString || 'Error fecha';
+            }
+        }
+        
+        // Función para editar usuario
+        function editUser(userId) {
+            window.location.href = `/editar-usuario/?id=${userId}`;
+        }
+
+        // Función para cambiar estado del usuario
+        async function toggleUserStatus(userId, activate) {
+            const action = activate ? 'activar' : 'desactivar';
+            
+            if (!confirm(`¿Estás seguro de que quieres ${action} este usuario?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/usuarios/${userId}/cambiar-estado/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ activo: activate })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ Usuario ${action}do exitosamente`);
+                    loadUsers(); // Recargar la lista
+                } else {
+                    alert(`❌ Error al ${action} usuario: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión');
+            }
+        }
+
+        // Función para limpiar filtros
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            loadUsers();
+        }
+
+        // Función para obtener token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Event listeners para filtros
+        document.getElementById('searchInput').addEventListener('input', debounce(loadUsers, 300));
+        document.getElementById('roleFilter').addEventListener('change', loadUsers);
+        document.getElementById('statusFilter').addEventListener('change', loadUsers);
+
+        // Función debounce para búsqueda
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Cargar usuarios al iniciar
+        document.addEventListener('DOMContentLoaded', loadUsers);
+
+        // Verificar si el usuario actual es SuperAdmin (renderizado desde servidor)
+        function isSuperAdmin() {
+            try {
+                // La plantilla Django inyectará esta variable si el usuario es SuperAdmin
+                return window.__IS_SUPERADMIN === true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function openChangeRole(userId, currentRole) {
+            const roles = ['Usuario','Docente','Investigacion','Administrativo','Aprobador','SuperAdmin'];
+            let options = roles.map(r => `${r}${r===currentRole? ' (actual)':''}`).join('\n');
+            let nuevo = prompt(`Seleccione nuevo rol para el usuario (escriba exactamente):\n\n${options}`, currentRole);
+            if (!nuevo) return;
+            if (!roles.includes(nuevo)) { alert('Rol inválido'); return; }
+
+            fetch(`/api/usuarios/${userId}/cambiar-rol/`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json','X-CSRFToken':getCSRFToken()},
+                body: JSON.stringify({ rol: nuevo })
+            }).then(r=>r.json()).then(data=>{
+                if (data.success) { alert('Rol actualizado'); loadUsers(); }
+                else alert('Error: '+(data.error||data.message));
+            }).catch(e=>{ alert('Error de conexión'); });
+        }
+    </script>
+</body>
+</html>

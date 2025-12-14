@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% include 'reservas/_theme_snippet.html' %}
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - INACAP</title>
+    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}" disabled>
+</head>
+<body>
+    <h1>Bienvenido al Dashboard</h1>
+    <p>Login exitoso! Esta es la página principal.</p>
+    <a href="/logout/">Cerrar Sesión</a>
+    
+    <script>
+        // Mostrar información del usuario
+        const userData = sessionStorage.getItem('currentUser');
+        if (userData) {
+            const user = JSON.parse(userData);
+            document.querySelector('h1').textContent = `Bienvenido ${user.nombre_completo}`;
+            document.querySelector('p').innerHTML += `<br>Rol: ${user.rol}`;
+        }
+    </script>
+    <script src="{% static 'js/theme.js' %}"></script>
+</body>
+</html>

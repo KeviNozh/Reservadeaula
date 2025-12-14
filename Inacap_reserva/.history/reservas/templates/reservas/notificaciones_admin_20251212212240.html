@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% include 'reservas/_theme_snippet.html' %}
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones Admin - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .notification-count {
+            background: #dc2626;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btn {
+            padding: 10px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .header-btn.primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .header-btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Notifications List */
+        .notifications-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .notifications-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .notifications-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .notifications-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Priority Styles */
+        .priority-urgente { border-left: 4px solid #dc2626; background: #fef2f2; }
+        .priority-alta { border-left: 4px solid #f59e0b; background: #fffbeb; }
+        .priority-media { border-left: 4px solid #2563eb; background: #eff6ff; }
+        .priority-baja { border-left: 4px solid #10b981; background: #f0fdf4; }
+
+        .notification-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: #f9fafb;
+        }
+
+        .notification-item.unread {
+            background: #fffbeb;
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .notification-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #111827;
+            flex: 1;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .notification-message {
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .notification-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        /* Real-time indicator */
+        .real-time-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            margin: 16px 24px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}" disabled>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Panel Administrativo</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
+            <a href="{% url 'gestion_espacios' %}" class="nav-item">Espacios</a>
+            <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+            <a href="{% url 'notificaciones_admin' %}" class="nav-item active">Notificaciones</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-left">
+                <h1 class="page-title">🔔 Notificaciones del Sistema</h1>
+                <span class="notification-count" id="unreadCount">0</span>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" id="refreshBtn">
+                    🔄 Actualizar
+                </button>
+                <button class="header-btn" id="markAllRead">
+                    ✓ Marcar todas como leídas
+                </button>
+                <button class="header-btn primary" id="clearRead">
+                    🗑️ Limpiar leídas
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">📊 Tipo de Evento</label>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">Todos los tipos</option>
+                        <option value="reserva_creada">Nueva Reserva</option>
+                        <option value="reserva_aprobada">Reserva Aprobada</option>
+                        <option value="reserva_rechazada">Reserva Rechazada</option>
+                        <option value="usuario_registrado">Usuario Registrado</option>
+                        <option value="espacio_creado">Espacio Creado</option>
+                        <option value="sesion_iniciada">Sesión Admin</option>
+                        <option value="sistema">Sistema</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">⚠️ Prioridad</label>
+                    <select class="filter-select" id="priorityFilter">
+                        <option value="">Todas las prioridades</option>
+                        <option value="urgente">Urgente</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">👤 Usuario</label>
+                    <select class="filter-select" id="userFilter">
+                        <option value="">Todos los usuarios</option>
+                        <!-- Se llenará dinámicamente -->
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 Período</label>
+                    <select class="filter-select" id="periodFilter">
+                        <option value="today">Hoy</option>
+                        <option value="yesterday">Ayer</option>
+                        <option value="week">Esta semana</option>
+                        <option value="month">Este mes</option>
+                        <option value="all">Todo el tiempo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Container -->
+        <div class="notifications-container">
+            <div class="notifications-header">
+                <div class="notifications-title">
+                    Actividad del Sistema en Tiempo Real
+                </div>
+                <div class="notification-time" id="lastUpdate">
+                    Actualizado: <span id="updateTime">--:--:--</span>
+                </div>
+            </div>
+
+            <!-- Real-time Indicator -->
+            <div class="real-time-indicator" id="realTimeIndicator">
+                <div class="pulse-dot"></div>
+                <span>Conectado - Actualizando en tiempo real</span>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notificationsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔔</div>
+                    <div class="empty-state-title">No hay notificaciones</div>
+                    <div class="empty-state-text">Las actividades del sistema aparecerán aquí</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Estado global
+        let notifications = [];
+        let filters = {
+            type: '',
+            priority: '',
+            user: '',
+            period: 'today'
+        };
+
+        // Elementos DOM
+        const notificationsList = document.getElementById('notificationsList');
+        const unreadCount = document.getElementById('unreadCount');
+        const lastUpdate = document.getElementById('updateTime');
+        const realTimeIndicator = document.getElementById('realTimeIndicator');
+
+        // Iconos por tipo de notificación
+        const typeIcons = {
+            'reserva_creada': '📋',
+            'reserva_aprobada': '✅',
+            'reserva_rechazada': '❌',
+            'reserva_cancelada': '📝',
+            'usuario_registrado': '👤',
+            'espacio_creado': '🏢',
+            'espacio_editado': '✏️',
+            'espacio_eliminado': '🗑️',
+            'sesion_iniciada': '🔐',
+            'sesion_cerrada': '🚪',
+            'reporte_generado': '📊',
+            'sistema': '⚙️',
+            'incidencia_reportada': '🚨'
+        };
+
+        // Colores por prioridad
+        const priorityColors = {
+            'urgente': 'priority-urgente',
+            'alta': 'priority-alta',
+            'media': 'priority-media',
+            'baja': 'priority-baja'
+        };
+
+        // Formatear tiempo relativo
+        function formatRelativeTime(timestamp) {
+            const now = new Date();
+            const date = new Date(timestamp * 1000);
+            const diffMs = now - date;
+            const diffSecs = Math.floor(diffMs / 1000);
+            const diffMins = Math.floor(diffSecs / 60);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffSecs < 60) {
+                return `hace ${diffSecs} segundos`;
+            } else if (diffMins < 60) {
+                return `hace ${diffMins} minutos`;
+            } else if (diffHours < 24) {
+                return `hace ${diffHours} horas`;
+            } else if (diffDays === 1) {
+                return 'ayer';
+            } else {
+                return `hace ${diffDays} días`;
+            }
+        }
+
+        // Cargar notificaciones
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notificaciones-admin/');
+                const data = await response.json();
+
+                if (data.success) {
+                    notifications = data.notificaciones;
+                    renderNotifications();
+                    updateUnreadCount();
+                    updateLastUpdateTime();
+                }
+            } catch (error) {
+                console.error('Error cargando notificaciones:', error);
+            }
+        }
+
+        // Renderizar notificaciones
+        function renderNotifications() {
+            const filteredNotifications = filterNotifications(notifications);
+            
+            if (filteredNotifications.length === 0) {
+                notificationsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-title">No hay notificaciones que coincidan</div>
+                        <div class="empty-state-text">Intenta con otros filtros</div>
+                    </div>
+                `;
+                return;
+            }
+
+            notificationsList.innerHTML = filteredNotifications.map(notif => `
+                <div class="notification-item ${notif.leida ? '' : 'unread'} ${priorityColors[notif.prioridad]}" 
+                     onclick="markAsRead(${notif.id})">
+                    <div class="notification-header">
+                        <div class="notification-icon">
+                            ${typeIcons[notif.tipo] || '📢'}
+                        </div>
+                        <div class="notification-title">
+                            ${notif.titulo}
+                        </div>
+                        <div class="notification-time">
+                            ${formatRelativeTime(notif.fecha_creacion_timestamp)}
+                        </div>
+                    </div>
+                    <div class="notification-message">
+                        ${notif.mensaje}
+                    </div>
+                    <div class="notification-meta">
+                        ${notif.usuario_relacionado ? `
+                            <div class="meta-item">
+                                👤 ${notif.usuario_relacionado.nombre_completo || notif.usuario_relacionado.username}
+                            </div>
+                        ` : ''}
+                        ${notif.reserva_info ? `
+                            <div class="meta-item">
+                                📅 ${notif.reserva_info.espacio_nombre} - ${notif.reserva_info.fecha}
+                            </div>
+                        ` : ''}
+                        ${notif.espacio_info ? `
+                            <div class="meta-item">
+                                🏢 ${notif.espacio_info.nombre}
+                            </div>
+                        ` : ''}
+                        <div class="meta-item">
+                            ⚠️ ${notif.prioridad.toUpperCase()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filtrar notificaciones
+        function filterNotifications(notifications) {
+            return notifications.filter(notif => {
+                // Filtro por tipo
+                if (filters.type && notif.tipo !== filters.type) {
+                    return false;
+                }
+                
+                // Filtro por prioridad
+                if (filters.priority && notif.prioridad !== filters.priority) {
+                    return false;
+                }
+                
+                // Filtro por usuario
+                if (filters.user && (!notif.usuario_relacionado || notif.usuario_relacionado.username !== filters.user)) {
+                    return false;
+                }
+                
+                // Filtro por período (implementación básica)
+                // En una implementación real, esto sería más sofisticado
+                
+                return true;
+            });
+        }
+
+        // Actualizar contador de no leídas
+        function updateUnreadCount() {
+            const unread = notifications.filter(n => !n.leida).length;
+            unreadCount.textContent = unread;
+        }
+
+        // Actualizar hora de última actualización
+        function updateLastUpdateTime() {
+            const now = new Date();
+            lastUpdate.textContent = now.toLocaleTimeString('es-ES');
+        }
+
+        // Marcar como leída
+        async function markAsRead(notificationId) {
+            try {
+                const response = await fetch(`/api/notificaciones-admin/${notificationId}/marcar-leida/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+
+                if (response.ok) {
+                    // Actualizar localmente
+                    const notif = notifications.find(n => n.id === notificationId);
+                    if (notif) {
+                        notif.leida = true;
+                    }
+                    updateUnreadCount();
+                }
+            } catch (error) {
+                console.error('Error marcando como leída:', error);
+            }
+        }
+
+        // Marcar todas como leídas
+        async function markAllAsRead() {
+            try {
+                const response = await fetch('/api/notificaciones-admin/marcar-todas-leidas/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+
+                if (response.ok) {
+                    notifications.forEach(notif => notif.leida = true);
+                    renderNotifications();
+                    updateUnreadCount();
+                }
+            } catch (error) {
+                console.error('Error marcando todas como leídas:', error);
+            }
+        }
+
+        // Obtener token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Event Listeners
+        document.getElementById('refreshBtn').addEventListener('click', loadNotifications);
+        document.getElementById('markAllRead').addEventListener('click', markAllAsRead);
+        
+        document.getElementById('clearRead').addEventListener('click', async function() {
+            if (confirm('¿Eliminar todas las notificaciones leídas?')) {
+                // Implementar limpieza de notificaciones leídas
+                await loadNotifications();
+            }
+        });
+
+        // Filtros
+        document.getElementById('typeFilter').addEventListener('change', function() {
+            filters.type = this.value;
+            renderNotifications();
+        });
+
+        document.getElementById('priorityFilter').addEventListener('change', function() {
+            filters.priority = this.value;
+            renderNotifications();
+        });
+
+        document.getElementById('periodFilter').addEventListener('change', function() {
+            filters.period = this.value;
+            renderNotifications();
+        });
+
+        // Actualización en tiempo real (cada 10 segundos)
+        setInterval(loadNotifications, 10000);
+
+        // Carga inicial
+        loadNotifications();
+
+
+    </script>
+    <script src="{% static 'js/theme.js' %}"></script>
+</body>
+</html>

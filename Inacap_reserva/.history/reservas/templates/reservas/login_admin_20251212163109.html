@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INACAP - Login Administrador</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo { 
+            font-size: 32px; 
+            font-weight: bold; 
+            color: #333; 
+            margin-bottom: 10px;
+        }
+        .subtitle { 
+            color: #666; 
+            margin-bottom: 30px;
+        }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-label { 
+            display: block; 
+            font-weight: 600; 
+            color: #333; 
+            margin-bottom: 8px; 
+        }
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #dc2626;
+        }
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .login-button:hover {
+            background: #b91c1c;
+        }
+        .user-link {
+            display: block;
+            margin-top: 20px;
+            color: #dc2626;
+            text-decoration: none;
+        }
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">inacap</div>
+        <div class="subtitle">Panel de Administración</div>
+        
+        <div class="warning">
+            ⚠️ Acceso exclusivo para administradores
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Usuario Administrador</label>
+                <input type="text" name="username" class="form-input" placeholder="Usuario admin" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-input" placeholder="Contraseña admin" required>
+            </div>
+            
+            <button type="submit" class="login-button">Acceder al Panel Admin</button>
+        </form>
+        
+        <a href="{% url 'login_usuario' %}" class="user-link">← Volver al login de usuarios</a>
+    </div>
+</body>
+</html>
+<script src="/static/js/theme.js"></script>

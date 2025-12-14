@@ -1,0 +1,179 @@
+<!-- Snippet de modo oscuro (inline): prevención flash, variables CSS y toggle JS -->
+
+
+
+<style>
+    :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --accent: #2563eb;
+    }
+    html[data-theme="dark"]{
+        --bg: #071126;
+        --text: #e6eef8;
+        --card: #071126;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+    }
+    body, html{background:var(--bg);color:var(--text)}
+    /* Reglas con mayor prioridad para evitar que estilos inline o CSS externos anulen el tema */
+    html[data-theme="dark"] body{background:var(--bg) !important;color:var(--text) !important}
+    html[data-theme="dark"] .card, html[data-theme="dark"] .card-custom{background:var(--card) !important;color:var(--text) !important;border-color:rgba(255,255,255,0.03) !important}
+    html[data-theme="dark"] .header, html[data-theme="dark"] .logo-text{color:var(--text) !important}
+    .theme-toggle{position:fixed;right:18px;bottom:18px;z-index:9999;background:var(--card);color:var(--text);border:1px solid rgba(0,0,0,0.08);padding:10px 12px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(2,6,23,0.12);font-size:16px}
+</style>
+
+<!-- Botón toggle (puedes moverlo dentro del body donde prefieras) -->
+<button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">🌓</button>
+
+<script>
+(function(){
+    function updateIcon(btn, dark){
+        if(!btn) return;
+        try{
+            btn.textContent = dark ? '🌙' : '☀️';
+            btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+        }catch(e){console.warn('[theme-snippet] updateIcon error', e)}
+    }
+
+    function setTheme(dark){
+        try{ localStorage.setItem('theme', dark? 'dark' : 'light'); }catch(e){}
+        if(dark) document.documentElement.setAttribute('data-theme','dark'); else document.documentElement.removeAttribute('data-theme');
+        updateIcon(document.getElementById('themeToggle'), dark);
+        console.log('[theme-snippet] setTheme ->', dark ? 'dark' : 'light');
+    }
+
+    try{
+        const t = localStorage.getItem('theme');
+        if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+        else if(t === 'light') document.documentElement.setAttribute('data-theme','light');
+    }catch(e){console.error('[theme-snippet] read theme error', e)}
+
+    function init(){
+        const btn = document.getElementById('themeToggle');
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if(btn) updateIcon(btn, isDark);
+        if(btn){
+            btn.addEventListener('click', function(){
+                const currentlyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                setTheme(!currentlyDark);
+            });
+        } else {
+            // log for debugging: button not found
+            console.log('[theme-snippet] themeToggle button not found in DOM');
+        }
+    }
+
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- Inline overrides de alta prioridad para cubrir elementos con fondo blanco/estilos inline -->
+<style id="inline-dark-overrides">
+html[data-theme="dark"], body.dark-theme {
+    background-color: #071126 !important;
+    color: #e6eef8 !important;
+}
+html[data-theme="dark"] body *, body.dark-theme * {
+    color: #e6eef8 !important;
+}
+
+/* Forzar fondos oscuros en elementos comunes */
+html[data-theme="dark"] .login-container,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .card-custom,
+html[data-theme="dark"] .page-header,
+html[data-theme="dark"] .filters-section,
+html[data-theme="dark"] .calendar-section,
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .demo-credentials,
+html[data-theme="dark"] .modal-content,
+body.dark-theme .login-container,
+body.dark-theme .card,
+body.dark-theme .card-custom,
+body.dark-theme .page-header,
+body.dark-theme .filters-section,
+body.dark-theme .calendar-section,
+body.dark-theme .sidebar,
+body.dark-theme .demo-credentials,
+body.dark-theme .modal-content {
+    background-color: #0f172a !important;
+    color: #e6eef8 !important;
+    border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Inputs, selects, textareas */
+html[data-theme="dark"] input, html[data-theme="dark"] textarea, html[data-theme="dark"] select,
+body.dark-theme input, body.dark-theme textarea, body.dark-theme select {
+    background-color: #1f2937 !important;
+    color: #e6eef8 !important;
+    border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Forzar fondo oscuro en elementos con estilo inline 'background: white' */
+html[data-theme="dark"] [style*="background: white"], body.dark-theme [style*="background: white"]{
+    background-color: #0f172a !important;
+    color: #e6eef8 !important;
+}
+
+/* Botones neutros y tarjetas */
+html[data-theme="dark"] .action-button, body.dark-theme .action-button,
+html[data-theme="dark"] .btn, body.dark-theme .btn {
+    color: #fff !important;
+}
+
+/* Header/Nav */
+html[data-theme="dark"] .header, body.dark-theme .header{
+    background-color: #0b1220 !important;
+    color: #e6eef8 !important;
+}
+
+/* Asegurar visibilidad de placeholders */
+html[data-theme="dark"] ::placeholder, body.dark-theme ::placeholder{ color: rgba(230,238,248,0.6) !important; }
+
+/* Evitar que cajas blancas con !important sobresalgan */
+html[data-theme="dark"] [style*="background: white !important"], body.dark-theme [style*="background: white !important"]{
+    background-color: #0f172a !important;
+    color: #e6eef8 !important;
+}
+</style>
+
+<!-- Inline fallback toggle: asegura que el botón #themeToggle funcione incluso si theme.js no se ha cargado -->
+<script>
+(function(){
+    if(window.__inlineThemeToggleInstalled) return; // evitar doble registro
+    window.__inlineThemeToggleInstalled = true;
+
+    function applyDark(dark){
+        try{ if(dark) document.documentElement.setAttribute('data-theme','dark'); else document.documentElement.removeAttribute('data-theme'); }catch(e){}
+        try{ if(dark) document.body.classList.add('dark-theme'); else document.body.classList.remove('dark-theme'); }catch(e){}
+        try{ localStorage.setItem('theme', dark ? 'dark' : 'light'); }catch(e){}
+    }
+
+    // Delegated click listener para el botón del login u otros botones con data-theme-toggle
+    document.addEventListener('click', function(ev){
+        var btn = ev.target.closest && ev.target.closest('#themeToggle, [data-theme-toggle], #themeToggleBtn');
+        if(!btn) return;
+        ev.preventDefault();
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        applyDark(!isDark);
+        // actualizar texto/ícono si existe
+        try{
+            if(btn.tagName === 'BUTTON' || btn.nodeType === 1){
+                btn.textContent = !isDark ? '☀️' : '🌙';
+            }
+        }catch(e){}
+    }, {capture:false});
+
+    // Sincronizar icono inicial si existe el botón
+    try{
+        var initialBtn = document.querySelector('#themeToggle') || document.querySelector('#themeToggleBtn') || document.querySelector('[data-theme-toggle]');
+        if(initialBtn){
+            var darkNow = document.documentElement.getAttribute('data-theme') === 'dark';
+            initialBtn.textContent = darkNow ? '☀️' : '🌙';
+        }
+    }catch(e){}
+})();
+</script>

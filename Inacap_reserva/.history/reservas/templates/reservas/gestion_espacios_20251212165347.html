@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Espacios - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-item {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #9ca3af;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f9fafb;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-maintenance {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-out-of-service {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-edit:hover {
+            background: #bfdbfe;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .empty-state-text {
+            margin-bottom: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 800px;
+            }
+        }
+    </style>
+    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}" disabled>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">SR</div>
+            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
+            <a href="{% url 'gestion_espacios' %}" class="nav-item active">Espacios</a>
+            <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
+            <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+        </nav>
+        
+        <div class="user-menu">
+            <div class="user-avatar">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span>
+                {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </span>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Gestión de Espacios</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">🏢 Gestión de Espacios</h1>
+                <div class="header-actions">
+                    <a href="{% url 'crear_espacio' %}" class="btn btn-primary">
+                        <span>➕</span>
+                        Nuevo Espacio
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Estado</label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="Disponible">Disponible</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                        <option value="Fuera de Servicio">Fuera de Servicio</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Tipo</label>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">Todos los tipos</option>
+                        <option value="Sala de Reuniones">Sala de Reuniones</option>
+                        <option value="Auditorio">Auditorio</option>
+                        <option value="Laboratorio">Laboratorio</option>
+                        <option value="Oficina">Oficina</option>
+                        <option value="Aula">Aula</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Edificio</label>
+                    <input type="text" class="filter-input" id="buildingFilter" placeholder="Filtrar por edificio">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Búsqueda</label>
+                    <input type="text" class="filter-input" id="searchFilter" placeholder="Buscar espacios...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Edificio</th>
+                        <th>Piso</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="spacesTableBody">
+                    {% for espacio in espacios %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: #111827;">{{ espacio.nombre }}</div>
+                            {% if espacio.descripcion %}
+                            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">{{ espacio.descripcion|truncatewords:10 }}</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ espacio.tipo }}</td>
+                        <td>{{ espacio.edificio|default:"-" }}</td>
+                        <td>{{ espacio.piso|default:"-" }}</td>
+                        <td>{{ espacio.capacidad }} personas</td>
+                        <td>
+                            {% if espacio.estado == 'Disponible' %}
+                                <span class="status-badge status-available">Disponible</span>
+                            {% elif espacio.estado == 'Mantenimiento' %}
+                                <span class="status-badge status-maintenance">Mantenimiento</span>
+                            {% elif espacio.estado == 'Fuera de Servicio' %}
+                                <span class="status-badge status-out-of-service">Fuera de Servicio</span>
+                            {% else %}
+                                <span class="status-badge">{{ espacio.estado }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'editar_espacio' %}?id={{ espacio.id }}" class="btn-icon btn-edit" title="Editar">
+                                    ✏️
+                                </a>
+                                <button class="btn-icon btn-delete" onclick="eliminarEspacio({{ espacio.id }})" title="Eliminar">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🏢</div>
+                                <h3 class="empty-state-title">No hay espacios registrados</h3>
+                                <p class="empty-state-text">
+                                    Comienza agregando el primer espacio al sistema.
+                                </p>
+                                <a href="{% url 'crear_espacio' %}" class="btn btn-primary">
+                                    <span>➕</span>
+                                    Crear Primer Espacio
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Filtros de tabla
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const buildingFilter = document.getElementById('buildingFilter');
+            const searchFilter = document.getElementById('searchFilter');
+            const tableBody = document.getElementById('spacesTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            function applyFilters() {
+                const statusValue = statusFilter.value.toLowerCase();
+                const typeValue = typeFilter.value.toLowerCase();
+                const buildingValue = buildingFilter.value.toLowerCase();
+                const searchValue = searchFilter.value.toLowerCase();
+
+                for (let row of rows) {
+                    if (row.cells.length < 7) continue; // Skip empty state row
+                    
+                    const status = row.cells[5].textContent.toLowerCase();
+                    const type = row.cells[1].textContent.toLowerCase();
+                    const building = row.cells[2].textContent.toLowerCase();
+                    const name = row.cells[0].textContent.toLowerCase();
+                    const description = row.cells[0].querySelector('div:nth-child(2)')?.textContent.toLowerCase() || '';
+
+                    const statusMatch = !statusValue || status.includes(statusValue);
+                    const typeMatch = !typeValue || type.includes(typeValue);
+                    const buildingMatch = !buildingValue || building.includes(buildingValue);
+                    const searchMatch = !searchValue || 
+                                       name.includes(searchValue) || 
+                                       description.includes(searchValue);
+
+                    row.style.display = statusMatch && typeMatch && buildingMatch && searchMatch ? '' : 'none';
+                }
+            }
+
+            statusFilter.addEventListener('change', applyFilters);
+            typeFilter.addEventListener('change', applyFilters);
+            buildingFilter.addEventListener('input', applyFilters);
+            searchFilter.addEventListener('input', applyFilters);
+        });
+
+        // Función para eliminar espacio
+        async function eliminarEspacio(espacioId) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este espacio? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/espacios/${espacioId}/eliminar/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Espacio eliminado exitosamente');
+                    location.reload(); // Recargar la página para actualizar la lista
+                } else {
+                    alert('Error al eliminar el espacio: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión al eliminar el espacio');
+            }
+        }
+
+        // Función para obtener token CSRF
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    <script src="{% static 'js/theme.js' %}"></script>
+</body>
+</html>

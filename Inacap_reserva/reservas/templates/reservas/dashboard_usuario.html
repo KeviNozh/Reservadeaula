@@ -4,29 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Sistema de Reservas</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
     <style>
+        /* Variables CSS para temas */
+        :root {
+            /* Tema Claro (default) */
+            --bg-primary: #f9fafb;
+            --bg-secondary: white;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --accent-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --purple-color: #8b5cf6;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-dark {
+            /* Tema Oscuro */
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #4b5563;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --purple-color: #8b5cf6;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f9fafb;
-            color: #111827;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
 
         /* Header */
         .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             padding: 0 24px;
             height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .logo-section {
@@ -38,50 +84,80 @@
         .logo {
             width: 40px;
             height: 40px;
-            background: #2563eb;
+            background: var(--accent-color);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
+            font-size: 18px;
         }
 
         .nav-menu {
             display: flex;
-            gap: 32px;
+            gap: 24px;
+            align-items: center;
         }
 
         .nav-item {
-            color: #6b7280;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
             padding: 8px 12px;
             border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             transition: all 0.3s ease;
         }
 
+        .nav-item i {
+            font-size: 16px;
+        }
+
         .nav-item:hover, .nav-item.active {
-            background: #2563eb;
+            background: var(--accent-color);
             color: white;
         }
 
         .user-menu {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .user-avatar {
             width: 32px;
             height: 32px;
-            background: #10b981;
+            background: var(--success-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Botón de tema */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-color);
         }
 
         /* Main Content */
@@ -98,12 +174,19 @@
         .page-title {
             font-size: 28px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-title i {
+            color: var(--accent-color);
         }
 
         .page-subtitle {
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 16px;
         }
 
@@ -116,33 +199,34 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             border-left: 4px solid;
             transition: transform 0.3s ease;
+            border: 1px solid var(--border-color);
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-card.green {
-            border-left-color: #10b981;
-        }
-
-        .stat-card.blue {
-            border-left-color: #3b82f6;
+            border-left-color: var(--success-color);
         }
 
         .stat-card.orange {
-            border-left-color: #f59e0b;
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.blue {
+            border-left-color: var(--accent-color);
         }
 
         .stat-card.purple {
-            border-left-color: #8b5cf6;
+            border-left-color: var(--purple-color);
         }
 
         .stat-header {
@@ -153,7 +237,7 @@
         }
 
         .stat-title {
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 14px;
             font-weight: 500;
             text-transform: uppercase;
@@ -171,29 +255,29 @@
         }
 
         .stat-card.green .stat-icon {
-            background: #d1fae5;
-            color: #10b981;
-        }
-
-        .stat-card.blue .stat-icon {
-            background: #dbeafe;
-            color: #3b82f6;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
         }
 
         .stat-card.orange .stat-icon {
-            background: #fef3c7;
-            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-card.blue .stat-icon {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--accent-color);
         }
 
         .stat-card.purple .stat-icon {
-            background: #ede9fe;
-            color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--purple-color);
         }
 
         .stat-value {
             font-size: 32px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-primary);
             margin-bottom: 8px;
             line-height: 1;
         }
@@ -207,11 +291,11 @@
         }
 
         .stat-change.positive {
-            color: #10b981;
+            color: var(--success-color);
         }
 
         .stat-change.negative {
-            color: #ef4444;
+            color: var(--danger-color);
         }
 
         /* Content Grid */
@@ -222,10 +306,11 @@
         }
 
         .main-section, .sidebar-section {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
 
         .section-header {
@@ -238,14 +323,20 @@
         .section-title {
             font-size: 18px;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .view-all-btn {
-            color: #2563eb;
+            color: var(--accent-color);
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .view-all-btn:hover {
@@ -262,19 +353,19 @@
         .reservations-table td {
             text-align: left;
             padding: 12px 0;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .reservations-table th {
             font-weight: 600;
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
         .reservations-table td {
-            color: #111827;
+            color: var(--text-primary);
         }
 
         .status-badge {
@@ -286,18 +377,18 @@
         }
 
         .status-badge.approved {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
         }
 
         .status-badge.pending {
-            background: #fef3c7;
-            color: #92400e;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
         }
 
         .status-badge.rejected {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
         }
 
         /* Quick Actions */
@@ -321,26 +412,31 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-size: 14px;
         }
 
         .action-btn.primary {
-            background: #10b981;
+            background: var(--success-color);
             color: white;
+            border: 1px solid var(--success-color);
         }
 
         .action-btn.primary:hover {
             background: #059669;
             transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
         }
 
         .action-btn.secondary {
-            background: #2563eb;
+            background: var(--accent-color);
             color: white;
+            border: 1px solid var(--accent-color);
         }
 
         .action-btn.secondary:hover {
             background: #1d4ed8;
             transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
         }
 
         /* Recent Activity */
@@ -355,7 +451,7 @@
             align-items: flex-start;
             gap: 12px;
             padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .activity-item:last-child {
@@ -365,13 +461,14 @@
         .activity-icon {
             width: 32px;
             height: 32px;
-            background: #f3f4f6;
+            background: var(--bg-tertiary);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             flex-shrink: 0;
+            color: var(--text-secondary);
         }
 
         .activity-content {
@@ -380,21 +477,21 @@
 
         .activity-text {
             font-size: 14px;
-            color: #374151;
+            color: var(--text-primary);
             margin-bottom: 4px;
             line-height: 1.4;
         }
 
         .activity-time {
             font-size: 12px;
-            color: #9ca3af;
+            color: var(--text-tertiary);
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #6b7280;
+            color: var(--text-secondary);
         }
 
         .empty-state-icon {
@@ -407,6 +504,7 @@
             font-size: 16px;
             font-weight: 500;
             margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
         .empty-state-text {
@@ -445,24 +543,49 @@
         }
     </style>
 </head>
-<body>
+<body class="theme-light">
     <!-- Header -->
     <header class="header">
         <div class="logo-section">
-            <div class="logo">SR</div>
-            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+            <div class="logo">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div style="font-weight: 600; color: var(--text-primary);">Sistema de Reservas</div>
         </div>
         
         <nav class="nav-menu">
-            <a href="{% url 'dashboard' %}" class="nav-item active">Dashboard</a>
-            <a href="{% url 'crear_reserva' %}" class="nav-item">Reservar</a>
-            <a href="{% url 'reservas' %}" class="nav-item">Historial</a>
-            <a href="{% url 'calendario' %}" class="nav-item">Calendario</a>
-            <a href="{% url 'espacios' %}" class="nav-item">Espacios</a>
-            <a href="{% url 'notificaciones' %}" class="nav-item">Notificaciones</a>
+            <a href="{% url 'dashboard' %}" class="nav-item active">
+                <i class="bi bi-speedometer2"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'crear_reserva' %}" class="nav-item">
+                <i class="bi bi-plus-circle"></i>
+                Reservar
+            </a>
+            <a href="{% url 'reservas' %}" class="nav-item">
+                <i class="bi bi-clock-history"></i>
+                Historial
+            </a>
+            <a href="{% url 'calendario' %}" class="nav-item">
+                <i class="bi bi-calendar-week"></i>
+                Calendario
+            </a>
+            <a href="{% url 'espacios' %}" class="nav-item">
+                <i class="bi bi-building"></i>
+                Espacios
+            </a>
+            <a href="{% url 'notificaciones' %}" class="nav-item">
+                <i class="bi bi-bell"></i>
+                Notificaciones
+            </a>
         </nav>
         
         <div class="user-menu">
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                <i class="bi bi-moon" id="themeIcon"></i>
+            </button>
+            
             <div class="user-avatar">
                 {% if user.first_name and user.last_name %}
                     {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
@@ -470,21 +593,26 @@
                     {{ user.username|first|upper }}
                 {% endif %}
             </div>
-            <span>
+            <span style="color: var(--text-primary);">
                 {% if user.first_name %}
                     {{ user.first_name }} {{ user.last_name }}
                 {% else %}
                     {{ user.username }}
                 {% endif %}
             </span>
-            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+            <a href="{% url 'logout' %}" class="theme-toggle" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
-            <h1 class="page-title">Dashboard</h1>
+            <h1 class="page-title">
+                <i class="bi bi-speedometer2"></i>
+                Dashboard
+            </h1>
             <p class="page-subtitle">
                 Bienvenido de vuelta, 
                 {% if user.first_name %}
@@ -501,37 +629,57 @@
             <div class="stat-card green">
                 <div class="stat-header">
                     <div class="stat-title">Reservas Activas</div>
-                    <div class="stat-icon">📅</div>
+                    <div class="stat-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
                 </div>
                 <div class="stat-value">{{ reservas_activas }}</div>
-                <div class="stat-change positive">✅ Activas este mes</div>
+                <div class="stat-change positive">
+                    <i class="bi bi-check-circle"></i>
+                    Activas este mes
+                </div>
             </div>
 
             <div class="stat-card orange">
                 <div class="stat-header">
                     <div class="stat-title">Reservas Pendientes</div>
-                    <div class="stat-icon">⏰</div>
+                    <div class="stat-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
                 </div>
                 <div class="stat-value">{{ reservas_pendientes }}</div>
-                <div class="stat-change positive">🔄 En espera de aprobación</div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-repeat"></i>
+                    En espera de aprobación
+                </div>
             </div>
 
             <div class="stat-card blue">
                 <div class="stat-header">
                     <div class="stat-title">Reservas Totales</div>
-                    <div class="stat-icon">📊</div>
+                    <div class="stat-icon">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
                 </div>
                 <div class="stat-value">{{ total_reservas }}</div>
-                <div class="stat-change positive">📈 Historial completo</div>
+                <div class="stat-change positive">
+                    <i class="bi bi-graph-up"></i>
+                    Historial completo
+                </div>
             </div>
 
             <div class="stat-card purple">
                 <div class="stat-header">
                     <div class="stat-title">Espacios Favoritos</div>
-                    <div class="stat-icon">❤️</div>
+                    <div class="stat-icon">
+                        <i class="bi bi-heart"></i>
+                    </div>
                 </div>
                 <div class="stat-value">3</div>
-                <div class="stat-change positive">⭐ Más utilizados</div>
+                <div class="stat-change positive">
+                    <i class="bi bi-star"></i>
+                    Más utilizados
+                </div>
             </div>
         </div>
 
@@ -540,8 +688,14 @@
             <!-- Main Section - Próximas Reservas -->
             <div class="main-section">
                 <div class="section-header">
-                    <h2 class="section-title">Próximas Reservas</h2>
-                    <a href="{% url 'reservas' %}" class="view-all-btn">Ver todas</a>
+                    <h2 class="section-title">
+                        <i class="bi bi-calendar3"></i>
+                        Próximas Reservas
+                    </h2>
+                    <a href="{% url 'reservas' %}" class="view-all-btn">
+                        Ver todas
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
                 
                 {% if reservas_recientes %}
@@ -571,10 +725,13 @@
                 </table>
                 {% else %}
                 <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-icon">
+                        <i class="bi bi-clipboard"></i>
+                    </div>
                     <h3 class="empty-state-title">No hay reservas recientes</h3>
                     <p class="empty-state-text">Crea tu primera reserva para comenzar</p>
                     <a href="{% url 'crear_reserva' %}" class="action-btn primary" style="margin-top: 16px;">
+                        <i class="bi bi-plus-lg"></i>
                         Crear Reserva
                     </a>
                 </div>
@@ -585,15 +742,18 @@
             <div class="sidebar-section">
                 <!-- Quick Actions -->
                 <div class="section-header">
-                    <h2 class="section-title">Acciones Rápidas</h2>
+                    <h2 class="section-title">
+                        <i class="bi bi-lightning"></i>
+                        Acciones Rápidas
+                    </h2>
                 </div>
                 <div class="quick-actions">
                     <a href="{% url 'crear_reserva' %}" class="action-btn primary">
-                        <span>➕</span>
+                        <i class="bi bi-plus-lg"></i>
                         Nueva Reserva
                     </a>
                     <a href="{% url 'calendario' %}" class="action-btn secondary">
-                        <span>📅</span>
+                        <i class="bi bi-calendar-week"></i>
                         Ver Calendario
                     </a>
                 </div>
@@ -601,7 +761,10 @@
                 <!-- Recent Activity -->
                 <div style="margin-top: 24px;">
                     <div class="section-header">
-                        <h2 class="section-title">Actividad Reciente</h2>
+                        <h2 class="section-title">
+                            <i class="bi bi-clock-history"></i>
+                            Actividad Reciente
+                        </h2>
                     </div>
                     <div class="activity-list">
                         {% if reservas_recientes %}
@@ -609,11 +772,11 @@
                             <div class="activity-item">
                                 <div class="activity-icon">
                                     {% if reserva.estado == 'Aprobada' %}
-                                        ✅
+                                        <i class="bi bi-check-circle"></i>
                                     {% elif reserva.estado == 'Pendiente' %}
-                                        ⏰
+                                        <i class="bi bi-clock"></i>
                                     {% else %}
-                                        📋
+                                        <i class="bi bi-clipboard"></i>
                                     {% endif %}
                                 </div>
                                 <div class="activity-content">
@@ -628,7 +791,9 @@
                             {% endfor %}
                         {% else %}
                             <div class="activity-item">
-                                <div class="activity-icon">👋</div>
+                                <div class="activity-icon">
+                                    <i class="bi bi-hand-wave"></i>
+                                </div>
                                 <div class="activity-content">
                                     <div class="activity-text">
                                         Bienvenido al sistema de reservas
@@ -646,9 +811,38 @@
     </main>
 
     <script>
-        // Simple animations
+        // Sistema de tema claro/oscuro
         document.addEventListener('DOMContentLoaded', function() {
-            // Add hover effects to stat cards
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            // Verificar tema guardado en localStorage
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                body.classList.add('theme-dark');
+                themeIcon.classList.remove('bi-moon');
+                themeIcon.classList.add('bi-sun');
+            }
+            
+            // Función para cambiar tema
+            themeToggle.addEventListener('click', () => {
+                const isDark = body.classList.contains('theme-dark');
+                
+                if (isDark) {
+                    body.classList.remove('theme-dark');
+                    themeIcon.classList.remove('bi-sun');
+                    themeIcon.classList.add('bi-moon');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('theme-dark');
+                    themeIcon.classList.remove('bi-moon');
+                    themeIcon.classList.add('bi-sun');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Animaciones para las tarjetas de estadísticas
             const statCards = document.querySelectorAll('.stat-card');
             statCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
@@ -658,6 +852,11 @@
                     this.style.transform = 'translateY(0)';
                 });
             });
+            
+            // Actualizar contadores en tiempo real (simulado)
+            setTimeout(() => {
+                console.log('Dashboard cargado correctamente');
+            }, 100);
         });
     </script>
 </body>

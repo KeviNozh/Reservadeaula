@@ -1,0 +1,53 @@
+<!-- Snippet de modo oscuro (inline): prevención flash, variables CSS y toggle JS -->
+<script>
+(function(){
+    try{
+        const t = localStorage.getItem('theme');
+        if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+    }catch(e){ }
+})();
+</script>
+
+<style>
+    :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --accent: #2563eb;
+    }
+    html[data-theme="dark"]{
+        --bg: #071126;
+        --text: #e6eef8;
+        --card: #071126;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+    }
+    body, html{background:var(--bg);color:var(--text)}
+    .theme-toggle{position:fixed;right:18px;bottom:18px;z-index:9999;background:var(--card);color:var(--text);border:1px solid rgba(0,0,0,0.08);padding:10px 12px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(2,6,23,0.12)}
+</style>
+
+<!-- Botón toggle (puedes moverlo dentro del body donde prefieras) -->
+<button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">🌓</button>
+
+<script>
+(function(){
+    function setTheme(dark){
+        try{ localStorage.setItem('theme', dark? 'dark' : 'light'); }catch(e){}
+        if(dark) document.documentElement.setAttribute('data-theme','dark'); else document.documentElement.removeAttribute('data-theme');
+    }
+
+    try{
+        const t = localStorage.getItem('theme');
+        if(t === 'dark') setTheme(true);
+    }catch(e){}
+
+    const btn = document.getElementById('themeToggle');
+    if(btn){
+        btn.addEventListener('click', function(){
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            setTheme(!isDark);
+        });
+    }
+})();
+</script>

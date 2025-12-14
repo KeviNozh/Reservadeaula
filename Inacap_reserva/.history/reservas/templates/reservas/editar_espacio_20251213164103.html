@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Espacio - Sistema de Reservas</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        /* Variables CSS para temas */
+        :root {
+            /* Tema Claro (por defecto) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            /* Tema Oscuro */
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-card: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #4b5563;
+            --primary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: var(--bg-secondary);
+            text-decoration: none;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-color);
+            transform: rotate(30deg);
+        }
+
+        /* Loading States */
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Placeholder color */
+        ::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle-container">
+        <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+            <i class="bi bi-moon-fill" id="themeIcon"></i>
+        </button>
+    </div>
+
+    <!-- Back Link -->
+    <a href="{% url 'gestion_espacios' %}" class="back-link">
+        <i class="bi bi-arrow-left"></i>
+        Volver a Gestión de Espacios
+    </a>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1>
+            <i class="bi bi-pencil-square"></i>
+            Editar Espacio
+        </h1>
+
+        <!-- Alert Message -->
+        <div id="alertMessage" class="alert"></div>
+
+        <!-- Loading Message -->
+        <div id="loadingMessage" class="loading-message">
+            <i class="bi bi-arrow-clockwise"></i> Cargando datos del espacio...
+        </div>
+
+        <!-- Form -->
+        <form id="editSpaceForm" style="display: none;">
+            <input type="hidden" id="espacio_id" name="espacio_id">
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-building"></i>
+                    Nombre del Espacio *
+                </label>
+                <input type="text" class="form-input" id="nombre" name="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-tags"></i>
+                    Tipo de Espacio *
+                </label>
+                <select class="form-select" id="tipo" name="tipo" required>
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="Sala de Reuniones">
+                        <i class="bi bi-people"></i> Sala de Reuniones
+                    </option>
+                    <option value="Auditorio">
+                        <i class="bi bi-cast"></i> Auditorio
+                    </option>
+                    <option value="Laboratorio">
+                        <i class="bi bi-flask"></i> Laboratorio
+                    </option>
+                    <option value="Oficina">
+                        <i class="bi bi-briefcase"></i> Oficina
+                    </option>
+                    <option value="Aula">
+                        <i class="bi bi-easel"></i> Aula
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-people"></i>
+                    Capacidad *
+                </label>
+                <input type="number" class="form-input" id="capacidad" name="capacidad" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-building"></i>
+                    Edificio
+                </label>
+                <input type="text" class="form-input" id="edificio" name="edificio">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-stairs"></i>
+                    Piso
+                </label>
+                <input type="number" class="form-input" id="piso" name="piso" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-card-text"></i>
+                    Descripción
+                </label>
+                <textarea class="form-textarea" id="descripcion" name="descripcion"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-circle-fill"></i>
+                    Estado
+                </label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="Disponible">
+                        <i class="bi bi-check-circle"></i> Disponible
+                    </option>
+                    <option value="Mantenimiento">
+                        <i class="bi bi-tools"></i> Mantenimiento
+                    </option>
+                    <option value="Fuera de Servicio">
+                        <i class="bi bi-x-circle"></i> Fuera de Servicio
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'gestion_espacios' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="bi bi-check-circle"></i>
+                    Actualizar Espacio
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Theme Management
+        function initializeTheme() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const htmlElement = document.documentElement;
+            
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                htmlElement.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'bi bi-sun-fill';
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                htmlElement.setAttribute('data-theme', newTheme);
+                themeIcon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+        
+        // Alert System
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // CSRF Token
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Get espacio ID from URL
+        function getEspacioIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+        
+        // Load espacio data
+        async function loadEspacioData() {
+            const espacioId = getEspacioIdFromUrl();
+            
+            if (!espacioId) {
+                showAlert('❌ No se especificó ID del espacio', 'error');
+                return;
+            }
+            
+            try {
+                console.log('🔍 Cargando espacio ID:', espacioId);
+                
+                const response = await fetch(`/api/espacios/${espacioId}/`);
+                const data = await response.json();
+                
+                console.log('📥 Datos recibidos:', data);
+                
+                if (data.success && data.espacio) {
+                    const espacio = data.espacio;
+                    
+                    // Fill form fields
+                    document.getElementById('espacio_id').value = espacio.id;
+                    document.getElementById('nombre').value = espacio.nombre || '';
+                    document.getElementById('tipo').value = espacio.tipo || '';
+                    document.getElementById('capacidad').value = espacio.capacidad || '';
+                    document.getElementById('edificio').value = espacio.edificio || '';
+                    document.getElementById('piso').value = espacio.piso || '';
+                    document.getElementById('descripcion').value = espacio.descripcion || '';
+                    document.getElementById('estado').value = espacio.estado || 'Disponible';
+                    
+                    // Show form and hide loading
+                    document.getElementById('loadingMessage').style.display = 'none';
+                    document.getElementById('editSpaceForm').style.display = 'block';
+                    
+                    console.log('✅ Formulario cargado correctamente');
+                    
+                } else {
+                    showAlert('❌ Error al cargar el espacio: ' + (data.error || 'No se encontró el espacio'), 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                showAlert('❌ Error de conexión al cargar datos', 'error');
+            }
+        }
+        
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const espacioId = getEspacioIdFromUrl();
+            if (!espacioId) {
+                showAlert('❌ ID de espacio no válido', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Disable and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Actualizando...
+            `;
+            
+            // Prepare form data
+            const formData = {
+                nombre: document.getElementById('nombre').value.trim(),
+                tipo: document.getElementById('tipo').value,
+                capacidad: parseInt(document.getElementById('capacidad').value),
+                edificio: document.getElementById('edificio').value.trim(),
+                piso: document.getElementById('piso').value ? parseInt(document.getElementById('piso').value) : null,
+                descripcion: document.getElementById('descripcion').value.trim(),
+                estado: document.getElementById('estado').value
+            };
+            
+            // Validation
+            if (!formData.nombre) {
+                showAlert('❌ El nombre del espacio es requerido', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+            
+            if (!formData.tipo) {
+                showAlert('❌ El tipo de espacio es requerido', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+            
+            if (!formData.capacidad || formData.capacidad < 1) {
+                showAlert('❌ La capacidad debe ser mayor a 0', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+            
+            try {
+                console.log('📤 Actualizando espacio ID:', espacioId);
+                console.log('📤 Datos:', formData);
+                
+                const response = await fetch(`/api/espacios/${espacioId}/actualizar/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                console.log('📥 Respuesta:', data);
+                
+                if (data.success) {
+                    showAlert('✅ ' + data.message, 'success');
+                    
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = "{% url 'gestion_espacios' %}";
+                    }, 1500);
+                    
+                } else {
+                    const errorMsg = data.error || 'Error desconocido';
+                    showAlert('❌ ' + errorMsg, 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                showAlert

@@ -1,0 +1,58 @@
+/* Dark mode overrides - applies when <body class="dark"> or when linked dynamically */
+:root{
+  --bg:#0b1220;
+  --card:#0f1724;
+  --muted:#9ca3af;
+  --text:#e6eef8;
+  --accent:#2563eb;
+  --danger:#ef4444;
+}
+body.dark, body.dark *{
+    color: var(--text) !important;
+}
+body.dark{
+    background: linear-gradient(135deg,#0b1220 0%, #071028 100%) !important;
+}
+body.dark .login-container, body.dark .card, body.dark .card-center, body.dark .card {
+    background: var(--card) !important;
+    box-shadow: none !important;
+}
+body.dark .form-input{
+    background: #0b1220 !important;
+    border-color: #1e293b !important;
+    color: var(--text) !important;
+}
+body.dark .action-button{ background: var(--accent) !important; }
+body.dark .demo-credentials{ background:#071026 !important; border-color:#122033 !important; color:var(--muted) !important }
+body.dark .logo-text, body.dark .welcome-text{ color: var(--text) !important }
+body.dark a{ color: #93c5fd !important }
+body.dark .message.error{ background:#4b0f0f !important }
+body.dark .message.success{ background:#08320a !important }
+/* specific adjustments */
+body.dark .toggle-password{ color: #cbd5e1 !important }
+body.dark .remember-me{ color: var(--muted) !important }
+
+/* Additional overrides to ensure login and admin UI look correct in dark mode */
+body.dark .login-container, body.dark .card, body.dark .card-center {
+  background: linear-gradient(135deg,#0b1220 0%, #071028 100%) !important;
+  color: var(--text) !important;
+}
+body.dark .logo-icon{ background:#ef4444 !important; color:white !important }
+body.dark .logo-text{ color:var(--text) !important }
+body.dark .welcome-text{ color:var(--text) !important }
+body.dark .tab, body.dark .tabs, body.dark .tabs .tab{ background:transparent !important }
+body.dark .tab.active{ background: rgba(255,255,255,0.03) !important; color: #93c5fd !important }
+body.dark .demo-credentials{ background: rgba(255,255,255,0.03) !important }
+body.dark .error-message{ background:#2a0b0b !important; color:#ffc9c9 !important }
+body.dark .success-message{ background:#07320a !important; color:#b7f7d1 !important }
+body.dark .action-button.register{ background:#059669 !important }
+body.dark input::placeholder{ color: rgba(230,238,248,0.6) !important }
+
+/* Style for injected floating toggle button */
+.theme-toggle{ width:48px; height:48px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:#eef2ff; color:#1f2937; border: none; font-size:18px }
+body.dark .theme-toggle{ background:#071026; color: #e6eef8 }
+
+/* Fallback if body.dark is not present and CSS is linked */
+@media (prefers-color-scheme: dark) {
+  body:not(.light) { background: var(--bg); }
+}

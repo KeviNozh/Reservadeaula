@@ -1,32 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    {% include 'reservas/_icons.html' %}
+    {% include 'reservas/_theme_snippet.html' %}
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Espacios - Sistema de Reservas</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ENjdO4Dr2bkBIFxQpeoA6DQD5N2Q6F0n6U8U6p6YkE9j6M9g6t5F5F5F5F5F5F5F5" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Variables CSS para temas */
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #dc3545;
+            --admin-color: #7c3aed;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #18191a;
+            --bg-secondary: #23272f;
+            --bg-tertiary: #2d3748;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e7eb;
+            --text-tertiary: #9ca3af;
+            --border-color: #4b5563;
+            --primary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --admin-color: #8b5cf6;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f9fafb;
-            color: #111827;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Header */
         .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             padding: 0 24px;
             height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo-section {
@@ -38,50 +78,55 @@
         .logo {
             width: 40px;
             height: 40px;
-            background: #2563eb;
+            background: var(--admin-color);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
+            font-size: 20px;
         }
 
         .nav-menu {
             display: flex;
-            gap: 32px;
+            gap: 24px;
         }
 
         .nav-item {
-            color: #6b7280;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
             padding: 8px 12px;
             border-radius: 6px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .nav-item:hover, .nav-item.active {
-            background: #2563eb;
+            background: var(--admin-color);
             color: white;
         }
 
         .user-menu {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: #10b981;
+            width: 36px;
+            height: 36px;
+            background: var(--success-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 14px;
         }
 
         /* Main Content */
@@ -98,12 +143,15 @@
             gap: 8px;
             margin-bottom: 24px;
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-secondary);
         }
 
         .breadcrumb a {
-            color: #2563eb;
+            color: var(--admin-color);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .breadcrumb a:hover {
@@ -111,16 +159,17 @@
         }
 
         .breadcrumb-separator {
-            color: #9ca3af;
+            color: var(--text-tertiary);
         }
 
         /* Page Header */
         .page-header {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .header-content {
@@ -134,7 +183,10 @@
         .page-title {
             font-size: 28px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .header-actions {
@@ -158,31 +210,36 @@
         }
 
         .btn-primary {
-            background: #10b981;
+            background: var(--success-color);
             color: white;
         }
 
         .btn-primary:hover {
             background: #059669;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
 
         .btn-secondary {
-            background: #6b7280;
-            color: white;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: #4b5563;
+            background: var(--admin-color);
+            color: white;
+            border-color: var(--admin-color);
         }
 
         /* Filters */
         .filters-section {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .filters-grid {
@@ -201,29 +258,35 @@
         .filter-label {
             font-size: 14px;
             font-weight: 500;
-            color: #374151;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .filter-select, .filter-input {
             padding: 10px 12px;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
-            background: white;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
             transition: border-color 0.3s ease;
         }
 
         .filter-select:focus, .filter-input:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: var(--admin-color);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
 
         /* Table */
         .table-container {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .table {
@@ -232,17 +295,19 @@
         }
 
         .table th {
-            background: #f9fafb;
+            background: var(--bg-tertiary);
             padding: 16px;
             text-align: left;
             font-weight: 600;
-            color: #374151;
-            border-bottom: 1px solid #e5e7eb;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
         }
 
         .table td {
             padding: 16px;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
         }
 
         .table tr:last-child td {
@@ -250,7 +315,7 @@
         }
 
         .table tr:hover {
-            background: #f9fafb;
+            background: var(--bg-tertiary);
         }
 
         /* Status Badges */
@@ -260,21 +325,27 @@
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .status-available {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .status-maintenance {
-            background: #fef3c7;
-            color: #92400e;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
         }
 
         .status-out-of-service {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         /* Action Buttons */
@@ -284,7 +355,7 @@
         }
 
         .btn-icon {
-            padding: 8px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -292,47 +363,103 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 14px;
+            gap: 4px;
         }
 
         .btn-edit {
-            background: #dbeafe;
-            color: #1d4ed8;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(37, 99, 235, 0.2);
         }
 
         .btn-edit:hover {
-            background: #bfdbfe;
+            background: rgba(37, 99, 235, 0.2);
+            transform: translateY(-1px);
         }
 
         .btn-delete {
-            background: #fee2e2;
-            color: #dc2626;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         .btn-delete:hover {
-            background: #fecaca;
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-1px);
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #6b7280;
+            color: var(--text-tertiary);
         }
 
         .empty-state-icon {
             font-size: 48px;
             margin-bottom: 16px;
+            opacity: 0.5;
         }
 
         .empty-state-title {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #374151;
+            color: var(--text-primary);
         }
 
         .empty-state-text {
             margin-bottom: 24px;
+            color: var(--text-secondary);
+        }
+
+        /* Clear Filters Button */
+        .clear-filters-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .clear-filters-btn:hover {
+            background: var(--admin-color);
+            color: white;
+            border-color: var(--admin-color);
+        }
+
+        /* Space Info */
+        .space-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .space-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* Capacity Badge */
+        .capacity-badge {
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         /* Responsive */
@@ -340,48 +467,102 @@
             .main-content {
                 padding: 16px;
             }
-
+            
+            .header {
+                padding: 0 16px;
+                height: 60px;
+            }
+            
+            .nav-menu {
+                display: none;
+            }
+            
             .filters-grid {
                 grid-template-columns: 1fr;
             }
-
+            
             .header-content {
                 flex-direction: column;
                 align-items: flex-start;
             }
-
+            
             .header-actions {
                 width: 100%;
                 justify-content: flex-end;
             }
-
+            
             .table-container {
                 overflow-x: auto;
             }
-
+            
             .table {
                 min-width: 800px;
             }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Animation for alerts */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
         }
     </style>
+    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}" disabled>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="logo-section">
-            <div class="logo">SR</div>
-            <div style="font-weight: 600; color: #111827;">Sistema de Reservas</div>
+            <div class="logo"><i class="bi bi-shield-check"></i></div>
+            <div style="font-weight: 600; color: var(--text-primary);">Panel Administrativo</div>
         </div>
         
         <nav class="nav-menu">
-            <a href="{% url 'admin_dashboard' %}" class="nav-item">Dashboard</a>
-            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">Solicitudes</a>
-            <a href="{% url 'gestion_espacios' %}" class="nav-item active">Espacios</a>
-            <a href="{% url 'gestion_usuarios' %}" class="nav-item">Usuarios</a>
-            <a href="{% url 'reportes' %}" class="nav-item">Reportes</a>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="{% url 'solicitudes_pendientes' %}" class="nav-item">
+                <i class="bi bi-clock"></i> Solicitudes
+            </a>
+            <a href="{% url 'gestion_espacios' %}" class="nav-item active">
+                <i class="bi bi-door-open-fill"></i> Espacios
+            </a>
+            <a href="{% url 'gestion_usuarios' %}" class="nav-item">
+                <i class="bi bi-people"></i> Usuarios
+            </a>
+            <a href="{% url 'reportes' %}" class="nav-item">
+                <i class="bi bi-bar-chart"></i> Reportes
+            </a>
+            <a href="{% url 'notificaciones_admin' %}" class="nav-item">
+                <i class="bi bi-bell"></i> Notificaciones
+            </a>
         </nav>
         
-        <div class="user-menu">
+        <div class="user-menu" id="userMenu">
+            <button class="notification-btn" id="notificationBtn" style="background:none;border:none;position:relative;font-size:22px;cursor:pointer;color:var(--admin-color);">
+                <i class="bi bi-bell"></i>
+                <span id="notifBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--danger-color);color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;">0</span>
+            </button>
             <div class="user-avatar">
                 {% if user.first_name and user.last_name %}
                     {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
@@ -389,14 +570,16 @@
                     {{ user.username|first|upper }}
                 {% endif %}
             </div>
-            <span>
+            <span style="color: var(--text-primary);">
                 {% if user.first_name %}
                     {{ user.first_name }} {{ user.last_name }}
                 {% else %}
                     {{ user.username }}
                 {% endif %}
             </span>
-            <a href="{% url 'logout' %}" style="margin-left: 10px; color: #666; text-decoration: none;">🚪</a>
+            <a href="{% url 'logout' %}" style="margin-left: 10px; color: var(--text-secondary); text-decoration: none;" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
         </div>
     </header>
 
@@ -404,19 +587,22 @@
     <main class="main-content">
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
-            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'admin_dashboard' %}">
+                <i class="bi bi-house"></i> Dashboard
+            </a>
             <span class="breadcrumb-separator">›</span>
-            <span>Gestión de Espacios</span>
+            <span style="color: var(--text-primary);">Gestión de Espacios</span>
         </nav>
 
         <!-- Page Header -->
         <div class="page-header">
             <div class="header-content">
-                <h1 class="page-title">🏢 Gestión de Espacios</h1>
+                <h1 class="page-title">
+                    <i class="bi bi-door-open-fill"></i> Gestión de Espacios
+                </h1>
                 <div class="header-actions">
                     <a href="{% url 'crear_espacio' %}" class="btn btn-primary">
-                        <span>➕</span>
-                        Nuevo Espacio
+                        <i class="bi bi-plus-circle"></i> Nuevo Espacio
                     </a>
                 </div>
             </div>
@@ -426,7 +612,9 @@
         <div class="filters-section">
             <div class="filters-grid">
                 <div class="filter-group">
-                    <label class="filter-label">Estado</label>
+                    <label class="filter-label">
+                        <i class="bi bi-circle-fill"></i> Estado
+                    </label>
                     <select class="filter-select" id="statusFilter">
                         <option value="">Todos los estados</option>
                         <option value="Disponible">Disponible</option>
@@ -436,7 +624,9 @@
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Tipo</label>
+                    <label class="filter-label">
+                        <i class="bi bi-tags"></i> Tipo
+                    </label>
                     <select class="filter-select" id="typeFilter">
                         <option value="">Todos los tipos</option>
                         <option value="Sala de Reuniones">Sala de Reuniones</option>
@@ -448,13 +638,23 @@
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Edificio</label>
+                    <label class="filter-label">
+                        <i class="bi bi-building"></i> Edificio
+                    </label>
                     <input type="text" class="filter-input" id="buildingFilter" placeholder="Filtrar por edificio">
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Búsqueda</label>
+                    <label class="filter-label">
+                        <i class="bi bi-search"></i> Búsqueda
+                    </label>
                     <input type="text" class="filter-input" id="searchFilter" placeholder="Buscar espacios...">
+                </div>
+
+                <div class="filter-group">
+                    <button class="clear-filters-btn" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i> Limpiar filtros
+                    </button>
                 </div>
             </div>
         </div>
@@ -464,46 +664,66 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
-                        <th>Tipo</th>
-                        <th>Edificio</th>
-                        <th>Piso</th>
-                        <th>Capacidad</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <th><i class="bi bi-card-heading"></i> Nombre</th>
+                        <th><i class="bi bi-tag"></i> Tipo</th>
+                        <th><i class="bi bi-building"></i> Edificio</th>
+                        <th><i class="bi bi-stairs"></i> Piso</th>
+                        <th><i class="bi bi-people"></i> Capacidad</th>
+                        <th><i class="bi bi-circle-fill"></i> Estado</th>
+                        <th><i class="bi bi-gear"></i> Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="spacesTableBody">
                     {% for espacio in espacios %}
                     <tr>
                         <td>
-                            <div style="font-weight: 600; color: #111827;">{{ espacio.nombre }}</div>
+                            <div class="space-name">
+                                <i class="bi bi-door-closed" style="margin-right: 8px; color: var(--text-secondary);"></i>
+                                {{ espacio.nombre }}
+                            </div>
                             {% if espacio.descripcion %}
-                            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">{{ espacio.descripcion|truncatewords:10 }}</div>
+                            <div class="space-description">
+                                {{ espacio.descripcion|truncatewords:10 }}
+                            </div>
                             {% endif %}
                         </td>
-                        <td>{{ espacio.tipo }}</td>
+                        <td>
+                            <span class="capacity-badge">
+                                {{ espacio.tipo }}
+                            </span>
+                        </td>
                         <td>{{ espacio.edificio|default:"-" }}</td>
                         <td>{{ espacio.piso|default:"-" }}</td>
-                        <td>{{ espacio.capacidad }} personas</td>
+                        <td>
+                            <span class="capacity-badge">
+                                <i class="bi bi-people"></i>
+                                {{ espacio.capacidad }} personas
+                            </span>
+                        </td>
                         <td>
                             {% if espacio.estado == 'Disponible' %}
-                                <span class="status-badge status-available">Disponible</span>
+                                <span class="status-badge status-available">
+                                    <i class="bi bi-check-circle"></i> Disponible
+                                </span>
                             {% elif espacio.estado == 'Mantenimiento' %}
-                                <span class="status-badge status-maintenance">Mantenimiento</span>
+                                <span class="status-badge status-maintenance">
+                                    <i class="bi bi-tools"></i> Mantenimiento
+                                </span>
                             {% elif espacio.estado == 'Fuera de Servicio' %}
-                                <span class="status-badge status-out-of-service">Fuera de Servicio</span>
+                                <span class="status-badge status-out-of-service">
+                                    <i class="bi bi-exclamation-triangle"></i> Fuera de Servicio
+                                </span>
                             {% else %}
                                 <span class="status-badge">{{ espacio.estado }}</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{% url 'editar_espacio' %}?id={{ espacio.id }}" class="btn-icon btn-edit" title="Editar">
-                                    ✏️
+                                <a href="{% url 'editar_espacio' %}?id={{ espacio.id }}" class="btn-icon btn-edit" title="Editar espacio">
+                                    <i class="bi bi-pencil"></i> Editar
                                 </a>
-                                <button class="btn-icon btn-delete" onclick="eliminarEspacio({{ espacio.id }})" title="Eliminar">
-                                    🗑️
+                                <button class="btn-icon btn-delete" onclick="eliminarEspacio({{ espacio.id }})" title="Eliminar espacio">
+                                    <i class="bi bi-trash"></i> Eliminar
                                 </button>
                             </div>
                         </td>
@@ -512,14 +732,15 @@
                     <tr>
                         <td colspan="7">
                             <div class="empty-state">
-                                <div class="empty-state-icon">🏢</div>
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-door-open"></i>
+                                </div>
                                 <h3 class="empty-state-title">No hay espacios registrados</h3>
                                 <p class="empty-state-text">
                                     Comienza agregando el primer espacio al sistema.
                                 </p>
                                 <a href="{% url 'crear_espacio' %}" class="btn btn-primary">
-                                    <span>➕</span>
-                                    Crear Primer Espacio
+                                    <i class="bi bi-plus-circle"></i> Crear Primer Espacio
                                 </a>
                             </div>
                         </td>
@@ -530,7 +751,30 @@
         </div>
     </main>
 
+    <!-- Modal de confirmación -->
+    <div id="confirmationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-secondary); padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color);">
+            <h3 style="color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-exclamation-triangle" style="color: var(--danger-color);"></i> Confirmar eliminación
+            </h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;">
+                ¿Estás seguro de que deseas eliminar este espacio? Esta acción no se puede deshacer.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closeConfirmationModal()" style="padding: 10px 20px; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                    <i class="bi bi-x"></i> Cancelar
+                </button>
+                <button onclick="confirmDelete()" style="padding: 10px 20px; background: var(--danger-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Variables globales
+        let spaceToDelete = null;
+
         // Filtros de tabla
         document.addEventListener('DOMContentLoaded', function() {
             const statusFilter = document.getElementById('statusFilter');
@@ -549,11 +793,18 @@
                 for (let row of rows) {
                     if (row.cells.length < 7) continue; // Skip empty state row
                     
-                    const status = row.cells[5].textContent.toLowerCase();
-                    const type = row.cells[1].textContent.toLowerCase();
-                    const building = row.cells[2].textContent.toLowerCase();
-                    const name = row.cells[0].textContent.toLowerCase();
-                    const description = row.cells[0].querySelector('div:nth-child(2)')?.textContent.toLowerCase() || '';
+                    const statusCell = row.cells[5];
+                    const typeCell = row.cells[1];
+                    const buildingCell = row.cells[2];
+                    const nameCell = row.cells[0];
+                    
+                    if (!statusCell || !typeCell || !buildingCell || !nameCell) continue;
+                    
+                    const status = statusCell.textContent.toLowerCase();
+                    const type = typeCell.textContent.toLowerCase();
+                    const building = buildingCell.textContent.toLowerCase();
+                    const name = nameCell.textContent.toLowerCase();
+                    const description = nameCell.querySelector('.space-description')?.textContent.toLowerCase() || '';
 
                     const statusMatch = !statusValue || status.includes(statusValue);
                     const typeMatch = !typeValue || type.includes(typeValue);
@@ -572,14 +823,24 @@
             searchFilter.addEventListener('input', applyFilters);
         });
 
-        // Función para eliminar espacio
-        async function eliminarEspacio(espacioId) {
-            if (!confirm('¿Estás seguro de que deseas eliminar este espacio? Esta acción no se puede deshacer.')) {
-                return;
-            }
+        // Función para abrir modal de eliminación
+        function eliminarEspacio(espacioId) {
+            spaceToDelete = espacioId;
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+
+        // Función para cerrar modal
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+            spaceToDelete = null;
+        }
+
+        // Función para confirmar eliminación
+        async function confirmDelete() {
+            if (!spaceToDelete) return;
 
             try {
-                const response = await fetch(`/api/espacios/${espacioId}/eliminar/`, {
+                const response = await fetch(`/api/espacios/${spaceToDelete}/eliminar/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -590,15 +851,34 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('Espacio eliminado exitosamente');
-                    location.reload(); // Recargar la página para actualizar la lista
+                    showAlert('✅ Espacio eliminado exitosamente', 'success');
+                    setTimeout(() => {
+                        location.reload(); // Recargar la página para actualizar la lista
+                    }, 1500);
                 } else {
-                    alert('Error al eliminar el espacio: ' + data.error);
+                    showAlert(`❌ Error al eliminar el espacio: ${data.error}`, 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error de conexión al eliminar el espacio');
+                showAlert('❌ Error de conexión al eliminar el espacio', 'error');
+            } finally {
+                closeConfirmationModal();
             }
+        }
+
+        // Función para limpiar filtros
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('buildingFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            
+            const rows = document.querySelectorAll('#spacesTableBody tr');
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+            
+            showAlert('🧹 Filtros limpiados', 'info');
         }
 
         // Función para obtener token CSRF
@@ -617,6 +897,84 @@
             }
             return cookieValue;
         }
+
+        // Función para mostrar alertas
+        function showAlert(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6'
+            };
+            
+            const icon = {
+                success: 'bi-check-circle',
+                error: 'bi-exclamation-triangle',
+                warning: 'bi-exclamation-circle',
+                info: 'bi-info-circle'
+            }[type];
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type]}20;
+                color: ${colors[type]};
+                padding: 16px 20px;
+                border-radius: 12px;
+                border: 1px solid ${colors[type]}40;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            alertDiv.innerHTML = `
+                <i class="bi ${icon}" style="font-size: 20px;"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideOutRight 0.3s ease-in forwards';
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('confirmationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConfirmationModal();
+            }
+        });
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirmationModal();
+            }
+        });
+
+        // Actualizar badge de notificaciones
+        function updateNotifBadge(count) {
+            const badge = document.getElementById('notifBadge');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+
+        // Inicializar badge
+        updateNotifBadge(0);
     </script>
+    <script src="{% static 'js/theme.js' %}"></script>
 </body>
 </html>
