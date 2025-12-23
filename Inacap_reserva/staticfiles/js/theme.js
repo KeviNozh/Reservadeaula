@@ -1,187 +1,106 @@
-// theme.js - Controlador del tema oscuro/claro
-
-class ThemeManager {
-    constructor() {
-        this.darkCss = document.getElementById('darkCss');
-        this.themeToggle = null; // se inicializa en init según existencia en el DOM
-        this.init();
-    }
-
-    init() {
-        // Solo aplicar el tema guardado por el usuario, nunca el del sistema
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            this.enableDarkTheme();
-        } else if (savedTheme === 'light') {
-            this.disableDarkTheme();
-        } // Si no hay preferencia, no aplicar nada (queda el default del sistema o CSS)
-
-        // Reusar un toggle existente creado por el snippet (_theme_snippet.html)
-        const existingToggle = document.getElementById('themeToggle') || document.getElementById('themeToggleBtn');
-        if (existingToggle) {
-            this.themeToggle = existingToggle;
-            this.themeToggle.id = this.themeToggle.id || 'themeToggleBtn';
-            this.themeToggle.classList.add('theme-toggle-btn');
-            this.themeToggle.addEventListener('click', () => this.handleToggleClick());
-        } else {
-            this.themeToggle = this.createThemeToggle();
-            this.addThemeToggleToDOM();
-        }
-
-        // Escuchar cambios en la preferencia del sistema
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-                e.matches ? this.enableDarkTheme() : this.disableDarkTheme();
-            }
-        });
-
-        // Aplicar clase al body para facilitar el CSS
-        document.addEventListener('DOMContentLoaded', () => {
-            this.updateBodyClass();
-        });
-    }
-
-    createThemeToggle() {
-        const toggle = document.createElement('button');
-        toggle.id = 'themeToggleBtn';
-        toggle.innerHTML = `<span class="theme-icon">🌙</span><span class="theme-text">Tema</span>`;
-        toggle.className = 'theme-toggle-btn';
-        return toggle;
-    }
-
-    addThemeToggleToDOM() {
-        // Buscar el header para agregar el toggle
-        const header = document.querySelector('.header');
-        if (header) {
-            // Agregar al final del header
-            header.appendChild(this.themeToggle);
-        } else {
-            // Si no hay header, agregar al body
-            document.body.appendChild(this.themeToggle);
-        }
-
-        // Agregar estilos para el botón
-        this.addToggleStyles();
-        this.themeToggle.addEventListener('click', () => this.handleToggleClick());
-    }
-
-    handleToggleClick() {
-        // Alternar tema sin recargar: aplicar atributo y clase para cubrir ambos snippets/styles
-        this.toggleTheme();
-    }
-
-    addToggleStyles() {
-        const styles = `
-            /* Estilos limpios y consistentes para botón de toggle */
-            .theme-toggle-btn{
-                background: rgba(255,255,255,0.95);
-                border: 0;
-                padding: 8px 12px;
-                border-radius: 999px;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 600;
-                color: #111827;
-                box-shadow: 0 6px 20px rgba(18, 25, 40, 0.12);
-                transition: transform 120ms ease, background 160ms ease;
-            }
-            .theme-toggle-btn:hover{ transform: translateY(-2px); }
-            .theme-toggle-btn .theme-icon{ font-size:16px }
-            .theme-toggle-btn .theme-text{ display:none }
-            @media(min-width:720px){ .theme-toggle-btn .theme-text{ display:inline } }
-
-            /* Si el botón fue inyectado por el snippet (id=themeToggle), unificar apariencia */
-            #themeToggle{ all: unset; display:inline-block }
-
-            /* Posicionamiento cuando el botón está fuera del header */
-            body .theme-toggle-btn[outside-header]{ position: fixed; right: 18px; bottom: 18px; z-index: 9999 }
-
-            /* Tema oscuro para el propio botón */
-            .dark-theme .theme-toggle-btn{ background: rgba(17,24,39,0.9); color: #e6eef8; box-shadow: 0 6px 18px rgba(0,0,0,0.4) }
+// theme.js - Controlador del tema oscuro/claro - Versión simplificada y funcional
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎨 theme.js cargado - Iniciando gestión de tema...');
+    
+    // 1. Buscar o crear el botón de cambio de tema
+    let themeToggle = document.getElementById('themeToggle');
+    
+    if (!themeToggle) {
+        // Crear botón si no existe
+        themeToggle = document.createElement('button');
+        themeToggle.id = 'themeToggle';
+        themeToggle.type = 'button';
+        themeToggle.setAttribute('aria-label', 'Cambiar tema claro/oscuro');
+        themeToggle.setAttribute('title', 'Click para cambiar tema');
+        themeToggle.style.cssText = `
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
         `;
-
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = styles;
-        document.head.appendChild(styleSheet);
+        
+        // Agregar al body
+        document.body.appendChild(themeToggle);
+        console.log('✅ Botón de tema creado e insertado');
     }
-
-    enableDarkTheme() {
-        if (this.darkCss) {
-            this.darkCss.disabled = false;
-        }
-        document.body.classList.add('dark-theme');
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        this.updateToggleIcon('☀️');
+    
+    // 2. Aplicar tema guardado al cargar
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const html = document.documentElement;
+    const body = document.body;
+    
+    if (savedTheme === 'dark') {
+        html.setAttribute('data-theme', 'dark');
+        body.classList.add('dark-theme');
+        body.classList.remove('light-theme');
+        themeToggle.textContent = '☀️';
+        themeToggle.setAttribute('title', 'Cambiar a tema claro');
+        console.log('🌙 Tema oscuro aplicado desde localStorage');
+    } else {
+        html.setAttribute('data-theme', 'light');
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
+        themeToggle.textContent = '🌙';
+        themeToggle.setAttribute('title', 'Cambiar a tema oscuro');
+        console.log('☀️ Tema claro aplicado desde localStorage');
     }
-
-    disableDarkTheme() {
-        if (this.darkCss) {
-            this.darkCss.disabled = true;
-        }
-        document.body.classList.remove('dark-theme');
-        // Elimina completamente el atributo data-theme para evitar cualquier estilo dark
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        this.updateToggleIcon('🌙');
-    }
-
-    // Sincronizar icono/estado del toggle al iniciar
-    updateInitialState(){
-        const isDark = (localStorage.getItem('theme') === 'dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if(isDark) this.enableDarkTheme(); else this.disableDarkTheme();
-    }
-
-    toggleTheme() {
-        if (document.body.classList.contains('dark-theme')) {
-            this.disableDarkTheme();
+    
+    // 3. Función para cambiar tema
+    function toggleTheme() {
+        const isDark = body.classList.contains('dark-theme');
+        
+        if (isDark) {
+            // Cambiar a claro
+            html.setAttribute('data-theme', 'light');
+            body.classList.remove('dark-theme');
+            body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+            themeToggle.textContent = '🌙';
+            themeToggle.setAttribute('title', 'Cambiar a tema oscuro');
+            console.log('🔄 Cambiado a tema claro');
         } else {
-            this.enableDarkTheme();
-        }
-        // Solo limpiar caché y recargar en localhost, nunca en producción
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            try {
-                localStorage.clear();
-                sessionStorage.clear();
-            } catch(e){}
-            setTimeout(() => { window.location.reload(true); }, 150);
-        }
-    }
-
-    updateToggleIcon(icon) {
-        if (!this.themeToggle) return;
-        const iconElement = this.themeToggle.querySelector('.theme-icon');
-        if (iconElement) {
-            iconElement.textContent = icon;
+            // Cambiar a oscuro
+            html.setAttribute('data-theme', 'dark');
+            body.classList.add('dark-theme');
+            body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+            themeToggle.textContent = '☀️';
+            themeToggle.setAttribute('title', 'Cambiar a tema claro');
+            console.log('🔄 Cambiado a tema oscuro');
         }
     }
-
-    updateBodyClass() {
-        if (this.darkCss && !this.darkCss.disabled) {
-            document.body.classList.add('dark-theme');
-            document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-theme');
-            document.documentElement.setAttribute('data-theme', 'light');
-        }
-    }
-}
-
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    window.themeManager = new ThemeManager();
-    // asegurar estado inicial y sincronizar icono
-    try{ window.themeManager.updateInitialState(); }catch(e){ }
+    
+    // 4. Asignar evento al botón
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // 5. Agregar efecto hover al botón
+    themeToggle.addEventListener('mouseenter', function() {
+        this.style.transform = 'scale(1.1)';
+        this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+    });
+    
+    themeToggle.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1)';
+        this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    });
+    
+    console.log('✅ theme.js completamente inicializado');
 });
 
-// También inicializar inmediatamente para páginas que ya cargaron
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.themeManager = new ThemeManager();
-    });
-} else {
-    window.themeManager = new ThemeManager();
+// Inicializar también si el DOM ya está cargado
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    document.dispatchEvent(new Event('DOMContentLoaded'));
 }

@@ -16,13 +16,13 @@ from django.utils import timezone
 import json
 from .models import PerfilUsuario, Reserva, Espacio, Notificacion, Incidencia, Area
 from django.contrib.auth.models import User
-from django.db import IntegrityError, transaction  # ← AQUÍ AGREGAR 'transaction'
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 import traceback
 from .services import NotificacionService
 from datetime import datetime, date, time
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 from .services import NotificacionAdminService
 from django.core.mail import send_mail
@@ -35,7 +35,351 @@ import string, random
 from .models import OneTimePassword
 from django.contrib.auth.hashers import check_password
 from datetime import timedelta
+from .decorators import es_usuario_normal, es_admin, rol_requerido
+from .utils import validar_disponibilidad_espacio, validar_anticipacion_reserva, validar_limite_reservas_usuario, calcular_duracion
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+import io
+from django.db import models
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db import transaction
+from .models import Elemento, Reserva, ElementoReserva
+from .forms import ElementoForm, ReservaElementosForm, ElementoPrestamoForm, ElementoDevolucionForm
+from functools import wraps  # <-- AGREGAR ESTO
+from django.core.exceptions import PermissionDenied  # <-- Y ESTO
 
+def es_administrador(view_func=None):
+    """
+    Decorador que verifica si el usuario es administrador.
+    Se puede usar como @es_admin() o @es_admin()
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise PermissionDenied("Debes iniciar sesión")
+            
+            try:
+                perfil = PerfilUsuario.objects.get(user=request.user)
+                # Roles de administrador permitidos
+                if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
+                    return view_func(request, *args, **kwargs)
+            except PerfilUsuario.DoesNotExist:
+                pass
+            
+            raise PermissionDenied("No tienes permisos de administrador")
+        return wrapper
+    
+    if view_func:
+        return decorator
+
+@login_required
+@user_passes_test(es_administrador)
+def lista_elementos(request):
+    elementos = Elemento.objects.all().order_by('categoria', 'nombre')
+    
+    categoria = request.GET.get('categoria')
+    estado = request.GET.get('estado')
+    
+    if categoria:
+        elementos = elementos.filter(categoria=categoria)
+    if estado:
+        elementos = elementos.filter(estado=estado)
+    
+    context = {
+        'elementos': elementos,
+        'categorias': Elemento.CATEGORIA_CHOICES,
+        'estados': Elemento.ESTADO_CHOICES,
+    }
+    return render(request, 'reservas/admin/lista_elementos.html', context)
+
+@login_required
+@user_passes_test(es_administrador)
+def crear_elemento(request):
+    if request.method == 'POST':
+        form = ElementoForm(request.POST, request.FILES)
+        if form.is_valid():
+            elemento = form.save()
+            messages.success(request, f'Elemento "{elemento.nombre}" creado exitosamente.')
+            return redirect('lista_elementos')
+    else:
+        form = ElementoForm()
+    
+    return render(request, 'reservas/admin/crear_elemento.html', {'form': form})
+
+@login_required
+@user_passes_test(es_administrador)
+def editar_elemento(request, elemento_id):
+    elemento = get_object_or_404(Elemento, id=elemento_id)
+    
+    if request.method == 'POST':
+        form = ElementoForm(request.POST, request.FILES, instance=elemento)
+        if form.is_valid():
+            # Actualizar cantidad disponible si cambia cantidad total
+            nueva_cantidad_total = form.cleaned_data['cantidad_total']
+            if nueva_cantidad_total != elemento.cantidad_total:
+                diferencia = nueva_cantidad_total - elemento.cantidad_total
+                elemento.cantidad_disponible += diferencia
+                elemento.cantidad_total = nueva_cantidad_total
+            
+            form.save()
+            messages.success(request, f'Elemento "{elemento.nombre}" actualizado exitosamente.')
+            return redirect('lista_elementos')
+    else:
+        form = ElementoForm(instance=elemento)
+    
+    return render(request, 'reservas/admin/editar_elemento.html', {
+        'form': form,
+        'elemento': elemento
+    })
+
+@login_required
+@user_passes_test(es_administrador)
+def cambiar_estado_elemento(request, elemento_id):
+    elemento = get_object_or_404(Elemento, id=elemento_id)
+    
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        if nuevo_estado in dict(Elemento.ESTADO_CHOICES):
+            elemento.estado = nuevo_estado
+            elemento.save()
+            messages.success(request, f'Estado del elemento "{elemento.nombre}" cambiado a {nuevo_estado}.')
+    
+    return redirect('lista_elementos')
+
+@login_required
+@user_passes_test(es_administrador)
+def detalle_elemento(request, elemento_id):
+    elemento = get_object_or_404(Elemento, id=elemento_id)
+    reservas_elemento = elemento.reservas_asociadas.select_related('reserva').all()
+    
+    return render(request, 'reservas/admin/detalle_elemento.html', {
+        'elemento': elemento,
+        'reservas_elemento': reservas_elemento
+    })
+
+# ================= VISTAS PARA USUARIOS =================
+
+@login_required
+def agregar_elementos_reserva(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+    
+    if reserva.estado != 'pendiente':
+        messages.error(request, 'No puedes modificar los elementos de una reserva que ya fue procesada.')
+        return redirect('detalle_reserva', reserva_id=reserva_id)
+    
+    if request.method == 'POST':
+        form = ReservaElementosForm(request.POST, instance=reserva)
+        if form.is_valid():
+            with transaction.atomic():
+                # Eliminar elementos previos de la reserva
+                ElementoReserva.objects.filter(reserva=reserva).delete()
+                
+                # Agregar nuevos elementos seleccionados
+                elementos_seleccionados = form.cleaned_data['elementos_seleccionados']
+                
+                for elemento in elementos_seleccionados:
+                    cantidad_key = f'cantidad_{elemento.id}'
+                    cantidad = int(request.POST.get(cantidad_key, 1))
+                    
+                    if 1 <= cantidad <= elemento.cantidad_disponible:
+                        ElementoReserva.objects.create(
+                            reserva=reserva,
+                            elemento=elemento,
+                            cantidad=cantidad
+                        )
+                
+                reserva.requiere_elementos = form.cleaned_data['requiere_elementos']
+                reserva.observaciones_elementos = form.cleaned_data['observaciones_elementos']
+                reserva.save()
+                
+                messages.success(request, 'Elementos agregados a la reserva exitosamente.')
+                return redirect('detalle_reserva', reserva_id=reserva_id)
+    else:
+        form = ReservaElementosForm(instance=reserva)
+    
+    # Obtener elementos disponibles por categoría
+    elementos_disponibles = Elemento.objects.filter(
+        estado='disponible',
+        cantidad_disponible__gt=0
+    ).order_by('categoria', 'nombre')
+    
+    # Agrupar por categoría
+    elementos_por_categoria = {}
+    for elemento in elementos_disponibles:
+        categoria = elemento.get_categoria_display()
+        if categoria not in elementos_por_categoria:
+            elementos_por_categoria[categoria] = []
+        elementos_por_categoria[categoria].append(elemento)
+    
+    return render(request, 'reservas/agregar_elementos.html', {
+        'form': form,
+        'reserva': reserva,
+        'elementos_por_categoria': elementos_por_categoria
+    })
+
+@login_required
+def quitar_elemento_reserva(request, reserva_id, elemento_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+    
+    if reserva.estado != 'pendiente':
+        messages.error(request, 'No puedes modificar los elementos de una reserva que ya fue procesada.')
+        return redirect('detalle_reserva', reserva_id=reserva_id)
+    
+    elemento_reserva = get_object_or_404(ElementoReserva, reserva=reserva, elemento_id=elemento_id)
+    elemento_reserva.delete()
+    
+    messages.success(request, 'Elemento removido de la reserva.')
+    return redirect('detalle_reserva', reserva_id=reserva_id)
+
+# ================= VISTAS PARA PRÉSTAMO/DEVOLUCIÓN (ADMIN) =================
+
+@login_required
+@user_passes_test(es_administrador)
+def gestionar_prestamos(request):
+    # Reservas pendientes con elementos
+    reservas_pendientes = Reserva.objects.filter(
+        estado='aprobada',
+        requiere_elementos=True
+    ).prefetch_related('elementos_detalle').order_by('fecha', 'hora_inicio')
+    
+    # Elementos actualmente prestados
+    elementos_prestados = ElementoReserva.objects.filter(
+        prestado=True,
+        devuelto=False
+    ).select_related('reserva', 'elemento')
+    
+    return render(request, 'reservas/admin/gestionar_prestamos.html', {
+        'reservas_pendientes': reservas_pendientes,
+        'elementos_prestados': elementos_prestados
+    })
+
+@login_required
+@user_passes_test(es_administrador)
+def registrar_prestamo(request, elemento_reserva_id):
+    elemento_reserva = get_object_or_404(ElementoReserva, id=elemento_reserva_id)
+    
+    if request.method == 'POST':
+        form = ElementoPrestamoForm(request.POST, instance=elemento_reserva)
+        if form.is_valid():
+            with transaction.atomic():
+                elemento_reserva = form.save(commit=False)
+                elemento_reserva.prestado = True
+                elemento_reserva.fecha_prestamo = form.cleaned_data['fecha_prestamo'] or timezone.now()
+                elemento_reserva.save()
+                
+                # Actualizar disponibilidad del elemento
+                elemento = elemento_reserva.elemento
+                elemento.prestar(elemento_reserva.cantidad)
+                
+                messages.success(request, f'Préstamo de {elemento_reserva.cantidad}x {elemento.nombre} registrado.')
+                return redirect('gestionar_prestamos')
+    else:
+        form = ElementoPrestamoForm(instance=elemento_reserva)
+    
+    return render(request, 'reservas/admin/registrar_prestamo.html', {
+        'form': form,
+        'elemento_reserva': elemento_reserva
+    })
+
+@login_required
+@user_passes_test(es_administrador)
+def registrar_devolucion(request, elemento_reserva_id):
+    elemento_reserva = get_object_or_404(ElementoReserva, id=elemento_reserva_id, prestado=True, devuelto=False)
+    
+    if request.method == 'POST':
+        form = ElementoDevolucionForm(request.POST, instance=elemento_reserva)
+        if form.is_valid():
+            with transaction.atomic():
+                elemento_reserva = form.save(commit=False)
+                elemento_reserva.devuelto = True
+                elemento_reserva.fecha_devolucion = form.cleaned_data['fecha_devolucion'] or timezone.now()
+                elemento_reserva.save()
+                
+                # Actualizar disponibilidad del elemento
+                elemento = elemento_reserva.elemento
+                elemento.devolver(elemento_reserva.cantidad)
+                
+                messages.success(request, f'Devolución de {elemento_reserva.cantidad}x {elemento.nombre} registrada.')
+                return redirect('gestionar_prestamos')
+    else:
+        form = ElementoDevolucionForm(instance=elemento_reserva)
+    
+    return render(request, 'reservas/admin/registrar_devolucion.html', {
+        'form': form,
+        'elemento_reserva': elemento_reserva
+    })
+
+# ================= VISTA PARA VER DISPONIBILIDAD =================
+
+@login_required
+def ver_disponibilidad_elementos(request):
+    fecha = request.GET.get('fecha')
+    categoria = request.GET.get('categoria')
+    
+    elementos = Elemento.objects.filter(estado='disponible', cantidad_disponible__gt=0)
+    
+    if categoria:
+        elementos = elementos.filter(categoria=categoria)
+    
+    # Si hay fecha, verificar elementos ya reservados para esa fecha
+    if fecha:
+        reservas_fecha = Reserva.objects.filter(fecha=fecha, estado__in=['pendiente', 'aprobada'])
+        elementos_reservados_ids = ElementoReserva.objects.filter(
+            reserva__in=reservas_fecha
+        ).values_list('elemento_id', flat=True)
+        
+        elementos = elementos.exclude(id__in=elementos_reservados_ids)
+    
+    elementos_por_categoria = {}
+    for elemento in elementos.order_by('categoria', 'nombre'):
+        cat_display = elemento.get_categoria_display()
+        if cat_display not in elementos_por_categoria:
+            elementos_por_categoria[cat_display] = []
+        elementos_por_categoria[cat_display].append(elemento)
+    
+    return render(request, 'reservas/disponibilidad_elementos.html', {
+        'elementos_por_categoria': elementos_por_categoria,
+        'categorias': Elemento.CATEGORIA_CHOICES,
+        'fecha_seleccionada': fecha
+    })
+
+# ================= API PARA DISPONIBILIDAD EN TIEMPO REAL =================
+
+@login_required
+def api_disponibilidad_elemento(request, elemento_id):
+    elemento = get_object_or_404(Elemento, id=elemento_id)
+    fecha = request.GET.get('fecha')
+    
+    disponibilidad = elemento.cantidad_disponible
+    
+    # Si hay fecha, restar elementos ya reservados para esa fecha
+    if fecha:
+        reservas_fecha = Reserva.objects.filter(
+            fecha=fecha,
+            estado__in=['pendiente', 'aprobada']
+        )
+        cantidad_reservada = ElementoReserva.objects.filter(
+            elemento=elemento,
+            reserva__in=reservas_fecha
+        ).aggregate(total=models.Sum('cantidad'))['total'] or 0
+        
+        disponibilidad = max(0, elemento.cantidad_disponible - cantidad_reservada)
+    
+    return JsonResponse({
+        'id': elemento.id,
+        'nombre': elemento.nombre,
+        'disponibilidad': disponibilidad,
+        'cantidad_total': elemento.cantidad_total,
+        'estado': elemento.estado
+    })
+    
 def is_admin_user(user):
     """Verifica si el usuario tiene permisos de administrador - CORREGIDO"""
     try:
@@ -160,75 +504,110 @@ def get_client_ip(request):
 
 
 # === RECUPERACIÓN DE CONTRASEÑA ===
-def _generate_temp_password(length=10):
+def _generate_temp_password(length=12):
+    """Genera una contraseña temporal aleatoria"""
+    import string, random
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
 
 
 @csrf_exempt
 def forgot_password_request_view(request):
-    """Muestra formulario para solicitar recuperación y envía contraseña temporal + link de restablecimiento."""
+    """Muestra formulario para solicitar recuperación - Versión PROYECTO"""
     if request.method == 'GET':
         return render(request, 'reservas/forgot_password_request.html')
 
     if request.method == 'POST':
-        is_json = request.content_type and request.content_type.startswith('application/json')
         try:
-            if is_json:
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            
+            # Obtener email
+            if request.content_type and 'application/json' in request.content_type:
                 data = json.loads(request.body) if request.body else {}
-                email = (data.get('email') or '').strip()
+                email = (data.get('email') or '').strip().lower()
             else:
-                email = (request.POST.get('email') or '').strip()
+                email = (request.POST.get('email') or '').strip().lower()
 
+            print(f"🔍 Email recibido para recuperación: {email}")
+            
             if not email:
-                if is_json:
-                    return JsonResponse({'success': False, 'message': 'Email requerido'}, status=400)
-                else:
-                    return render(request, 'reservas/forgot_password_request.html', {'error': 'Email requerido'})
+                return JsonResponse({'success': False, 'message': 'Email requerido'}, status=400)
 
             try:
                 user = User.objects.get(email__iexact=email)
-
-                temp_password = _generate_temp_password(12)
-                OneTimePassword.create_for_user(user, temp_password, ttl_minutes=60)
-
+                print(f"✅ Usuario encontrado: {user.username} (activo: {user.is_active})")
+                
+                # Verificar que el usuario esté activo
+                if not user.is_active:
+                    print(f"❌ Usuario {user.username} está INACTIVO")
+                    return JsonResponse({
+                        'success': False, 
+                        'message': 'Esta cuenta está desactivada. Contacta al administrador.'
+                    })
+                
+                # Verificar rol
+                try:
+                    perfil = PerfilUsuario.objects.get(user=user)
+                    print(f"📋 Rol del usuario: {perfil.rol}")
+                    
+                    # Solo permitir para usuarios normales
+                    if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
+                        print(f"🚫 Usuario {user.username} es administrador, no permitido")
+                        return JsonResponse({
+                            'success': False, 
+                            'message': 'Los administradores deben contactar al soporte para recuperar su contraseña.'
+                        })
+                        
+                except PerfilUsuario.DoesNotExist:
+                    print(f"⚠️ Usuario {user.username} no tiene perfil, pero continuamos")
+                
+                # Generar contraseña temporal
+                temp_password = _generate_temp_password(8)
+                print(f"🔑 Contraseña generada: {temp_password}")
+                
+                # Crear OTP
+                otp = OneTimePassword.create_for_user(user, temp_password, ttl_minutes=60)
+                print(f"📝 OTP creado - ID: {otp.id}, Expira: {otp.expires_at}")
+                
+                # Enlace de reset
                 reset_link = request.build_absolute_uri(reverse('reset_via_otp'))
-
-                subject = 'Recuperación de contraseña - INACAP Sistema de Reservas'
-                context = {
-                    'user': user,
+                print(f"🔗 Enlace de reset: {reset_link}")
+                
+                # Retornar respuesta
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Contraseña temporal generada',
                     'temp_password': temp_password,
                     'reset_link': reset_link,
-                    'site_name': 'INACAP - Sistema de Reservas'
-                }
-                message = render_to_string('reservas/email/forgot_password_email.txt', context)
-                html_message = render_to_string('reservas/email/forgot_password_email.html', context)
-
-                try:
-                    send_mail(subject, message, None, [user.email], html_message=html_message)
-                except Exception as e:
-                    print(f"⚠️ Error enviando email de recuperación: {e}")
+                    'user_info': {
+                        'username': user.username,
+                        'first_name': user.first_name or 'Usuario',
+                        'email': user.email,
+                        'is_active': user.is_active
+                    }
+                })
 
             except User.DoesNotExist:
-                # No revelar existencia
-                pass
-
-            if is_json:
-                return JsonResponse({'success': True, 'message': 'Si existe una cuenta con ese correo, recibirás instrucciones.'})
-            else:
-                return redirect('forgot_password_sent')
+                print(f"❌ Usuario no encontrado para email: {email}")
+                # Por seguridad, mensaje genérico
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Si el correo está registrado, se generará una contraseña temporal.'
+                })
 
         except Exception as e:
-            print(f"❌ Error en forgot_password_request_view: {e}")
+            print(f"❌ Error en recuperación: {str(e)}")
+            import traceback
             traceback.print_exc()
-            if is_json:
-                return JsonResponse({'success': False, 'message': 'Error interno'}, status=500)
-            else:
-                return render(request, 'reservas/forgot_password_request.html', {'error': 'Error interno. Inténtalo más tarde.'})
+            return JsonResponse({
+                'success': False, 
+                'message': 'Error interno. Intenta nuevamente.'
+            }, status=500)
 
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
 
-@csrf_exempt
 def forgot_password_sent_view(request):
+    """Página de confirmación después de solicitar recuperación"""
     return render(request, 'reservas/forgot_password_sent.html')
 
 
@@ -269,64 +648,156 @@ def reset_password_view(request, uidb64, token):
 
 @csrf_exempt
 def reset_via_otp_view(request):
-    """Permite al usuario restablecer contraseña usando el código temporal enviado por email.
-
-    Formulario espera: email, temp_password, new_password, new_password2
-    """
+    """Permite restablecer contraseña usando OTP"""
+    print(f"🔄 RESET OTP: Método {request.method}")
+    
     if request.method == 'GET':
         return render(request, 'reservas/reset_via_otp.html')
-
+    
     if request.method == 'POST':
         try:
-            data = json.loads(request.body) if request.body else request.POST
-            email = (data.get('email') or request.POST.get('email') or '').strip()
-            temp = data.get('temp_password') or request.POST.get('temp_password')
-            new_password = data.get('new_password') or request.POST.get('new_password')
-            new_password2 = data.get('new_password2') or request.POST.get('new_password2')
-
-            if not email or not temp or not new_password or not new_password2:
-                return JsonResponse({'success': False, 'message': 'Todos los campos son requeridos.'}, status=400)
-
+            # Obtener datos
+            if request.content_type and 'application/json' in request.content_type:
+                data = json.loads(request.body) if request.body else {}
+            else:
+                data = request.POST
+            
+            email = (data.get('email') or '').strip().lower()
+            temp_password = data.get('temp_password') or ''
+            new_password = data.get('new_password') or ''
+            new_password2 = data.get('new_password2') or ''
+            
+            print(f"📧 RESET OTP para: {email}")
+            print(f"🔑 Contraseña temporal recibida: {temp_password[:3]}...")  # Solo primeros 3 chars por seguridad
+            
+            # Validaciones
+            if not all([email, temp_password, new_password, new_password2]):
+                print("❌ Faltan campos")
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Todos los campos son requeridos'
+                }, status=400)
+            
             if new_password != new_password2:
-                return JsonResponse({'success': False, 'message': 'Las contraseñas no coinciden.'}, status=400)
-
+                print("❌ Contraseñas no coinciden")
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Las contraseñas no coinciden'
+                }, status=400)
+            
+            if len(new_password) < 8:
+                print("❌ Contraseña muy corta")
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'La contraseña debe tener al menos 8 caracteres'
+                }, status=400)
+            
             try:
                 user = User.objects.get(email__iexact=email)
+                print(f"✅ Usuario encontrado: {user.username} (activo: {user.is_active})")
+                
+                if not user.is_active:
+                    print(f"❌ Usuario inactivo")
+                    return JsonResponse({
+                        'success': False, 
+                        'message': 'Esta cuenta está desactivada'
+                    }, status=400)
+                
+                # Buscar OTPs válidos
+                otp_qs = OneTimePassword.objects.filter(
+                    user=user, 
+                    used=False,
+                    expires_at__gte=timezone.now()
+                ).order_by('-created_at')
+                
+                print(f"🔍 Buscando OTPs válidos. Encontrados: {otp_qs.count()}")
+                
+                if not otp_qs.exists():
+                    print("❌ No hay OTPs válidos")
+                    return JsonResponse({
+                        'success': False, 
+                        'message': 'Contraseña temporal inválida o expirada'
+                    }, status=400)
+                
+                # Verificar cada OTP
+                valid_otp = None
+                for otp in otp_qs:
+                    print(f"🔑 Verificando OTP ID {otp.id}...")
+                    if otp.check_token(temp_password):
+                        valid_otp = otp
+                        print(f"✅ OTP válido encontrado: ID {otp.id}")
+                        break
+                
+                if not valid_otp:
+                    print("❌ Ningún OTP coincide")
+                    return JsonResponse({
+                        'success': False, 
+                        'message': 'Contraseña temporal incorrecta'
+                    }, status=400)
+                
+                print(f"📝 Cambiando contraseña para {user.username}")
+                
+                # Cambiar contraseña
+                user.set_password(new_password)
+                user.save()
+                
+                # Marcar OTP como usado
+                valid_otp.used = True
+                valid_otp.save()
+                print(f"✅ OTP marcado como usado: ID {valid_otp.id}")
+                
+                # Crear notificación
+                Notificacion.objects.create(
+                    destinatario=user,
+                    tipo='sistema',
+                    titulo='🔐 Contraseña Restablecida',
+                    mensaje='Tu contraseña ha sido restablecida exitosamente.',
+                    leida=False
+                )
+                
+                print(f"🎉 Contraseña cambiada exitosamente para {user.username}")
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Contraseña actualizada exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña.',
+                    'redirect_url': '/login/'
+                })
+                
             except User.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Datos inválidos.'}, status=400)
-
-            # Buscar OTP activo más reciente
-            otp_qs = OneTimePassword.objects.filter(user=user, used=False, expires_at__gte=timezone.now()).order_by('-created_at')
-            if not otp_qs.exists():
-                return JsonResponse({'success': False, 'message': 'Código temporal inválido o expirado.'}, status=400)
-
-            valid_otp = None
-            for otp in otp_qs:
-                if otp.check_token(temp):
-                    valid_otp = otp
-                    break
-
-            if not valid_otp:
-                return JsonResponse({'success': False, 'message': 'Código temporal inválido o expirado.'}, status=400)
-
-            # Aplicar nueva contraseña y marcar OTP como usado
-            user.set_password(new_password)
-            user.save()
-            valid_otp.mark_used()
-
-            return JsonResponse({'success': True, 'message': 'Contraseña actualizada. Inicia sesión con la nueva contraseña.'})
-
+                print(f"❌ Usuario no encontrado: {email}")
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Usuario no encontrado'
+                }, status=400)
+                
         except Exception as e:
-            print(f"❌ Error en reset_via_otp_view: {e}")
+            print(f"❌ Error en reset_via_otp: {str(e)}")
+            import traceback
             traceback.print_exc()
-            return JsonResponse({'success': False, 'message': 'Error interno'}, status=500)
+            return JsonResponse({
+                'success': False, 
+                'message': f'Error interno: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({
+        'success': False, 
+        'message': 'Método no permitido'
+    }, status=405)
 
-# --- Vista de Login Modificada ---
+# --- Vista de Login Modificada y Corregida ---
 @csrf_exempt
 def login_view(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            return redirect('dashboard')
+            # Si ya está autenticado, redirigir según su rol
+            try:
+                perfil = PerfilUsuario.objects.get(user=request.user)
+                if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
+                    return redirect('admin_dashboard')
+                else:
+                    return redirect('dashboard')
+            except PerfilUsuario.DoesNotExist:
+                return redirect('dashboard')
         return render(request, 'reservas/login.html')
 
     if request.method == 'POST':
@@ -356,9 +827,9 @@ def login_view(request):
                     is_admin_login = user_type == 'administrador'
                     
                     # Roles que pueden acceder como administradores
-                    admin_roles = ['Administrativo', 'Investigacion', 'Aprobador']
+                    admin_roles = ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']
                     # Roles que pueden acceder como usuarios normales (todos)
-                    user_roles = ['Usuario', 'Docente', 'Investigacion', 'Administrativo', 'Aprobador']
+                    user_roles = ['Usuario', 'Docente', 'Investigacion', 'Administrativo', 'Aprobador', 'SuperAdmin']
                     
                     print(f"🔄 Login tipo: {user_type}, Rol usuario: {perfil.rol}")
                     print(f"🎯 Roles admin: {admin_roles}")
@@ -384,10 +855,10 @@ def login_view(request):
                     perfil.ultimo_acceso = timezone.now()
                     perfil.save()
 
-                    print(f"✅ Login exitoso - Redirigiendo a dashboard")
+                    print(f"✅ Login exitoso - Rol: {perfil.rol}")
 
                     # 🔔 NOTIFICAR LOGIN DE ADMINISTRADOR - SI ES ADMIN
-                    if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador']:
+                    if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
                         try:
                             notificar_accion_admin(
                                 tipo='sesion_iniciada',
@@ -400,10 +871,28 @@ def login_view(request):
                         except Exception as admin_notif_error:
                             print(f"⚠️ Error en notificación admin login: {admin_notif_error}")
 
+                    # 🎯 REDIRECCIÓN SEGÚN ROL - CORREGIDO
+                    redirect_url = '/dashboard/'  # Por defecto
+                    
+                    if is_admin_login:
+                        # Si hizo login como administrador, ir al dashboard admin
+                        redirect_url = '/admin-dashboard/'
+                    else:
+                        # Si hizo login como usuario, verificar su rol para decidir
+                        if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
+                            # Es administrador pero hizo login como usuario, igual va a admin-dashboard
+                            redirect_url = '/admin-dashboard/'
+                        else:
+                            # Es usuario normal
+                            redirect_url = '/dashboard/'
+
+                    print(f"🎯 Redirigiendo a: {redirect_url}")
+
                     return JsonResponse({
                         'success': True,
                         'message': 'Login exitoso',
-                        'redirect_url': '/dashboard/'
+                        'redirect_url': redirect_url,
+                        'user_role': perfil.rol
                     })
 
                 except PerfilUsuario.DoesNotExist:
@@ -412,9 +901,16 @@ def login_view(request):
                         'message': 'Error: Perfil de usuario no configurado.'
                     }, status=500)
             else:
+                error_msg = 'Credenciales incorrectas'
+                if user and not user.is_active:
+                    error_msg = 'Cuenta desactivada. Contacta al administrador.'
+                elif user and user.is_active:
+                    error_msg = 'Contraseña incorrecta. ¿Olvidaste tu contraseña? Ve a /forgot-password/'
+                
                 return JsonResponse({
                     'success': False, 
-                    'message': 'Credenciales incorrectas o cuenta desactivada'
+                    'message': error_msg,
+                    'hint': 'Si tienes una contraseña temporal, úsala en /reset-otp/ no en el login'
                 }, status=401)
 
         except Exception as e:
@@ -477,12 +973,19 @@ def registrar_usuario_automatico(email, password, rol='Usuario'):
     
 # --- Vista del Dashboard Modificada ---
 @login_required
+@es_usuario_normal()
 def dashboard_view(request):
+    """Dashboard SOLO para usuarios normales (no administradores)"""
     try:
         perfil = PerfilUsuario.objects.get(user=request.user)
         print(f"🎯 Usuario {request.user.username} accediendo a dashboard. Rol: {perfil.rol}")
         
-        # Obtener datos REALES de la base de datos
+        # Verificar que NO es administrador (seguridad adicional)
+        if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
+            print(f"⚠️ Usuario {request.user.username} es administrador, redirigiendo a admin_dashboard")
+            return redirect('admin_dashboard')
+        
+        # Obtener datos REALES de la base de datos SOLO para usuarios normales
         reservas_usuario = Reserva.objects.filter(solicitante=request.user)
         reservas_activas = reservas_usuario.filter(
             estado='Aprobada', 
@@ -504,13 +1007,8 @@ def dashboard_view(request):
             'reservas_recientes': reservas_recientes,
         }
         
-        # Redirigir según el rol - ACTUALIZADO
-        if perfil.rol in ['Administrativo', 'Investigacion', 'Aprobador']:
-            print("➡️ Redirigiendo a dashboard admin")
-            return render(request, 'reservas/dashboard_admin.html', context)
-        else:
-            print("➡️ Redirigiendo a dashboard usuario")
-            return render(request, 'reservas/dashboard_usuario.html', context)
+        print("➡️ Mostrando dashboard para usuario normal")
+        return render(request, 'reservas/dashboard_usuario.html', context)
             
     except PerfilUsuario.DoesNotExist:
         print(f"❌ Usuario {request.user.username} no tiene perfil")
@@ -524,6 +1022,7 @@ def dashboard_view(request):
         return redirect('login')
 
 @login_required
+@es_usuario_normal() 
 def reservas_view(request):
     """Vista del historial de reservas con datos REALES"""
     try:
@@ -542,6 +1041,7 @@ def reservas_view(request):
         return render(request, 'reservas/reservas.html', {'reservas': [], 'reservas_count': 0})
 
 @login_required
+@es_usuario_normal() 
 def calendario_view(request):
     """Vista del calendario con eventos REALES"""
     try:
@@ -592,6 +1092,7 @@ def calendario_view(request):
 
 # --- Vistas de API ---
 @login_required
+@es_usuario_normal()
 def get_user_reservas(request):
     try:
         reservas = Reserva.objects.filter(solicitante=request.user).order_by('-fecha_solicitud')
@@ -615,6 +1116,7 @@ def get_user_reservas(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
+@es_usuario_normal()
 def get_espacios_disponibles(request):
     try:
         espacios = Espacio.objects.filter(estado='Disponible')
@@ -637,6 +1139,7 @@ def get_espacios_disponibles(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
+@es_usuario_normal()
 def get_notificaciones(request):
     try:
         notificaciones = Notificacion.objects.filter(
@@ -661,6 +1164,7 @@ def get_notificaciones(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
+@es_admin()
 @csrf_exempt
 def reportar_incidencia(request):
     if request.method == 'POST':
@@ -799,6 +1303,7 @@ def registro_usuario(request):
     }, status=405)
     
 @login_required
+@es_admin()
 def editar_usuario_view(request):
     """Vista para editar usuario (template)"""
     try:
@@ -811,6 +1316,7 @@ def editar_usuario_view(request):
         return redirect('login')
     
 @login_required
+@es_admin()
 def get_dashboard_stats(request):
     try:
         perfil = PerfilUsuario.objects.get(user=request.user)
@@ -878,10 +1384,12 @@ def logout_view(request):
 
 # --- VISTAS PARA SERVIR TEMPLATES HTML ---
 @login_required
+@es_usuario_normal()
 def notificaciones_view(request):
     return render(request, 'reservas/notificaciones.html')
 
 @login_required
+@es_usuario_normal()
 def crear_reserva_view(request):
     """Vista para crear reserva con espacios disponibles"""
     try:
@@ -913,6 +1421,7 @@ def crear_reserva_view(request):
         return render(request, 'reservas/crear_reserva.html', context)
 
 @login_required
+@es_usuario_normal()
 def reserva_exitosa(request):
     """Vista de confirmación de reserva exitosa con datos REALES"""
     reserva_id = request.GET.get('reserva_id')
@@ -955,6 +1464,7 @@ def reserva_exitosa(request):
         return render(request, 'reservas/reserva_exitosa.html', context)
 
 @login_required
+@es_usuario_normal()
 def detalle_reserva_view(request):
     """Vista de detalle de reserva con datos REALES de la BD"""
     reserva_id = request.GET.get('id')
@@ -1005,36 +1515,26 @@ def detalle_reserva_view(request):
         messages.error(request, 'Error al cargar los detalles de la reserva.')
         return redirect('reservas')
 
-def calcular_duracion(hora_inicio, hora_fin):
-    """Calcular la duración en formato legible"""
-    if isinstance(hora_inicio, str):
-        hora_inicio = datetime.strptime(hora_inicio, '%H:%M:%S').time()
-    if isinstance(hora_fin, str):
-        hora_fin = datetime.strptime(hora_fin, '%H:%M:%S').time()
-    
-    diferencia = datetime.combine(date.today(), hora_fin) - datetime.combine(date.today(), hora_inicio)
-    horas = diferencia.seconds // 3600
-    minutos = (diferencia.seconds % 3600) // 60
-    
-    if horas > 0:
-        return f"{horas} hora{'s' if horas > 1 else ''} {minutos} minuto{'s' if minutos > 1 else ''}"
-    else:
-        return f"{minutos} minutos"
-
 @login_required
+@es_usuario_normal()
 def cancelar_reserva_view(request):
     return render(request, 'reservas/cancelar_reserva.html')
 
-# --- Vistas de Administración - ACTUALIZADAS ---
+# --- Vista del Dashboard de Administración ---
 @login_required
+@es_admin()
 def admin_dashboard_view(request):
-    """Dashboard para administradores - CON DATOS REALES"""
+    """Dashboard EXCLUSIVO para administradores"""
     try:
         perfil = PerfilUsuario.objects.get(user=request.user)
-        if perfil.rol not in ['Administrativo', 'Investigacion', 'Aprobador']:
+        print(f"👑 Admin {request.user.username} accediendo a admin_dashboard. Rol: {perfil.rol}")
+        
+        # Verificar que ES administrador
+        if perfil.rol not in ['Administrativo', 'Investigacion', 'Aprobador', 'SuperAdmin']:
+            print(f"⚠️ Usuario {request.user.username} NO es administrador, redirigiendo a dashboard normal")
             return redirect('dashboard')
         
-        # Datos REALES de la base de datos
+        # Datos REALES de la base de datos para administradores
         total_reservas = Reserva.objects.count()
         reservas_pendientes = Reserva.objects.filter(estado='Pendiente').count()
         total_espacios = Espacio.objects.count()
@@ -1049,6 +1549,9 @@ def admin_dashboard_view(request):
             leida=False
         ).count()
         
+        # Notificaciones admin sin leer
+        notificaciones_admin_sin_leer = NotificacionAdmin.objects.filter(leida=False).count()
+        
         context = {
             'user': request.user,
             'perfil': perfil,
@@ -1058,12 +1561,25 @@ def admin_dashboard_view(request):
             'usuarios_activos': usuarios_activos,
             'reservas_recientes': reservas_recientes,
             'notificaciones_sin_leer': notificaciones_sin_leer,
+            'notificaciones_admin_sin_leer': notificaciones_admin_sin_leer,
         }
+        
+        print(f"✅ Mostrando admin dashboard para {request.user.username}")
         return render(request, 'reservas/dashboard_admin.html', context)
+        
     except PerfilUsuario.DoesNotExist:
+        print(f"❌ Admin {request.user.username} no tiene perfil")
+        logout(request)
+        return redirect('login')
+    except Exception as e:
+        print(f"💥 Error en admin_dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        logout(request)
         return redirect('login')
 
 @login_required
+@es_admin()
 def solicitudes_pendientes_view(request):
     """Vista de solicitudes pendientes para administradores - CON DATOS REALES"""
     try:
@@ -1083,6 +1599,7 @@ def solicitudes_pendientes_view(request):
         return redirect('login')
 
 @login_required
+@es_admin()
 def gestion_espacios_view(request):
     """Vista de gestión de espacios para administradores - CON DATOS REALES"""
     try:
@@ -1102,6 +1619,7 @@ def gestion_espacios_view(request):
         return redirect('login')
 
 @login_required
+@es_admin()
 def gestion_usuarios_view(request):
     """Vista de gestión de usuarios para administradores - CON DATOS REALES"""
     try:
@@ -1122,6 +1640,7 @@ def gestion_usuarios_view(request):
 
 
 @login_required
+@es_admin()
 def crear_usuario_view(request):
     """Vista para que administradores creen usuarios desde una interfaz separada"""
     try:
@@ -1136,6 +1655,7 @@ def crear_usuario_view(request):
 
 @login_required
 @csrf_exempt
+@es_usuario_normal()
 @require_http_methods(["POST"])
 @transaction.atomic  # NUEVO: Transacción atómica
 def crear_reserva_api(request):
@@ -1324,6 +1844,7 @@ def crear_reserva_api(request):
     }, status=405)
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def cambiar_rango_admin_api(request, user_id):
@@ -1364,6 +1885,7 @@ def cambiar_rango_admin_api(request, user_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def crear_usuario_api(request):
@@ -1452,6 +1974,7 @@ def crear_usuario_api(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@es_admin()
 def reportes_view(request):
     """Vista de reportes para administradores - CON DATOS REALES"""
     try:
@@ -1510,6 +2033,7 @@ def reportes_view(request):
         return redirect('login')
 
 @login_required
+@es_admin()
 def revisar_solicitud_view(request):
     """Vista para revisar una solicitud específica"""
     try:
@@ -1534,6 +2058,7 @@ def revisar_solicitud_view(request):
         return redirect('login')
 
 @login_required
+@es_admin()
 @csrf_exempt
 def cancelar_reserva_api(request, reserva_id):
     if request.method == 'POST':
@@ -1581,13 +2106,14 @@ def cancelar_reserva_api(request, reserva_id):
 
 @login_required
 @csrf_exempt
-def crear_reserva_api(request):
+@es_usuario_normal() 
+def crear_reserva_api2(request):
     """API para crear reservas REALES en la base de datos - VERSIÓN MEJORADA"""
     if request.method == 'POST':
         try:
-            print("🎯 CREAR_RESERVA_API: Iniciando creación de reserva...")
+            print("🎯 CREAR_RESERVA_API2: Iniciando creación de reserva...")
             data = json.loads(request.body)
-            print(f"🎯 CREAR_RESERVA_API: Datos recibidos - {data}")
+            print(f"🎯 CREAR_RESERVA_API2: Datos recibidos - {data}")
             
             # Validar datos requeridos
             required_fields = ['espacio_id', 'fecha_reserva', 'hora_inicio', 'hora_fin', 'proposito', 'num_asistentes']
@@ -1621,10 +2147,10 @@ def crear_reserva_api(request):
                 estado='Pendiente'
             )
             
-            print(f"🎯 CREAR_RESERVA_API: Reserva REAL creada - ID {reserva.id}")
+            print(f"🎯 CREAR_RESERVA_API2: Reserva REAL creada - ID {reserva.id}")
 
            # 🔔 NOTIFICAR A ADMINISTRADORES - ESTA PARTE DEBE EJECUTARSE
-            print("🎯 CREAR_RESERVA_API: Intentando crear notificación admin...")
+            print("🎯 CREAR_RESERVA_API2: Intentando crear notificación admin...")
             try:
                 notificar_accion_admin(
                     tipo='reserva_creada',
@@ -1634,9 +2160,9 @@ def crear_reserva_api(request):
                     reserva=reserva,
                     request=request
                 )
-                print(f"🎯 CREAR_RESERVA_API: Notificación admin CREADA para reserva {reserva.id}")
+                print(f"🎯 CREAR_RESERVA_API2: Notificación admin CREADA para reserva {reserva.id}")
             except Exception as admin_notif_error:
-                print(f"❌ CREAR_RESERVA_API: Error en notificación admin: {admin_notif_error}")
+                print(f"❌ CREAR_RESERVA_API2: Error en notificación admin: {admin_notif_error}")
             
             # NOTIFICAR AL USUARIO
             try:
@@ -1672,6 +2198,7 @@ def crear_reserva_api(request):
     }, status=405)
 
 @login_required
+@es_usuario_normal() 
 def espacios_view(request):
     """Vista para mostrar los espacios disponibles"""
     try:
@@ -1688,6 +2215,7 @@ def espacios_view(request):
         return render(request, 'reservas/espacios.html', {'espacios': []})
 
 @login_required
+@es_usuario_normal() 
 def notificaciones_view(request):
     """Vista para mostrar notificaciones"""
     try:
@@ -1705,6 +2233,7 @@ def notificaciones_view(request):
         return render(request, 'reservas/notificaciones.html', {'notificaciones': []})
 
 @login_required
+@es_admin()
 @csrf_exempt
 def aprobar_reserva_api(request, reserva_id):
     """API para que administradores aprueben reservas - VERSIÓN CORREGIDA"""
@@ -1773,6 +2302,7 @@ def aprobar_reserva_api(request, reserva_id):
             return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
+@es_admin()
 @csrf_exempt
 def rechazar_reserva_api(request, reserva_id):
     """API para que administradores rechacen reservas - VERSIÓN CORREGIDA"""
@@ -1848,6 +2378,7 @@ def force_logout(request):
 # Agregar estas vistas al final del views.py existente
 
 @login_required
+@es_usuario_normal()
 @require_http_methods(["GET"])
 def get_notificaciones_usuario(request):
     """
@@ -1910,6 +2441,7 @@ def get_notificaciones_usuario(request):
         })
 
 @login_required
+@es_usuario_normal()
 @csrf_exempt
 @require_http_methods(["POST"])
 def marcar_notificacion_leida(request, notificacion_id):
@@ -1944,6 +2476,7 @@ def marcar_notificacion_leida(request, notificacion_id):
         }, status=500)
 
 @login_required
+@es_usuario_normal()
 @csrf_exempt
 @require_http_methods(["POST"])
 def marcar_todas_leidas(request):
@@ -1967,6 +2500,7 @@ def marcar_todas_leidas(request):
         }, status=500)
 
 @login_required
+@es_usuario_normal()
 @require_http_methods(["GET"])
 def contar_notificaciones_no_leidas(request):
     """
@@ -1990,6 +2524,7 @@ def contar_notificaciones_no_leidas(request):
 # === VISTAS PARA GESTIÓN DE ESPACIOS ===
 
 @login_required
+@es_admin()
 def crear_espacio_view(request):
     """Vista para crear espacio (template)"""
     try:
@@ -2002,6 +2537,7 @@ def crear_espacio_view(request):
         return redirect('login')
 
 @login_required
+@es_admin()
 def editar_espacio_view(request):
     """Vista para editar espacio (template)"""
     try:
@@ -2031,6 +2567,7 @@ def editar_espacio_view(request):
 
 # APIs para gestión de espacios
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def crear_espacio_api(request):
@@ -2118,6 +2655,7 @@ def crear_espacio_api(request):
         }, status=500)
 
 @login_required
+@es_admin()
 @require_http_methods(["GET"])
 def obtener_espacio_api(request, espacio_id):
     """API para obtener datos de un espacio específico - VERSIÓN CORREGIDA"""
@@ -2162,6 +2700,7 @@ def obtener_espacio_api(request, espacio_id):
         }, status=500)
         
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])  
 def actualizar_espacio_api(request, espacio_id):
@@ -2237,6 +2776,7 @@ def actualizar_espacio_api(request, espacio_id):
         return JsonResponse({'success': False, 'error': f'Error interno del servidor: {str(e)}'})
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def eliminar_espacio_api(request, espacio_id):
@@ -2277,6 +2817,7 @@ def eliminar_espacio_api(request, espacio_id):
 # === VISTAS FALTANTES PARA GESTIÓN DE USUARIOS ===
 
 @login_required
+@es_admin()
 @require_http_methods(["GET"])
 def filtrar_usuarios_api(request):
     """API para filtrar usuarios con múltiples criterios"""
@@ -2361,6 +2902,7 @@ def filtrar_usuarios_api(request):
         }, status=500)
 
 @login_required
+@es_admin()
 @require_http_methods(["GET"])
 def obtener_usuario_api(request, user_id):
     """API para obtener datos de un usuario específico - MEJORADA"""
@@ -2396,6 +2938,7 @@ def obtener_usuario_api(request, user_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def actualizar_usuario_api(request, user_id):
@@ -2540,6 +3083,7 @@ def actualizar_usuario_api(request, user_id):
         }, status=500)
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def cambiar_estado_usuario_api(request, user_id):
@@ -2590,6 +3134,7 @@ def cambiar_estado_usuario_api(request, user_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@es_admin()
 @require_http_methods(["GET"])
 def obtener_perfiles_usuario_api(request):
     """API para obtener perfiles de usuario"""
@@ -2625,6 +3170,7 @@ def obtener_perfiles_usuario_api(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
 @login_required
+@es_admin()
 def notificaciones_admin_view(request):
     """Vista de notificaciones para administradores"""
     try:
@@ -2637,6 +3183,7 @@ def notificaciones_admin_view(request):
         return redirect('login')
 
 @login_required
+@es_admin()
 def get_notificaciones_admin_api(request):
     """API para obtener notificaciones de administradores"""
     try:
@@ -2728,6 +3275,7 @@ def get_notificaciones_admin_api(request):
 # === VISTAS PARA NOTIFICACIONES DE ADMINISTRADOR ===
 
 @login_required
+@es_admin()
 @require_http_methods(["GET"])
 def contar_notificaciones_admin_no_leidas(request):
     """API para contar notificaciones de admin no leídas"""
@@ -2752,6 +3300,7 @@ def contar_notificaciones_admin_no_leidas(request):
         }, status=500)
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def marcar_todas_notificaciones_admin_leidas(request):
@@ -2782,6 +3331,7 @@ def marcar_todas_notificaciones_admin_leidas(request):
         }, status=500)
 
 @login_required
+@es_admin()
 @csrf_exempt
 @require_http_methods(["POST"])
 def marcar_notificacion_admin_leida(request, notificacion_id):
@@ -2866,19 +3416,9 @@ class AreaViewSet(viewsets.ModelViewSet):
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
-from django.http import HttpResponse
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-import io
-from datetime import datetime
-from django.db import models
 
 @login_required
+@es_admin()
 def generar_reporte_pdf(request, tipo_reporte):
     """Genera reportes en PDF basados en datos reales de la BD"""
     try:
@@ -3175,8 +3715,8 @@ def generar_reporte_pdf(request, tipo_reporte):
         print(f"❌ Error generando PDF: {e}")
         return JsonResponse({'success': False, 'error': 'Error al generar el reporte PDF'})
 
-
 @login_required
+@es_admin()
 @user_passes_test(is_admin_user)
 def limpiar_notificaciones_prueba(request):
     """Limpia las notificaciones de prueba"""
@@ -3200,6 +3740,7 @@ def limpiar_notificaciones_prueba(request):
         return JsonResponse({'success': False, 'error': str(e)})
     
 @login_required
+@es_admin()
 @user_passes_test(is_admin_user)
 def test_notificaciones_reales(request):
     """Endpoint de prueba para notificaciones admin con datos reales"""

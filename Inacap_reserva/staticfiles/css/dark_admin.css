@@ -1,4 +1,8 @@
+[file name]: dark_admin.css
+[file content begin]
 /* dark_admin.css: Fuerza tema oscuro y corrige fondos/textos claros en el admin de Django */
+
+/* Aplicar solo cuando el usuario ha seleccionado tema oscuro */
 html[data-theme="dark"] body,
 html[data-theme="dark"] #container,
 html[data-theme="dark"] .login,
@@ -22,6 +26,7 @@ html[data-theme="dark"] .change-list {
     color: #e6eef8 !important;
     border-color: #232b3a !important;
 }
+
 html[data-theme="dark"] input,
 html[data-theme="dark"] select,
 html[data-theme="dark"] textarea {
@@ -29,31 +34,51 @@ html[data-theme="dark"] textarea {
     color: #e6eef8 !important;
     border-color: #232b3a !important;
 }
+
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+    border-color: #7da2ff !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(125, 162, 255, 0.2) !important;
+}
+
 html[data-theme="dark"] a,
 html[data-theme="dark"] a:link,
 html[data-theme="dark"] a:visited {
     color: #7da2ff !important;
+    text-decoration: none !important;
 }
+
 html[data-theme="dark"] a:hover {
-    color: #fff !important;
+    color: #a0c1ff !important;
+    text-decoration: underline !important;
 }
+
 html[data-theme="dark"] .theme-toggle {
     background: transparent !important;
     color: #e6eef8 !important;
 }
+
 html[data-theme="dark"] .errornote,
 html[data-theme="dark"] .errorlist {
     background: #570808 !important;
     color: #fff !important;
+    border-color: #7a0d0d !important;
 }
+
 html[data-theme="dark"] .success {
     background: #006b1b !important;
     color: #fff !important;
+    border-color: #008a22 !important;
 }
+
 html[data-theme="dark"] .warning {
     background: #583305 !important;
     color: #fff !important;
+    border-color: #7a4707 !important;
 }
+
 /* Corrige cualquier fondo blanco o gris claro inline */
 html[data-theme="dark"] [style*="background: #fff"],
 html[data-theme="dark"] [style*="background:#fff"],
@@ -68,3 +93,132 @@ html[data-theme="dark"] [style*="background-color: rgb(230,230,230)"] {
     background: #181818 !important;
     color: #e6eef8 !important;
 }
+
+/* Tablas admin */
+html[data-theme="dark"] table,
+html[data-theme="dark"] thead,
+html[data-theme="dark"] tbody,
+html[data-theme="dark"] tr,
+html[data-theme="dark"] th,
+html[data-theme="dark"] td {
+    background: #181818 !important;
+    color: #e6eef8 !important;
+    border-color: #232b3a !important;
+}
+
+html[data-theme="dark"] thead th {
+    background: #232b3a !important;
+    color: #e6eef8 !important;
+}
+
+/* Botones admin */
+html[data-theme="dark"] .button,
+html[data-theme="dark"] input[type="submit"],
+html[data-theme="dark"] input[type="button"] {
+    background: #232b3a !important;
+    color: #e6eef8 !important;
+    border-color: #2d3a4d !important;
+}
+
+html[data-theme="dark"] .button:hover,
+html[data-theme="dark"] input[type="submit"]:hover,
+html[data-theme="dark"] input[type="button"]:hover {
+    background: #2d3a4d !important;
+    border-color: #7da2ff !important;
+}
+
+html[data-theme="dark"] .button.default {
+    background: #7da2ff !important;
+    color: #181818 !important;
+    border-color: #7da2ff !important;
+}
+
+html[data-theme="dark"] .button.default:hover {
+    background: #a0c1ff !important;
+    border-color: #a0c1ff !important;
+}
+
+/* Header admin */
+html[data-theme="dark"] #header {
+    background: #232b3a !important;
+    color: #e6eef8 !important;
+}
+
+html[data-theme="dark"] #branding h1 {
+    color: #e6eef8 !important;
+}
+
+html[data-theme="dark"] #user-tools {
+    color: #e6eef8 !important;
+}
+
+html[data-theme="dark"] #user-tools a {
+    color: #7da2ff !important;
+}
+
+html[data-theme="dark"] #user-tools a:hover {
+    color: #a0c1ff !important;
+}
+
+/* Sidebar admin */
+html[data-theme="dark"] #content-related {
+    background: #181818 !important;
+    border-color: #232b3a !important;
+}
+
+html[data-theme="dark"] #content-related .module {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] #content-related h3 {
+    color: #e6eef8 !important;
+    background: #232b3a !important;
+}
+
+/* Dashboard */
+html[data-theme="dark"] .dashboard #content {
+    background: #181818 !important;
+}
+
+html[data-theme="dark"] .dashboard .module {
+    background: #232b3a !important;
+}
+
+html[data-theme="dark"] .dashboard .module h2 {
+    background: #181818 !important;
+    color: #e6eef8 !important;
+    border-color: #232b3a !important;
+}
+
+/* Login page */
+html[data-theme="dark"] .login #header {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] .login #content {
+    background: #181818 !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+html[data-theme="dark"] .login .form-row {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] .login .submit-row {
+    background: transparent !important;
+    padding: 10px 0 !important;
+}
+
+/* Responsive admin */
+@media (max-width: 767px) {
+    html[data-theme="dark"] body {
+        font-size: 14px !important;
+    }
+    
+    html[data-theme="dark"] #header {
+        padding: 10px !important;
+    }
+}
+[file content end]

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% include 'reservas/_theme_snippet.html' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INACAP - Sistema de Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Variables CSS para temas */
+        :root {
+            /* Tema Claro (default) */
+            --bg-primary: #f9fafb;
+            --bg-secondary: white;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --input-bg: #ffffff;
+            --input-text: #111827;
+            --input-border: #e5e7eb;
+            --border-color: #e5e7eb;
+            --accent-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="dark"] {
+            /* Tema Oscuro */
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --input-bg: #374151;
+            --input-text: #ffffff;
+            --input-border: #4b5563;
+            --border-color: #4b5563;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: #dc2626;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .welcome-text {
+            font-size: 24px;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .tab-container {
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .tab.active {
+            background: var(--bg-secondary);
+            color: var(--accent-color);
+            box-shadow: var(--shadow);
+        }
+
+        .user-type-selector {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 30px;
+            gap: 4px;
+        }
+
+        .user-type-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .user-type-btn.active {
+            background: var(--bg-secondary);
+            color: var(--accent-color);
+            box-shadow: var(--shadow);
+        }
+
+        .user-type-info {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: var(--accent-color);
+            text-align: left;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: var(--input-bg);
+            color: var(--input-text);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .name-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .remember-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .action-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .action-button.register {
+            background: var(--success-color);
+        }
+
+        .action-button.register:hover {
+            background: #059669;
+        }
+
+        .action-button.admin {
+            background: #dc2626;
+        }
+
+        .action-button.admin:hover {
+            background: #b91c1c;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .switch-form {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .switch-form a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            margin-left: 8px;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Estilos específicos para el modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 480px;
+            padding: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            color: var(--text-primary);
+        }
+
+        .modal h4 {
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            margin-bottom: 10px;
+        }
+
+        .modal-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 6px;
+        }
+    </style>
+    {% load static %}
+    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">IN</div>
+            <div class="logo-text">INACAP</div>
+            <button id="themeToggle" class="theme-toggle" title="Cambiar tema">🌙</button>
+        </div>
+
+        <!-- Modal de Registro Rápido -->
+        <div id="registerModal" class="modal">
+            <div class="modal-content">
+                <h4>Crear Usuario</h4>
+                <div id="registerMsg"></div>
+                <input id="r_firstName" placeholder="Nombre" class="modal-input" required />
+                <input id="r_lastName" placeholder="Apellido" class="modal-input" />
+                <input id="r_email" placeholder="Correo electrónico" type="email" class="modal-input" required />
+                <input id="r_password" placeholder="Contraseña" type="password" class="modal-input" required minlength="6" />
+                <div class="modal-buttons">
+                    <button id="closeRegisterModal" class="action-button" style="background: var(--text-tertiary)">Cerrar</button>
+                    <button id="submitRegisterModal" class="action-button register">Crear cuenta</button>
+                </div>
+            </div>
+        </div>
+        
+        <h1 class="welcome-text">Sistema de Reservas</h1>
+
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" data-tab="login">🔐 Iniciar Sesión</button>
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <!-- FORMULARIO DE LOGIN -->
+        <div class="form-container active" id="loginFormContainer">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">📧 Correo Electrónico</label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        class="form-input" 
+                        placeholder="correo@institucion.cl"
+                        required
+                        style="color: var(--input-text);"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🔒 Contraseña</label>
+                    <div class="password-container">
+                        <input 
+                            type="password" 
+                            id="loginPassword" 
+                            class="form-input" 
+                            placeholder="Tu contraseña"
+                            required
+                            style="color: var(--input-text);"
+                        >
+                        <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" class="remember-checkbox" id="rememberMe">
+                        Recordar sesión
+                    </label>
+                </div>
+                <div style="text-align:left; margin-bottom:18px;">
+                    <a href="/forgot-password/" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                    &nbsp;|&nbsp;
+                    <a href="#" id="openRegisterLink" class="forgot-password">Crear un usuario</a>
+                </div>
+                
+                <button type="submit" class="action-button" id="loginBtn">
+                    Iniciar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Agrega esto en login.html -->
+<div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+    <p style="color: #6b7280; margin-bottom: 10px;">¿Olvidaste tu contraseña?</p>
+    <a href="{% url 'forgot_password_request' %}" style="color: #2563eb; text-decoration: none; font-weight: 500;">
+        🔑 Recuperar contraseña (usuarios normales)
+    </a>
+    <p style="font-size: 12px; color: #9ca3af; margin-top: 5px;">
+        <em>Nota: Los administradores deben contactar al soporte</em>
+    </p>
+</div>
+
+    <script>
+        // Aplicar tema inmediatamente al cargar
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                const html = document.documentElement;
+                
+                if (savedTheme === 'dark') {
+                    html.setAttribute('data-theme', 'dark');
+                } else {
+                    html.setAttribute('data-theme', 'light');
+                }
+            } catch(e) {
+                console.log('Error aplicando tema:', e);
+            }
+        })();
+
+        // Toggle del tema
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            this.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleButton = passwordInput.parentNode.querySelector('.toggle-password');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = '🔒';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = '👁️';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // FUNCIÓN MEJORADA DE LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Limpiar mensajes anteriores
+            hideMessages();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showError('Por favor completa todos los campos');
+                return;
+            }
+
+            // Mostrar loading
+            const loginBtn = document.getElementById('loginBtn');
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '⏳ Conectando...';
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch('/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+               if (data.success) {
+                    showSuccess('¡Login exitoso! Redirigiendo...');
+                    
+                    console.log('Login exitoso, redirigiendo a:', data.redirect_url);
+                    
+                    // Redirigir después de breve delay
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '/dashboard/';
+                    }, 1000);
+                    
+                } else {
+                    showError(data.message || 'Credenciales incorrectas');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión con el servidor');
+            } finally {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+        });
+
+        // FUNCIÓN PARA OBTENER CSRF TOKEN
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            
+            return cookieValue;
+        }
+
+        // Inicializaciones al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ajustar botón de tema según el tema actual
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+            // Inicializar modal de registro
+            const openLink = document.getElementById('openRegisterLink');
+            const modal = document.getElementById('registerModal');
+            const closeBtn = document.getElementById('closeRegisterModal');
+            const submitBtn = document.getElementById('submitRegisterModal');
+
+            if (openLink && modal) {
+                openLink.addEventListener('click', function(e){
+                    e.preventDefault();
+                    modal.style.display = 'flex';
+                    document.getElementById('r_firstName').focus();
+                });
+            }
+
+            if (closeBtn && modal) {
+                closeBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    modal.style.display = 'none';
+                });
+            }
+
+            if (submitBtn && modal) {
+                submitBtn.addEventListener('click', async function(e){
+                    e.preventDefault();
+                    const firstName = document.getElementById('r_firstName').value.trim();
+                    const lastName = document.getElementById('r_lastName').value.trim();
+                    const email = document.getElementById('r_email').value.trim();
+                    const password = document.getElementById('r_password').value;
+
+                    const msgDiv = document.getElementById('registerMsg');
+                    msgDiv.innerHTML = '';
+
+                    if (!firstName || !email || !password) {
+                        msgDiv.innerHTML = '<div class="error-message" style="display:block">Completa nombre, email y contraseña</div>';
+                        return;
+                    }
+
+                    try {
+                        this.textContent = 'Creando...';
+                        this.disabled = true;
+
+                        const resp = await fetch('/api/registro/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type':'application/json',
+                                'X-CSRFToken': getCSRFToken()
+                            },
+                            body: JSON.stringify({
+                                first_name: firstName,
+                                last_name: lastName,
+                                email: email,
+                                password: password
+                            })
+                        });
+                        
+                        const data = await resp.json();
+                        if (data.success) {
+                            msgDiv.innerHTML = '<div class="success-message" style="display:block">Cuenta creada. Revisa tu correo o inicia sesión.</div>';
+                            setTimeout(() => { 
+                                modal.style.display = 'none'; 
+                                document.getElementById('loginEmail').value = email;
+                                document.getElementById('loginPassword').focus();
+                            }, 1500);
+                        } else {
+                            msgDiv.innerHTML = `<div class="error-message" style="display:block">${data.message || data.error}</div>`;
+                        }
+                    } catch (err) {
+                        msgDiv.innerHTML = '<div class="error-message" style="display:block">Error de conexión</div>';
+                    } finally {
+                        this.textContent = 'Crear cuenta';
+                        this.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

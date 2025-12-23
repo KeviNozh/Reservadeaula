@@ -1,49 +1,465 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    {% include 'reservas/_theme_snippet.html' %}
-    {% load static %}
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Restablecer con código - INACAP</title>
-    <style>body{font-family:Segoe UI, Tahoma, sans-serif;background:#f3f4f6;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}.card{background:white;padding:24px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.08);width:420px}.form-input{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin-top:8px}.action-button{width:100%;padding:12px;background:#2563eb;color:white;border:none;border-radius:8px;cursor:pointer;margin-top:12px}</style>
-    <link id="darkCss" rel="stylesheet" href="{% static 'css/dark.css' %}" disabled>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restablecer Contraseña - INACAP Reservas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #2563eb;
+            margin: 0;
+            font-size: 32px;
+        }
+        
+        .logo p {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #111827;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .back-link a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .instructions {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .instructions ol {
+            margin: 15px 0 15px 20px;
+            padding: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .warning {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .warning strong {
+            color: #92400e;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .password-show {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .success-screen {
+            text-align: center;
+            padding: 30px 0;
+            display: none;
+        }
+        
+        .success-icon {
+            font-size: 80px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="card">
-        <h3>Restablecer contraseña (código temporal)</h3>
-        <p>Ingresa tu correo y el código temporal que recibiste por email. El código funciona una sola vez y expira.</p>
-        <div id="msg" style="color:#dc2626;margin-bottom:8px"></div>
-        <input id="email" class="form-input" placeholder="correo@institucion.cl" />
-        <input id="temp" class="form-input" placeholder="Código temporal recibido" />
-        <input id="new1" class="form-input" type="password" placeholder="Nueva contraseña" />
-        <input id="new2" class="form-input" type="password" placeholder="Repetir nueva contraseña" />
-        <button id="saveBtn" class="action-button">Cambiar contraseña</button>
-        <p style="margin-top:10px"><a href="/login/">Volver al inicio de sesión</a></p>
+        <div class="logo">
+            <h1>🔄 INACAP</h1>
+            <p>Restablecer Contraseña</p>
+        </div>
+        
+        <div class="alert" id="alertMessage"></div>
+        
+        <!-- Pantalla de éxito (oculta inicialmente) -->
+        <div class="success-screen" id="successScreen">
+            <div class="success-icon">✅</div>
+            <h2 style="color: #065f46;">¡Contraseña Restablecida!</h2>
+            <p>Tu contraseña ha sido actualizada exitosamente.</p>
+            <p>Redirigiendo al login...</p>
+            <div class="loading" id="redirectLoading">
+                <div class="spinner"></div>
+            </div>
+            <div class="back-link" style="margin-top: 30px;">
+                <a href="{% url 'login' %}" id="manualLoginLink">Haz clic aquí si no se redirige automáticamente</a>
+            </div>
+        </div>
+        
+        <!-- Formulario (visible inicialmente) -->
+        <div id="resetFormContainer">
+            <div class="instructions">
+                <strong>📝 CÓMO USAR TU CONTRASEÑA TEMPORAL:</strong>
+                <ol>
+                    <li>Ingresa el <strong>mismo email</strong> que usaste para generar la contraseña</li>
+                    <li>Copia y pega la <strong>contraseña temporal de 8 letras</strong> que recibiste</li>
+                    <li>Crea tu <strong>nueva contraseña</strong> (mínimo 8 caracteres)</li>
+                    <li>Confirma la nueva contraseña</li>
+                </ol>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ IMPORTANTE:</strong>
+                <p>La contraseña temporal <strong>NO funciona en el login normal</strong>.<br>
+                Solo sirve aquí, para crear una nueva contraseña.</p>
+            </div>
+            
+            <form id="resetForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="email">📧 Correo Electrónico</label>
+                    <input type="email" id="email" required 
+                           placeholder="ejemplo@inacap.cl">
+                </div>
+                
+                <div class="form-group">
+                    <label for="temp_password">🔑 Contraseña Temporal (8 letras)</label>
+                    <input type="text" id="temp_password" required 
+                           placeholder="Pega aquí la contraseña temporal">
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password">🆕 Nueva Contraseña</label>
+                    <div class="password-show">
+                        <input type="password" id="new_password" required 
+                               placeholder="Mínimo 8 caracteres">
+                        <button type="button" class="toggle-password" onclick="togglePassword('new_password')">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password2">✓ Confirmar Nueva Contraseña</label>
+                    <div class="password-show">
+                        <input type="password" id="new_password2" required 
+                               placeholder="Repite tu nueva contraseña">
+                        <button type="button" class="toggle-password" onclick="togglePassword('new_password2')">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Procesando...</p>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">
+                    <span id="btnText">✅ Crear Nueva Contraseña</span>
+                </button>
+            </form>
+            
+            <div class="back-link">
+                <a href="{% url 'forgot_password_request' %}">← Volver a generar contraseña temporal</a> |
+                <a href="{% url 'login' %}">Ir al Login</a>
+            </div>
+        </div>
     </div>
-<script>
-document.getElementById('saveBtn').addEventListener('click', async function(){
-    const email = document.getElementById('email').value.trim();
-    const temp = document.getElementById('temp').value.trim();
-    const p1 = document.getElementById('new1').value;
-    const p2 = document.getElementById('new2').value;
-    const msg = document.getElementById('msg'); msg.textContent='';
-    if(!email || !temp || !p1 || !p2){ msg.textContent='Completa todos los campos.'; return; }
-    if(p1!==p2){ msg.textContent='Las contraseñas no coinciden.'; return; }
-    this.disabled=true; this.textContent='Guardando...';
-    try{
-        const resp = await fetch('/reset-otp/', {
-            method:'POST',
-            headers:{'Content-Type':'application/json','X-CSRFToken':(function(){const name='csrftoken';let v=null;if(document.cookie&&document.cookie!==''){document.cookie.split(';').forEach(c=>{const t=c.trim(); if(t.indexOf(name+'=')===0) v=decodeURIComponent(t.substring(name.length+1));});}return v;})()},
-            body: JSON.stringify({email: email, temp_password: temp, new_password: p1, new_password2: p2})
+    
+    <script>
+        // Obtener email de la URL si existe
+        function getEmailFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('email') || '';
+        }
+        
+        // Auto-completar email si viene en la URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailFromURL = getEmailFromURL();
+            if (emailFromURL) {
+                document.getElementById('email').value = emailFromURL;
+                document.getElementById('temp_password').focus();
+            } else {
+                document.getElementById('email').focus();
+            }
         });
-        const data = await resp.json();
-        if(data.success){ alert('Contraseña actualizada. Inicia sesión.'); window.location.href='/login/'; }
-        else{ msg.textContent = data.message || 'Error'; }
-    }catch(e){ msg.textContent='Error de conexión'; }
-    finally{ this.disabled=false; this.textContent='Cambiar contraseña'; }
-});
-</script>
-    <script src="{% static 'js/theme.js' %}"></script>
+        
+        function togglePassword(fieldId) {
+            const input = document.getElementById(fieldId);
+            const button = input.parentNode.querySelector('.toggle-password');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🔒';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alertMessage');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            // Auto-ocultar después de 5 segundos (excepto success)
+            if (type !== 'success') {
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Scroll al alert
+            alert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function showSuccessScreen() {
+            document.getElementById('resetFormContainer').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+            
+            // Redirigir automáticamente después de 3 segundos
+            setTimeout(() => {
+                window.location.href = '{% url "login" %}';
+            }, 3000);
+        }
+        
+        // Función para obtener CSRF token
+        function getCSRFToken() {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                return csrfToken.value;
+            }
+            
+            // Si no está en el DOM, buscar en las cookies
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        document.getElementById('resetForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const tempPassword = document.getElementById('temp_password').value.trim();
+            const newPassword = document.getElementById('new_password').value;
+            const newPassword2 = document.getElementById('new_password2').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+            
+            // Validaciones básicas
+            if (!email || !tempPassword || !newPassword || !newPassword2) {
+                showAlert('Todos los campos son requeridos', 'error');
+                return;
+            }
+            
+            if (newPassword !== newPassword2) {
+                showAlert('Las nuevas contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showAlert('La nueva contraseña debe tener al menos 8 caracteres', 'error');
+                return;
+            }
+            
+            if (tempPassword.length !== 8) {
+                showAlert('La contraseña temporal debe tener exactamente 8 caracteres', 'error');
+                return;
+            }
+            
+            // Mostrar loading
+            submitBtn.disabled = true;
+            btnText.textContent = 'Procesando...';
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch('{% url "reset_via_otp" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        temp_password: tempPassword,
+                        new_password: newPassword,
+                        new_password2: newPassword2
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('✅ ' + data.message, 'success');
+                    showSuccessScreen();
+                } else {
+                    showAlert('❌ ' + data.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión. Intenta nuevamente.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = '✅ Crear Nueva Contraseña';
+                loading.style.display = 'none';
+            }
+        });
+        
+        // Auto-seleccionar campo de contraseña temporal al hacer clic
+        document.getElementById('temp_password').addEventListener('click', function() {
+            this.select();
+        });
+    </script>
 </body>
 </html>
